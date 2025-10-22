@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Menu, Phone } from "lucide-react";
-import autopaskolosLogo from "@/assets/autokopers-logo.jpg";
+import autopaskolosLogo from "@/assets/autopaskolos-logo.png";
 
 export const Header = () => {
   return (
