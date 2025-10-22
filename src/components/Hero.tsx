@@ -1,68 +1,63 @@
 import { Button } from "@/components/ui/button";
-import { Car, RefreshCw, Wrench, ShoppingCart, ChevronRight } from "lucide-react";
-
-const loanTypes = [
-  { icon: ShoppingCart, label: "Vartojimo paskola" },
-  { icon: Car, label: "Paskola automobiliui" },
-  { icon: RefreshCw, label: "Refinansavimas" },
-  { icon: Wrench, label: "Paskola būsto remontui" },
-];
+import { ArrowRight, Calculator, TrendingDown, Clock, Shield } from "lucide-react";
 
 export const Hero = () => {
   return (
-    <section className="bg-gradient-to-br from-background to-secondary/30 py-16 md:py-24">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              Nemokamai palyginkite paskolas iki 30.000 €
-            </h1>
-            <p className="text-lg text-muted-foreground mb-8">
-              Per 1 valandą Jums atrinksime 3 geriausius paskolos pasiūlymus iš 20 bankų ir kreditorių. Nemokamai ir be įsipareigojimų.
-            </p>
-            
-            <div className="space-y-3 mb-8">
-              {loanTypes.map((type, index) => (
-                <button
-                  key={index}
-                  className="w-full flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-accent/5 hover:border-primary/50 transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-primary/10 text-primary">
-                      <type.icon className="h-5 w-5" />
-                    </div>
-                    <span className="font-medium">{type.label}</span>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </button>
-              ))}
-            </div>
+    <section className="relative py-20 md:py-32 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background" />
+      
+      <div className="container mx-auto px-4 relative">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 text-accent-foreground text-sm font-medium mb-6 animate-fade-in">
+            <TrendingDown className="h-4 w-4" />
+            Palyginkite paskolas per 1 minutę
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 animate-fade-in">
+            Raskite geriausią{" "}
+            <span className="text-primary">paskolą</span>
+            <br />iki 30.000 €
+          </h1>
+          
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-fade-in">
+            Nemokamai palyginkite pasiūlymus iš 20+ bankų ir kreditorių. 
+            Greitas atsakymas, be įsipareigojimų.
+          </p>
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                  </svg>
-                ))}
-              </div>
-              <span className="ml-2">Klientų įvertinimas</span>
-              <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" className="h-4 ml-1" />
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-fade-in">
+            <Button size="lg" className="gap-2 group">
+              Pradėti palyginimą
+              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button size="lg" variant="outline" className="gap-2">
+              <Calculator className="h-5 w-5" />
+              Skaičiuoklė
+            </Button>
           </div>
 
-          <div className="relative">
-            <div className="relative w-full aspect-square max-w-md mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"></div>
-              <div className="relative bg-gradient-to-br from-primary/10 to-accent/10 rounded-full p-8 border border-primary/20">
-                <div className="w-full h-full rounded-full bg-card flex items-center justify-center overflow-hidden">
-                  <div className="text-center p-8">
-                    <div className="text-6xl mb-4">👨‍💼</div>
-                    <p className="text-sm text-muted-foreground">Paskolos ekspertas</p>
-                    <p className="text-xs text-muted-foreground mt-1">AUTOKOPERS rūpinamas</p>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="bg-card p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-6 w-6 text-primary" />
               </div>
+              <h3 className="font-semibold mb-2">Per 1 valandą</h3>
+              <p className="text-sm text-muted-foreground">Gauti 3 geriausius pasiūlymus</p>
+            </div>
+
+            <div className="bg-card p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <TrendingDown className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">Žemiausia palūkanų norma</h3>
+              <p className="text-sm text-muted-foreground">Nuo 3.9% metinių</p>
+            </div>
+
+            <div className="bg-card p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">100% nemokama</h3>
+              <p className="text-sm text-muted-foreground">Be jokių paslėptų mokesčių</p>
             </div>
           </div>
         </div>
