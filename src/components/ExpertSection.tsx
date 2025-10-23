@@ -1,29 +1,68 @@
 import { Button } from "@/components/ui/button";
+import { CheckCircle, Award, TrendingDown } from "lucide-react";
+import expertImage from "@/assets/expert-person.jpg";
 
 export const ExpertSection = () => {
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-primary/5 to-accent/5">
+    <section className="py-24 bg-muted/30">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="order-2 md:order-1">
-              <div className="relative w-full aspect-square max-w-md mx-auto">
-                <div className="absolute inset-0 bg-primary/10 rounded-full"></div>
-                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border-4 border-background shadow-xl">
-                  <div className="text-9xl">👨‍💼</div>
-                </div>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="relative order-2 lg:order-1">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img 
+                  src={expertImage} 
+                  alt="Paskolų ekspertas"
+                  className="w-full h-full object-cover aspect-square"
+                />
+              </div>
+              <div className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground p-6 rounded-2xl shadow-xl">
+                <div className="text-4xl font-bold">15+</div>
+                <div className="text-sm mt-1">Metų patirtis</div>
               </div>
             </div>
 
-            <div className="order-1 md:order-2">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Su AUTOPASKOLOS.LT paskolų ekspertais pasiskolinsite žemesnėmis palūkanomis
+            <div className="order-1 lg:order-2 space-y-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+                <Award className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Sertifikuoti ekspertai</span>
+              </div>
+
+              <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+                Profesionalūs konsultantai –{" "}
+                <span className="text-primary">jūsų pusėje</span>
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Nustebtumėte, kiek galima sutaupyti vien tik palyginus kelių kredito įstaigų pasiūlymus. Tiesa, tai reikalauja laiko ir žinių. Pavyzdžiui, kai kurios įmonės mėgsta sumažinti palūkanų normas ir paslėpti jas po papildomais mokesčiais. AUTOPASKOLOS.LT paskolų ekspertai yra Jūsų pusėje ir gerai suprasdami rinką, pateikia skaidrius palyginimus bei leidžia išvengti netikėtumų. AUTOPASKOLOS.LT paslaugos nieko nekainuoja. Tad kodėl gi jų neišbandžius nors ir dabar?
+              
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Mūsų ekspertai išanalizuos jūsų situaciją ir atrinksime geriausias sąlygas iš 20+ kreditorių. Sutaupykite laiką ir pinigus – mes žinome, kaip gauti geriausią pasiūlymą.
               </p>
-              <Button size="lg" className="text-lg px-8 py-6">
-                Gauti pasiūlymą
+
+              <div className="space-y-4 pt-4">
+                <div className="flex gap-3">
+                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold mb-1">Individualus vertinimas</div>
+                    <div className="text-sm text-muted-foreground">Kiekvienam klientui parengiame individualų planą</div>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <TrendingDown className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold mb-1">Žemesnės palūkanos</div>
+                    <div className="text-sm text-muted-foreground">Vidutiniškai 1.5% mažesnės nei tiesioginiai pasiūlymai</div>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold mb-1">Skaidrus procesas</div>
+                    <div className="text-sm text-muted-foreground">Be paslėptų mokesčių ir netikėtumų</div>
+                  </div>
+                </div>
+              </div>
+
+              <Button size="lg" className="text-lg h-14 px-8 mt-6">
+                Konsultuotis nemokamai
               </Button>
             </div>
           </div>
