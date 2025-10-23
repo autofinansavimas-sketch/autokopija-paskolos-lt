@@ -1,50 +1,77 @@
+import { Facebook, Instagram, Linkedin, Mail, Phone } from "lucide-react";
+import autokopersLogo from "@/assets/autokopers-logo.png";
+
 export const Footer = () => {
   return (
-    <footer className="bg-foreground text-background py-12">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+    <footer className="bg-muted/30 border-t">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">AUTOPASKOLOS.LT</h3>
-            <p className="text-sm text-background/80">
-              Powered by AUTOKOPERS
+            <h3 className="font-semibold text-lg mb-4">Apie mus</h3>
+            <p className="text-sm text-muted-foreground">
+              AUTOPASKOLOS.LT padeda klientams rasti geriausias paskolų sąlygas Lietuvoje.
             </p>
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Paskolos</h4>
-            <ul className="space-y-2 text-sm text-background/80">
-              <li><a href="#" className="hover:text-background">Vartojimo paskola</a></li>
-              <li><a href="#" className="hover:text-background">Paskola automobiliui</a></li>
-              <li><a href="#" className="hover:text-background">Refinansavimas</a></li>
-              <li><a href="#" className="hover:text-background">Paskola būsto remontui</a></li>
+            <h3 className="font-semibold text-lg mb-4">Nuorodos</h3>
+            <ul className="space-y-2">
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kaip tai veikia</a></li>
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">DUK</a></li>
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privatumo politika</a></li>
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Taisyklės</a></li>
             </ul>
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Informacija</h4>
-            <ul className="space-y-2 text-sm text-background/80">
-              <li><a href="#" className="hover:text-background">Apie mus</a></li>
-              <li><a href="#" className="hover:text-background">Kaip tai veikia</a></li>
-              <li><a href="#" className="hover:text-background">DUK</a></li>
-              <li><a href="#" className="hover:text-background">Kontaktai</a></li>
+            <h3 className="font-semibold text-lg mb-4">Produktai</h3>
+            <ul className="space-y-2">
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Vartojimo paskola</a></li>
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Automobilio lizingas</a></li>
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Būsto remontas</a></li>
             </ul>
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Teisinė informacija</h4>
-            <ul className="space-y-2 text-sm text-background/80">
-              <li><a href="#" className="hover:text-background">Privatumo politika</a></li>
-              <li><a href="#" className="hover:text-background">Naudojimosi taisyklės</a></li>
-              <li><a href="#" className="hover:text-background">Slapukai</a></li>
+            <h3 className="font-semibold text-lg mb-4">Kontaktai</h3>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="h-4 w-4" />
+                <span>+370 600 00000</span>
+              </li>
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Mail className="h-4 w-4" />
+                <span>info@autopaskolos.lt</span>
+              </li>
             </ul>
+            <div className="flex gap-4 mt-4">
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Linkedin className="h-5 w-5" />
+              </a>
+            </div>
           </div>
         </div>
         
-        <div className="border-t border-background/20 pt-8 text-center text-sm text-background/60">
-          <p>© 2025 AUTOPASKOLOS.LT. Visos teisės saugomos. Powered by AUTOKOPERS.</p>
-          <p className="mt-2">
-            AUTOPASKOLOS.LT yra Lietuvos Banko prižiūrimas tarpininkas, veikiantis kaip priklausomas vartojimo kreditų tarpininkas bei kaip nepriklausomas kredito, susijusio su nekilnojamuoju turtu tarpininkas.
-          </p>
+        <div className="border-t pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              © 2024 AUTOPASKOLOS.LT. Visos teisės saugomos.
+            </p>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">Powered by</span>
+              <img 
+                src={autokopersLogo} 
+                alt="Autokopers" 
+                className="h-8"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </footer>
