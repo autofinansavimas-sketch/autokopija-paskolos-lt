@@ -3,18 +3,27 @@ import testimonialImage from "@/assets/testimonial-couple.jpg";
 
 const testimonials = [
   {
-    quote: "Sutaupėme beveik 3000 eurų per paskolos laikotarpį. Konsultantė buvo labai profesionali ir padėjo išsirinkti tinkamiausią variantą.",
-    author: "Mindaugas ir Laura",
+    quote: "Sutaupėme beveik 3000 eurų per paskolos laikotarpį. Konsultantė buvo labai profesionali ir padėjo išsirinkti tinkamiausią variantą mūsų situacijai.",
+    author: "Mindaugas ir Laura K.",
+    location: "Vilnius",
     rating: 5
   },
   {
-    quote: "Neįtikėtina, kaip greitai gavome pasiūlymus. Per vieną dieną turėjome 4 pasiūlymus ir išsirinkome geriausią. Labai rekomenduoju!",
+    quote: "Neįtikėtina, kaip greitai gavome pasiūlymus. Per vieną dieną turėjome 4 skirtingus pasiūlymus ir išsirinkome geriausią. Labai rekomenduoju!",
     author: "Tomas V.",
+    location: "Kaunas",
     rating: 5
   },
   {
-    quote: "Maniau, kad man nepatvirtins paskolos, bet ekspertai surado tinkamą kreditorių. Esu labai dėkinga už pagalbą!",
+    quote: "Maniau, kad man nepatvirtins paskolos dėl kredito istorijos, bet ekspertai surado tinkamą kreditorių. Esu labai dėkinga už profesionalią pagalbą!",
     author: "Rūta M.",
+    location: "Klaipėda",
+    rating: 5
+  },
+  {
+    quote: "Skaidrus procesas nuo pradžios iki pabaigos. Jokių paslėptų mokesčių ar netikėtumų. Tikrai vertas pasitikėjimo.",
+    author: "Jonas P.",
+    location: "Šiauliai",
     rating: 5
   }
 ];
@@ -29,11 +38,11 @@ export const Testimonials = () => {
               Ką sako mūsų <span className="text-primary">klientai</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Prisijunkite prie tūkstančių patenkintų klientų
+              Tikri atsiliepimai iš mūsų patenkintų klientų
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-card border-2 border-border rounded-2xl p-8 hover:border-primary/50 transition-all hover:shadow-xl">
                 <div className="flex gap-1 mb-6">
@@ -44,12 +53,15 @@ export const Testimonials = () => {
                 <blockquote className="text-base mb-6 leading-relaxed">
                   "{testimonial.quote}"
                 </blockquote>
-                <div className="font-semibold text-primary">{testimonial.author}</div>
+                <div>
+                  <div className="font-semibold text-primary">{testimonial.author}</div>
+                  <div className="text-sm text-muted-foreground">{testimonial.location}</div>
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-16 bg-card border-2 border-primary/20 rounded-2xl p-8 md:p-12">
+          <div className="bg-card border-2 border-primary/20 rounded-2xl p-8 md:p-12">
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div className="rounded-xl overflow-hidden">
                 <img 
@@ -65,8 +77,8 @@ export const Testimonials = () => {
                     <Star key={i} className="h-6 w-6 fill-primary text-primary" />
                   ))}
                 </div>
-                <p className="text-xl font-semibold">Vidutinis įvertinimas</p>
-                <p className="text-muted-foreground">Remiantis 1,240+ atsiliepimų Google platformoje</p>
+                <p className="text-xl font-semibold">Vidutinis klientų įvertinimas</p>
+                <p className="text-muted-foreground">Remiantis 1,240+ klientų atsiliepimais per pastaruosius metus</p>
               </div>
             </div>
           </div>
