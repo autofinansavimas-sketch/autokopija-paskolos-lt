@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { useState } from "react";
-import logo from "@/assets/autopaskolos-logo-new.png";
+import logo from "@/assets/autopaskolos-logo.png";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,7 +37,7 @@ export const Header = () => {
 
           <div className="flex items-center gap-4">
             <Button className="hidden md:inline-flex">
-              Pradėti dabar
+              Gauti paskolą
             </Button>
             
             <button 
@@ -65,7 +65,7 @@ export const Header = () => {
                 DUK
               </a>
               <Button className="w-full">
-                Pradėti dabar
+                Gauti paskolą
               </Button>
             </div>
           </nav>
