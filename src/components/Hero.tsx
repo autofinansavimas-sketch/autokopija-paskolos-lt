@@ -17,7 +17,7 @@ export const Hero = () => {
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
               Geriausia{" "}
               <span className="text-primary">paskola</span>{" "}
-              per 24 valandas
+              per 30 minučių
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
