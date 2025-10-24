@@ -26,7 +26,7 @@ export const Hero = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button size="lg" className="text-lg h-14 px-8 gap-2 group shadow-lg hover:shadow-xl transition-all">
-                Pradėti dabar
+                Gauti paskolą
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button size="lg" variant="outline" className="text-lg h-14 px-8 border-2">
@@ -40,7 +40,7 @@ export const Hero = () => {
                 <div className="text-sm text-muted-foreground mt-1">Palūkanos nuo</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-primary">24h</div>
+                <div className="text-3xl font-bold text-primary">10min</div>
                 <div className="text-sm text-muted-foreground mt-1">Sprendimas</div>
               </div>
               <div>

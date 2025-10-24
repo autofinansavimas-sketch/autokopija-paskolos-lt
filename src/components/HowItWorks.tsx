@@ -23,7 +23,7 @@ const steps = [
     number: "04",
     icon: HandCoins,
     title: "Gaukite pinigus",
-    description: "Pasirašykite sutartį ir gaukite pinigus į sąskaitą per 1-2 darbo dienas.",
+    description: "Pasirašykite sutartį ir gaukite pinigus į sąskaitą per 30 min.",
   },
 ];
 
