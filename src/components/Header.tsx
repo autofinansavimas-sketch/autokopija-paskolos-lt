@@ -15,7 +15,7 @@ export const Header = () => {
               <img 
                 src={logo} 
                 alt="AUTOPASKOLOS.LT" 
-                className="h-14"
+                className="h-24 md:h-28"
               />
             </a>
             
