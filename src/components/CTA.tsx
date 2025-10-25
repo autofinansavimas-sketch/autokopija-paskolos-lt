@@ -11,7 +11,7 @@ export const CTA = () => {
         <div className="max-w-4xl mx-auto text-center text-primary-foreground">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8">
             <Clock className="h-5 w-5" />
-            <span className="font-semibold">Atsakymas per 24 valandas</span>
+            <span className="font-semibold">Atsakymas per 1 valandą</span>
           </div>
           
           <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
@@ -24,7 +24,7 @@ export const CTA = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button size="lg" variant="secondary" className="text-lg h-14 px-8 gap-2 group shadow-lg">
-              Pradėti dabar
+              Gauti paskolą
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
