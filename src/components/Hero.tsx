@@ -15,13 +15,13 @@ export const Hero = () => {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-              Užpildykite paraišką per{" "}
-              <span className="text-primary">3 minutes</span>{" "}
-              ir gaukite atsakymus per 30 min
+              Geriausia{" "}
+              <span className="text-primary">paskola</span>{" "}
+              per 30 minučių
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              Palyginkite 20+ kreditorių pasiūlymus vienoje vietoje. Profesionalūs konsultantai padės išsirinkti tinkamiausią variantą ir sutaupyti tūkstančius eurų.
+              Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 30 min. Palyginkite 20+ kreditorių pasiūlymus vienoje vietoje ir sutaupykite tūkstančius eurų.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
