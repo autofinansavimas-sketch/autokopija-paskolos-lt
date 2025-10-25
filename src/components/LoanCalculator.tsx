@@ -39,8 +39,8 @@ export const LoanCalculator = () => {
             <p className="text-lg text-muted-foreground">
               Pasirinkite produktą ir sužinokite preliminarią mėnesinę įmoką
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              <span className="font-semibold">Tipinis pavyzdys:</span> galutinės sąlygos gali skirtis pagal kredito reitingą
+            <p className="text-sm text-muted-foreground mt-3 bg-muted/50 rounded-lg p-4 inline-block">
+              <span className="font-semibold">Tipinis pavyzdys:</span> 10,000 € 5 metams, BVKKMN 9.16%, mėnesinė įmoka ~208 €. Galutinės sąlygos gali skirtis pagal kredito reitingą.
             </p>
           </div>
 
