@@ -15,9 +15,9 @@ export const Hero = () => {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-              Geriausia{" "}
-              <span className="text-primary">paskola</span>{" "}
-              per 30 minučių
+              Užpildykite paraišką per{" "}
+              <span className="text-primary">3 minutes</span>{" "}
+              ir gaukite atsakymus per 30 min
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
@@ -25,27 +25,30 @@ export const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button size="lg" className="text-lg h-14 px-8 gap-2 group shadow-lg hover:shadow-xl transition-all">
-                Gauti paskolą
+              <Button 
+                size="lg" 
+                className="text-lg h-14 px-8 gap-2 group shadow-lg hover:shadow-xl transition-all"
+                onClick={() => {
+                  document.querySelector('#loan-calculator')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Gauti paskolos pasiūlymą
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg h-14 px-8 border-2">
-                Skaičiuoti paskolą
               </Button>
             </div>
 
-            <div className="grid grid-cols-3 gap-8 pt-8 border-t">
-              <div>
-                <div className="text-3xl font-bold text-primary">3.9%</div>
-                <div className="text-sm text-muted-foreground mt-1">Palūkanos nuo</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 pt-8 border-t">
+              <div className="text-center sm:text-left">
+                <div className="text-4xl md:text-5xl font-bold text-primary">3.9%</div>
+                <div className="text-base text-muted-foreground mt-2">Palūkanos nuo</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">10min</div>
-                <div className="text-sm text-muted-foreground mt-1">Sprendimas</div>
+              <div className="text-center sm:text-left">
+                <div className="text-4xl md:text-5xl font-bold text-primary">10min</div>
+                <div className="text-base text-muted-foreground mt-2">Sprendimas</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">0€</div>
-                <div className="text-sm text-muted-foreground mt-1">Mokestis</div>
+              <div className="text-center sm:text-left">
+                <div className="text-4xl md:text-5xl font-bold text-primary">0€</div>
+                <div className="text-base text-muted-foreground mt-2">Mokestis</div>
               </div>
             </div>
           </div>
