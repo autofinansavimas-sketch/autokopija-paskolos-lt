@@ -39,9 +39,6 @@ export const LoanCalculator = () => {
             <p className="text-lg text-muted-foreground">
               Pasirinkite produktą ir sužinokite preliminarią mėnesinę įmoką
             </p>
-            <p className="text-sm text-muted-foreground mt-3 bg-muted/50 rounded-lg p-4 inline-block">
-              <span className="font-semibold">Tipinis pavyzdys:</span> 10,000 € 5 metams, BVKKMN 9.16%, mėnesinė įmoka ~208 €. Galutinės sąlygos gali skirtis pagal kredito reitingą.
-            </p>
           </div>
 
           <Card className="p-8 md:p-12 border-2">
@@ -136,6 +133,10 @@ export const LoanCalculator = () => {
 
             <p className="text-center text-sm text-muted-foreground mt-6">
               * Skaičiavimai yra apytiksliai ir skirti informaciniams tikslams. Galutines sąlygas pateiks kreditoriai.
+            </p>
+            
+            <p className="text-center text-xs text-muted-foreground mt-4 leading-relaxed max-w-3xl mx-auto">
+              Tipinis pavyzdys: Jei imtumėte 10,000 Eur vartojimo kreditą, kai sutarties trukmė (ir kredito grąžinimo terminas) – 5 metai (60 mėnesių), taikant 7.5% metinę fiksuotų palūkanų normą, mokant minimalų paslaugų mokestį (1 Eur per mėnesį), mėnesio įmokas 208 Eur mokant anuiteto metodu, bendra vartojimo kredito kainos metinė norma (BVKKMN) būtų 9.16%, o bendra vartojimo kredito gavėjo mokama suma būtų 12,480 Eur.
             </p>
           </Card>
         </div>
