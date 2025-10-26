@@ -122,7 +122,13 @@ export const LoanCalculator = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg h-14 px-8">
+              <Button 
+                size="lg" 
+                className="text-lg h-14 px-8"
+                onClick={() => {
+                  document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 Gauti geriausius pasiūlymus
               </Button>
               <Button size="lg" variant="outline" className="text-lg h-14 px-8 gap-2">

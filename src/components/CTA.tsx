@@ -23,7 +23,14 @@ export const CTA = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button size="lg" variant="secondary" className="text-lg h-14 px-8 gap-2 group shadow-lg">
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="text-lg h-14 px-8 gap-2 group shadow-lg"
+              onClick={() => {
+                document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               Gauti paskolą
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
