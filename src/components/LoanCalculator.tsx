@@ -93,13 +93,13 @@ export const LoanCalculator = () => {
                 value={period}
                 onValueChange={setPeriod}
                 min={6}
-                max={84}
+                max={144}
                 step={6}
                 className="mb-2"
               />
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>6 mėn.</span>
-                <span>84 mėn.</span>
+                <span>144 mėn.</span>
               </div>
             </div>
 
