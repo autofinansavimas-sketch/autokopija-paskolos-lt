@@ -29,35 +29,28 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="py-20 bg-background">
+    <section className="py-12 md:py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Kaip tai <span className="text-primary">veikia</span>?
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">
+            Kaip tai veikia?
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Paprastas ir greitas procesas nuo paraiškos iki pinigų gavimo
+          <p className="text-base text-muted-foreground">
+            4 paprasti žingsniai
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {steps.map((step, index) => (
             <div key={index} className="relative">
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-16 left-[60%] w-[80%] h-0.5 bg-border" />
-              )}
               
-              <div className="relative bg-card p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg">
-                <div className="text-6xl font-bold text-primary/10 mb-4">
-                  {step.number}
+              <div className="bg-card p-6 rounded-lg border text-center">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 mx-auto">
+                  <step.icon className="h-6 w-6 text-primary" />
                 </div>
                 
-                <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                  <step.icon className="h-7 w-7 text-primary" />
-                </div>
-                
-                <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
+                <p className="text-sm text-muted-foreground">
                   {step.description}
                 </p>
               </div>
