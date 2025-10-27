@@ -11,7 +11,7 @@ export const Hero = () => {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/10 border border-primary/20">
               <CheckCircle className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Patikima 10,000+ klientų</span>
+              <span className="text-sm font-medium">Laimingi 1000+ klientų</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
