@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/form";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Vardas turi būti bent 2 simboliai"),
-  phone: z.string().min(9, "Telefono numeris privalomas").regex(/^[\d\s+()-]+$/, "Neteisingas telefono numerio formatas"),
+  name: z.string().optional(),
+  phone: z.string().min(1, "Telefono numeris privalomas"),
   email: z.string().email("Neteisingas el. pašto formatas"),
-  amount: z.string().min(1, "Paskolos suma privaloma"),
+  amount: z.string().optional(),
 });
 
 export const ContactForm = () => {
@@ -66,7 +66,7 @@ export const ContactForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-base font-semibold">
-                          Vardas Pavardė *
+                          Vardas Pavardė
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -139,7 +139,7 @@ export const ContactForm = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-base font-semibold">
-                          Paskolos suma *
+                          Paskolos suma
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
