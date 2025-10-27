@@ -8,9 +8,9 @@ import { Calculator, TrendingDown } from "lucide-react";
 type LoanType = "consumer" | "car" | "home";
 
 const loanTypes = [
-  { type: "consumer", label: "Vartojimo", rate: 5.9 },
-  { type: "car", label: "Auto", rate: 3.9 },
-  { type: "home", label: "Būstas", rate: 4.5 },
+  { id: "consumer" as LoanType, name: "Vartojimo paskola", rate: 5.9, color: "bg-primary" },
+  { id: "car" as LoanType, name: "Automobilio lizingas", rate: 3.9, color: "bg-blue-500" },
+  { id: "home" as LoanType, name: "Būsto remontas", rate: 4.5, color: "bg-green-500" },
 ];
 
 export const LoanCalculator = () => {
@@ -18,48 +18,56 @@ export const LoanCalculator = () => {
   const [amount, setAmount] = useState([15000]);
   const [period, setPeriod] = useState([36]);
 
-  const currentLoan = loanTypes.find(l => l.type === selectedType)!;
+  const currentLoan = loanTypes.find(l => l.id === selectedType)!;
   const monthlyRate = currentLoan.rate / 100 / 12;
   const monthlyPayment = (amount[0] * monthlyRate * Math.pow(1 + monthlyRate, period[0])) / (Math.pow(1 + monthlyRate, period[0]) - 1);
   const totalPayment = monthlyPayment * period[0];
   const totalInterest = totalPayment - amount[0];
 
   return (
-    <section id="loan-calculator" className="py-12 md:py-16 bg-background">
+    <section id="loan-calculator" className="py-24 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">
-            Kiek noriu pasiskolinti?
-          </h2>
-          <p className="text-base text-muted-foreground">
-            Pasirink sumą ir laikotarpį
-          </p>
-        </div>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
+              <Calculator className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Nemokama skaičiuoklė</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Apskaičiuokite savo <span className="text-primary">paskolos įmoką</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Pasirinkite produktą ir sužinokite preliminarią mėnesinę įmoką
+            </p>
+          </div>
 
-        <Card className="max-w-3xl mx-auto shadow-lg">
-          <div className="p-6 md:p-10 space-y-8">
+          <Card className="p-8 md:p-12 border-2">
             {/* Loan Type Selection */}
-            <div className="space-y-3">
-              <Label className="text-base">Paskolos tipas</Label>
-              <div className="grid grid-cols-3 gap-2">
+            <div className="mb-10">
+              <Label className="text-base font-semibold mb-4 block">Paskolos tipas</Label>
+              <div className="grid md:grid-cols-3 gap-4">
                 {loanTypes.map((type) => (
-                  <Button
-                    key={type.type}
-                    variant={selectedType === type.type ? "default" : "outline"}
-                    onClick={() => setSelectedType(type.type as LoanType)}
-                    className="h-16 text-sm"
+                  <button
+                    key={type.id}
+                    onClick={() => setSelectedType(type.id)}
+                    className={`p-6 rounded-xl border-2 transition-all text-left ${
+                      selectedType === type.id
+                        ? "border-primary bg-primary/5 shadow-lg"
+                        : "border-border hover:border-primary/50 bg-card"
+                    }`}
                   >
-                    {type.label}
-                  </Button>
+                    <div className="font-semibold text-lg mb-2">{type.name}</div>
+                    <div className="text-sm text-muted-foreground">Nuo {type.rate}% metinių</div>
+                  </button>
                 ))}
               </div>
             </div>
 
             {/* Amount Slider */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label className="text-base">Suma</Label>
-                <span className="text-xl font-bold text-primary">{amount[0].toLocaleString('lt-LT')} €</span>
+            <div className="mb-10">
+              <div className="flex justify-between items-center mb-4">
+                <Label className="text-base font-semibold">Paskolos suma</Label>
+                <div className="text-3xl font-bold text-primary">{amount[0].toLocaleString('lt-LT')} €</div>
               </div>
               <Slider
                 value={amount}
@@ -67,18 +75,19 @@ export const LoanCalculator = () => {
                 min={1000}
                 max={30000}
                 step={500}
+                className="mb-2"
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="flex justify-between text-sm text-muted-foreground">
                 <span>1,000 €</span>
                 <span>30,000 €</span>
               </div>
             </div>
 
             {/* Period Slider */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label className="text-base">Laikotarpis</Label>
-                <span className="text-xl font-bold text-primary">{period[0]} mėn.</span>
+            <div className="mb-12">
+              <div className="flex justify-between items-center mb-4">
+                <Label className="text-base font-semibold">Paskolos laikotarpis</Label>
+                <div className="text-3xl font-bold text-primary">{period[0]} mėn.</div>
               </div>
               <Slider
                 value={period}
@@ -86,51 +95,57 @@ export const LoanCalculator = () => {
                 min={6}
                 max={144}
                 step={6}
+                className="mb-2"
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="flex justify-between text-sm text-muted-foreground">
                 <span>6 mėn.</span>
                 <span>144 mėn.</span>
               </div>
             </div>
 
             {/* Results */}
-            <div className="bg-primary/5 rounded-xl p-6 md:p-8 space-y-4 border border-primary/20">
-              
-              <div className="text-center space-y-2">
-                <div className="text-sm text-muted-foreground">Mokėsi per mėnesį</div>
-                <div className="text-4xl md:text-5xl font-bold text-primary">{monthlyPayment.toFixed(0)} €</div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="text-center">
-                  <div className="text-xs text-muted-foreground mb-1">Bendra suma</div>
-                  <div className="text-lg font-semibold">{totalPayment.toFixed(0)} €</div>
+            <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 mb-8">
+              <div className="grid md:grid-cols-3 gap-8">
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Mėnesinis mokestis</div>
+                  <div className="text-4xl font-bold text-primary">{monthlyPayment.toFixed(2)} €</div>
                 </div>
-                
-                <div className="text-center">
-                  <div className="text-xs text-muted-foreground mb-1">Palūkanos</div>
-                  <div className="text-lg font-semibold">{totalInterest.toFixed(0)} €</div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Bendra mokėtina suma</div>
+                  <div className="text-4xl font-bold">{totalPayment.toFixed(2)} €</div>
                 </div>
-              </div>
-
-              <div className="pt-4">
-                <Button 
-                  size="lg" 
-                  className="w-full h-14 text-lg"
-                  onClick={() => {
-                    document.querySelector('#contact-form')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  Gauti pasiūlymus
-                </Button>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Palūkanos</div>
+                  <div className="text-4xl font-bold">{totalInterest.toFixed(2)} €</div>
+                </div>
               </div>
             </div>
 
-            <p className="text-xs text-muted-foreground text-center">
-              Apytikslis skaičiavimas. Tikslios sąlygos priklauso nuo kreditoriaus.
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="text-lg h-14 px-8"
+                onClick={() => {
+                  document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Gauti geriausius pasiūlymus
+              </Button>
+              <Button size="lg" variant="outline" className="text-lg h-14 px-8 gap-2">
+                <TrendingDown className="h-5 w-5" />
+                Palyginti kreditorius
+              </Button>
+            </div>
+
+            <p className="text-center text-sm text-muted-foreground mt-6">
+              * Skaičiavimai yra apytiksliai ir skirti informaciniams tikslams. Galutines sąlygas pateiks kreditoriai.
             </p>
-          </div>
-        </Card>
+            
+            <p className="text-center text-xs text-muted-foreground mt-4 leading-relaxed max-w-3xl mx-auto">
+              Tipinis pavyzdys: Jei imtumėte 10,000 Eur vartojimo kreditą, kai sutarties trukmė (ir kredito grąžinimo terminas) – 5 metai (60 mėnesių), taikant 7.5% metinę fiksuotų palūkanų normą, mokant minimalų paslaugų mokestį (1 Eur per mėnesį), mėnesio įmokas 208 Eur mokant anuiteto metodu, bendra vartojimo kredito kainos metinė norma (BVKKMN) būtų 9.16%, o bendra vartojimo kredito gavėjo mokama suma būtų 12,480 Eur.
+            </p>
+          </Card>
+        </div>
       </div>
     </section>
   );
