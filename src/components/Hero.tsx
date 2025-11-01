@@ -11,17 +11,17 @@ export const Hero = () => {
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/10 border border-primary/20">
               <CheckCircle className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Laimingi 1000+ klientų</span>
+              <span className="text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-              Gauk{" "}
-              <span className="text-primary">geriausią paskolos</span>{" "}
-              pasiūlymą vos per 30 minučių
+            <h1 className="text-5xl md:text-7xl font-bold leading-tight uppercase">
+              GAUK{" "}
+              <span className="text-primary">GERIAUSIĄ PASKOLOS</span>{" "}
+              PASIŪLYMĄ VOS PER 30 MINUČIŲ
             </h1>
             
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-              Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 30 minučių. Palyginkite 20+ kreditorių pasiūlymus vienoje vietoje ir sutaupykite tūkstančius eurų.
+            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl uppercase">
+              UŽPILDYKITE PARAIŠKĄ PER 3 MINUTES IR GAUKITE ATSAKYMUS PER 30 MINUČIŲ. PALYGINKITE 20+ KREDITORIŲ PASIŪLYMUS VIENOJE VIETOJE IR SUTAUPYKITE TŪKSTANČIUS EURŲ.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -32,7 +32,7 @@ export const Hero = () => {
                   document.querySelector('#loan-calculator')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Gauti pasiūlymą
+                GAUTI PASIŪLYMĄ
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
@@ -40,15 +40,15 @@ export const Hero = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 pt-8 border-t">
               <div className="text-center sm:text-left">
                 <div className="text-4xl md:text-5xl font-bold text-primary">3.9%</div>
-                <div className="text-base text-muted-foreground mt-2">Palūkanos nuo</div>
+                <div className="text-base text-muted-foreground mt-2 uppercase">PALŪKANOS NUO</div>
               </div>
               <div className="text-center sm:text-left">
                 <div className="text-4xl md:text-5xl font-bold text-primary">10min</div>
-                <div className="text-base text-muted-foreground mt-2">Sprendimas</div>
+                <div className="text-base text-muted-foreground mt-2 uppercase">SPRENDIMAS</div>
               </div>
               <div className="text-center sm:text-left">
                 <div className="text-4xl md:text-5xl font-bold text-primary">0€</div>
-                <div className="text-base text-muted-foreground mt-2">Mokestis</div>
+                <div className="text-base text-muted-foreground mt-2 uppercase">MOKESTIS</div>
               </div>
             </div>
           </div>

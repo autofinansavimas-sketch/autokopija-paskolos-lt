@@ -16,9 +16,9 @@ export const ExpertSection = () => {
                   className="w-full h-full object-cover aspect-square"
                 />
               </div>
-              <div className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground p-6 rounded-2xl shadow-xl">
-                <div className="text-4xl font-bold">15+</div>
-                <div className="text-sm mt-1">Metų patirtis</div>
+              <div className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground p-4 rounded-2xl shadow-xl">
+                <div className="text-3xl font-bold">15+</div>
+                <div className="text-xs mt-1">Metų patirtis</div>
               </div>
             </div>
 
