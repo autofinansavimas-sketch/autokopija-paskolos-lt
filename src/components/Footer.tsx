@@ -61,7 +61,7 @@ export const Footer = () => {
         <div className="border-t pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2024 AUTOPASKOLOS.LT. Visos teisės saugomos.
+              © 2025 AUTOPASKOLOS.LT. Visos teisės saugomos.
             </p>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Powered by</span>
