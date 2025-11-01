@@ -16,19 +16,19 @@ export const Footer = () => {
           <div>
             <h3 className="font-semibold text-lg mb-4">Nuorodos</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kaip tai veikia</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">DUK</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privatumo politika</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Taisyklės</a></li>
+              <li><a href="#how-it-works" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kaip tai veikia</a></li>
+              <li><a href="#faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">DUK</a></li>
+              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Skaičiuoklė</a></li>
+              <li><a href="#contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kontaktai</a></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold text-lg mb-4">Produktai</h3>
+            <h3 className="font-semibold text-lg mb-4">Paskolos</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Vartojimo paskola</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Automobilio lizingas</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Būsto remontas</a></li>
+              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Vartojimo paskola</a></li>
+              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Automobilio lizingas</a></li>
+              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Būsto remontas</a></li>
             </ul>
           </div>
           
@@ -65,11 +65,13 @@ export const Footer = () => {
             </p>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Powered by</span>
-              <img 
-                src={autokopersLogo} 
-                alt="Autokopers" 
-                className="h-8"
-              />
+              <a href="https://www.autokopers.lt" target="_blank" rel="noopener noreferrer">
+                <img 
+                  src={autokopersLogo} 
+                  alt="Autokopers" 
+                  className="h-8 hover:opacity-80 transition-opacity"
+                />
+              </a>
             </div>
           </div>
         </div>
