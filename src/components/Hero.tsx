@@ -6,7 +6,7 @@ export const Hero = () => {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-[60%_40%] gap-12 items-center max-w-7xl mx-auto">
           {/* Left Content */}
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/10 border border-primary/20">
@@ -56,7 +56,7 @@ export const Hero = () => {
           {/* Right Image */}
           <div className="relative lg:block hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl blur-3xl"></div>
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl max-h-[500px]">
               <img 
                 src={heroImage} 
                 alt="Profesionali paskolų konsultantė"
