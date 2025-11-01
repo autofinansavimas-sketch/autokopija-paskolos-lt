@@ -55,8 +55,8 @@ export const Hero = () => {
 
           {/* Right Image */}
           <div className="relative lg:block hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl blur-3xl"></div>
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl max-h-[500px]">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-3xl"></div>
+            <div className="relative rounded-2xl overflow-hidden shadow-xl max-h-[350px] max-w-[280px] ml-auto">
               <img 
                 src={heroImage} 
                 alt="Profesionali paskolų konsultantė"
