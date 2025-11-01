@@ -37,7 +37,7 @@ export const Header = () => {
 
           <div className="flex items-center gap-4">
             <Button className="hidden md:inline-flex">
-              Gauti paskolą
+              Gauti pasiūlymą
             </Button>
             
             <button 
@@ -65,7 +65,7 @@ export const Header = () => {
                 DUK
               </a>
               <Button className="w-full">
-                Gauti paskolą
+                Gauti pasiūlymą
               </Button>
             </div>
           </nav>

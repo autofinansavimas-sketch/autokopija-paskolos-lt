@@ -32,7 +32,7 @@ export const Hero = () => {
                   document.querySelector('#loan-calculator')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Gauti paskolos pasiūlymą
+                Gauti pasiūlymą
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
