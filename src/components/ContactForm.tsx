@@ -48,15 +48,15 @@ export const ContactForm = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
               Gaukite <span className="text-primary">geriausią pasiūlymą</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-base md:text-lg text-muted-foreground">
               Užpildykite formą ir gaukite personalizuotus pasiūlymus per 1 valandą
             </p>
           </div>
 
-          <Card className="p-8 md:p-12">
+          <Card className="p-6 md:p-12">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -158,7 +158,7 @@ export const ContactForm = () => {
                   />
                 </div>
 
-                <Button type="submit" size="lg" className="w-full h-14 text-lg">
+                <Button type="submit" size="lg" className="w-full h-16 md:h-14 text-base md:text-lg font-semibold">
                   Gauti pasiūlymus
                 </Button>
 

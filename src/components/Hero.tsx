@@ -9,25 +9,25 @@ export const Hero = () => {
         <div className="grid lg:grid-cols-[60%_40%] gap-12 items-center max-w-7xl mx-auto">
           {/* Left Content */}
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/10 border border-primary/20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 md:px-5 rounded-full bg-primary/10 border border-primary/20">
               <CheckCircle className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
+              <span className="text-xs md:text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
             </div>
             
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight uppercase">
+            <h1 className="text-3xl md:text-5xl font-bold leading-tight uppercase">
               GAUK{" "}
               <span className="text-primary">GERIAUSIĄ PASKOLOS</span>{" "}
               PASIŪLYMĄ VOS PER 30 MINUČIŲ
             </h1>
             
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
+            <p className="text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl">
               Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 30 minučių. Palyginkite 20+ kreditorių pasiūlymus vienoje vietoje ir sutaupykite tūkstančius eurų.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
               <Button 
                 size="lg" 
-                className="text-lg h-14 px-8 gap-2 group shadow-lg hover:shadow-xl transition-all"
+                className="text-base md:text-lg h-16 md:h-14 px-8 gap-2 group shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
                 onClick={() => {
                   document.querySelector('#loan-calculator')?.scrollIntoView({ behavior: 'smooth' });
                 }}
