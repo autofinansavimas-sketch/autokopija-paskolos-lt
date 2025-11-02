@@ -9,16 +9,16 @@ export const ExpertSection = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="relative order-2 lg:order-1">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-md mx-auto">
                 <img 
                   src={expertImage} 
                   alt="Paskolų ekspertas"
-                  className="w-full h-full object-cover aspect-square"
+                  className="w-full h-full object-cover aspect-[3/4]"
                 />
               </div>
-              <div className="absolute -bottom-6 -right-6 bg-primary text-primary-foreground p-4 rounded-2xl shadow-xl">
-                <div className="text-3xl font-bold">15+</div>
-                <div className="text-xs mt-1">Metų patirtis</div>
+              <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground p-3 rounded-xl shadow-xl">
+                <div className="text-2xl font-bold">15+</div>
+                <div className="text-xs mt-0.5">Metų patirtis</div>
               </div>
             </div>
 

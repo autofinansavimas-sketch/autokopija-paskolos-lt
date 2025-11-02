@@ -33,8 +33,8 @@ export const LoanCalculator = () => {
               <Calculator className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Nemokama skaičiuoklė</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Apskaičiuokite savo <span className="text-primary">paskolos įmoką</span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 uppercase">
+              APSKAIČIUOKITE SAVO <span className="text-primary">PASKOLOS ĮMOKĄ</span>
             </h2>
             <p className="text-lg text-muted-foreground">
               Pasirinkite produktą ir sužinokite preliminarią mėnesinę įmoką

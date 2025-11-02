@@ -4,13 +4,13 @@ const steps = [
   {
     number: "01",
     icon: FileText,
-    title: "Užpildykite paraišką",
+    title: "UŽPILDYKITE PARAIŠKĄ",
     description: "Atsakykite į kelis klausimus apie norimą paskolą ir save. Užtruks tik 3 minutes.",
   },
   {
     number: "02",
     icon: Search,
-    title: "Gausite pasiūlymus",
+    title: "GAUSITE PASIŪLYMUS",
     description: "Per 1 valandą atrinksime 3 geriausius pasiūlymus iš 20+ kreditorių.",
   },
   {
@@ -32,8 +32,8 @@ export const HowItWorks = () => {
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Kaip tai <span className="text-primary">veikia</span>?
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 uppercase">
+            KAIP TAI <span className="text-primary">VEIKIA</span>?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Paprastas ir greitas procesas nuo paraiškos iki pinigų gavimo

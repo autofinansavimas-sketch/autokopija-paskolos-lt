@@ -14,14 +14,14 @@ export const Hero = () => {
               <span className="text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight uppercase">
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight uppercase">
               GAUK{" "}
               <span className="text-primary">GERIAUSIĄ PASKOLOS</span>{" "}
               PASIŪLYMĄ VOS PER 30 MINUČIŲ
             </h1>
             
-            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl uppercase">
-              UŽPILDYKITE PARAIŠKĄ PER 3 MINUTES IR GAUKITE ATSAKYMUS PER 30 MINUČIŲ. PALYGINKITE 20+ KREDITORIŲ PASIŪLYMUS VIENOJE VIETOJE IR SUTAUPYKITE TŪKSTANČIUS EURŲ.
+            <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
+              Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 30 minučių. Palyginkite 20+ kreditorių pasiūlymus vienoje vietoje ir sutaupykite tūkstančius eurų.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
