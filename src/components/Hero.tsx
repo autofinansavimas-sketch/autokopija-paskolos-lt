@@ -37,16 +37,16 @@ export const Hero = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 pt-8 border-t">
-              <div className="text-center sm:text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t">
+              <div className="text-center">
                 <div className="text-4xl md:text-5xl font-bold text-primary">3.9%</div>
                 <div className="text-base text-muted-foreground mt-2 uppercase">PALŪKANOS NUO</div>
               </div>
-              <div className="text-center sm:text-left">
+              <div className="text-center">
                 <div className="text-4xl md:text-5xl font-bold text-primary">10min</div>
                 <div className="text-base text-muted-foreground mt-2 uppercase">SPRENDIMAS</div>
               </div>
-              <div className="text-center sm:text-left">
+              <div className="text-center">
                 <div className="text-4xl md:text-5xl font-bold text-primary">0€</div>
                 <div className="text-base text-muted-foreground mt-2 uppercase">MOKESTIS</div>
               </div>
