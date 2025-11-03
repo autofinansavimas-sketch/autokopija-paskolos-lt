@@ -14,7 +14,7 @@ const benefits = [
   {
     icon: Zap,
     title: "Greitas procesas",
-    description: "Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 1 valandą",
+    description: "Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 30 minučių",
   },
   {
     icon: Users,
