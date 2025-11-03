@@ -131,10 +131,6 @@ export const LoanCalculator = () => {
               >
                 Gauti geriausius pasiūlymus
               </Button>
-              <Button size="lg" variant="outline" className="text-base md:text-lg h-16 md:h-14 px-6 md:px-8 gap-2 w-full md:w-auto font-semibold">
-                <TrendingDown className="h-5 w-5" />
-                Palyginti kreditorius
-              </Button>
             </div>
 
             <p className="text-center text-sm text-muted-foreground mt-6">
