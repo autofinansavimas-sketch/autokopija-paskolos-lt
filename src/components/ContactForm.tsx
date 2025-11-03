@@ -121,7 +121,7 @@ export const ContactForm = () => {
                               {...field}
                               type="tel"
                               className="pl-10 h-12"
-                              placeholder="+370 600 00000"
+                              placeholder="+37062851439"
                             />
                           </div>
                         </FormControl>
