@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Phone, Mail, User, Euro } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -35,12 +36,34 @@ export const ContactForm = () => {
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    toast({
-      title: "Paraiška išsiųsta!",
-      description: "Susisieksime su Jumis per 1 valandą.",
-    });
-    form.reset();
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          name: values.name || "Nenurodytas",
+          email: values.email,
+          phone: values.phone,
+          amount: values.amount || "Nenurodyta",
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Paraiška išsiųsta!",
+        description: "Susisieksime su Jumis per 30 minučių. Patikrinkite el. paštą.",
+      });
+      form.reset();
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Klaida",
+        description: "Nepavyko išsiųsti paraiškos. Bandykite dar kartą.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
