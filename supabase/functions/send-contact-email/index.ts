@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "AutoPaskolos <onboarding@resend.dev>",
+        from: "AutoPaskolos <info@autopaskolos.lt>",
         to: [email],
         subject: "Gavome jūsų užklausą!",
         html: `
