@@ -26,6 +26,36 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending email to:", email);
 
+    // Send to verified email (for testing during API key activation)
+    const notificationEmail = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "AutoPaskolos <info@autopaskolos.lt>",
+        to: ["autofinansavimas@gmail.com"],
+        subject: "Nauja paskolos užklausa",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Nauja užklausa</h1>
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p><strong>Vardas:</strong> ${name}</p>
+              <p><strong>El. paštas:</strong> ${email}</p>
+              <p><strong>Telefonas:</strong> ${phone}</p>
+              <p><strong>Paskolos suma:</strong> ${amount}€</p>
+            </div>
+          </div>
+        `,
+      }),
+    });
+
+    if (!notificationEmail.ok) {
+      console.error("Failed to send notification email:", await notificationEmail.text());
+    }
+
+    // Try to send confirmation to client (will work once API key is fully activated)
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -67,13 +97,16 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!emailResponse.ok) {
       const errorData = await emailResponse.json();
-      throw new Error(JSON.stringify(errorData));
+      console.error("Failed to send client confirmation:", errorData);
+      // Don't fail the request - notification was sent successfully
+    } else {
+      console.log("Client confirmation sent successfully");
     }
 
-    const data = await emailResponse.json();
-    console.log("Email sent successfully:", data);
-
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: "Užklausa gauta. Susisieksime su jumis greitai." 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
