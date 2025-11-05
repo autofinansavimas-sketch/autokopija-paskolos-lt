@@ -47,7 +47,10 @@ export const HowItWorks = () => {
                 <div className="hidden lg:block absolute top-16 left-[60%] w-[80%] h-0.5 bg-border" />
               )}
               
-              <div className="relative bg-card p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg">
+              <div 
+                className={`relative bg-card p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg ${index === 0 ? 'cursor-pointer' : ''}`}
+                onClick={index === 0 ? () => document.querySelector('#contact-form')?.scrollIntoView({ behavior: 'smooth' }) : undefined}
+              >
                 <div className="text-6xl font-bold text-primary/10 mb-4">
                   {step.number}
                 </div>
