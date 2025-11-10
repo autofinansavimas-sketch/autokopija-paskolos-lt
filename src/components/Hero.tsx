@@ -1,10 +1,16 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import heroImage from "@/assets/hero-person.jpg";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
 
 export const Hero = () => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background">
+    <>
+      <ContactFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background">
       <div className="container mx-auto px-4 py-16">
         <div className="grid lg:grid-cols-[60%_40%] gap-12 items-center max-w-7xl mx-auto">
           {/* Left Content */}
@@ -28,9 +34,7 @@ export const Hero = () => {
               <Button 
                 size="lg" 
                 className="text-base md:text-lg h-16 md:h-14 px-8 gap-2 group shadow-lg hover:shadow-xl transition-all w-full sm:w-auto"
-                onClick={() => {
-                  document.querySelector('#loan-calculator')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => setDialogOpen(true)}
               >
                 GAUTI PASIŪLYMĄ
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -67,5 +71,6 @@ export const Hero = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
