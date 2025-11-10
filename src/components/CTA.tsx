@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Clock } from "lucide-react";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
 
 export const CTA = () => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
   return (
+    <>
+      <ContactFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     <section className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-accent"></div>
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9Ii4xIi8+PC9nPjwvc3ZnPg==')] opacity-10"></div>
@@ -27,9 +33,7 @@ export const CTA = () => {
               size="lg" 
               variant="secondary" 
               className="text-lg h-14 px-8 gap-2 group shadow-lg"
-              onClick={() => {
-                document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => setDialogOpen(true)}
             >
               Gauti paskolą
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -43,5 +47,6 @@ export const CTA = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };

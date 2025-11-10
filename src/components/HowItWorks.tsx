@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { FileText, Search, CheckCircle2, HandCoins } from "lucide-react";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
 
 const steps = [
   {
@@ -28,8 +30,12 @@ const steps = [
 ];
 
 export const HowItWorks = () => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
   return (
-    <section className="py-20 bg-background">
+    <>
+      <ContactFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 uppercase">
@@ -49,7 +55,7 @@ export const HowItWorks = () => {
               
               <div 
                 className={`relative bg-card p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg ${index === 0 ? 'cursor-pointer' : ''}`}
-                onClick={index === 0 ? () => document.querySelector('#contact-form')?.scrollIntoView({ behavior: 'smooth' }) : undefined}
+                onClick={index === 0 ? () => setDialogOpen(true) : undefined}
               >
                 <div className="text-6xl font-bold text-primary/10 mb-4">
                   {step.number}
@@ -69,5 +75,6 @@ export const HowItWorks = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
