@@ -38,14 +38,14 @@ export const Hero = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t">
-              <div className="text-center relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold uppercase shadow-lg animate-pulse">
+              <div className="text-center space-y-3">
+                <div className="flex justify-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold uppercase shadow-lg">
                     🔥 AKCIJA
                   </span>
                 </div>
                 <div className="text-4xl md:text-5xl font-bold text-primary">3.9%</div>
-                <div className="text-base text-muted-foreground mt-2 uppercase">PALŪKANOS NUO</div>
+                <div className="text-base text-muted-foreground uppercase">PALŪKANOS NUO</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl md:text-5xl font-bold text-primary">10min</div>
