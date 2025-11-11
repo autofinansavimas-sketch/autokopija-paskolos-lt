@@ -61,9 +61,16 @@ export const ExpertSection = () => {
                 </div>
               </div>
 
-              <Button size="lg" className="text-lg h-14 px-8 mt-6">
-                Konsultuotis nemokamai
-              </Button>
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-2 text-lg">
+                  <span className="font-semibold">Skambinkite:</span>
+                  <a href="tel:+37060000000" className="text-primary hover:underline font-bold">+370 600 00000</a>
+                </div>
+                <div className="flex items-center gap-2 text-lg">
+                  <span className="font-semibold">El. paštas:</span>
+                  <a href="mailto:info@autopaskolos.lt" className="text-primary hover:underline font-bold">info@autopaskolos.lt</a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
