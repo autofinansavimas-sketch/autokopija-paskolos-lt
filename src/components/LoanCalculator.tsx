@@ -5,12 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Calculator, TrendingDown } from "lucide-react";
 
-type LoanType = "consumer" | "car" | "home";
+type LoanType = "consumer" | "car" | "home" | "refinance";
 
 const loanTypes = [
   { id: "consumer" as LoanType, name: "Vartojimo paskola", rate: 5.9, color: "bg-primary" },
   { id: "car" as LoanType, name: "Automobilio lizingas", rate: 3.9, color: "bg-blue-500" },
   { id: "home" as LoanType, name: "Būsto remontas", rate: 4.5, color: "bg-green-500" },
+  { id: "refinance" as LoanType, name: "Paskolų refinansavimas", rate: 4.2, color: "bg-purple-500" },
 ];
 
 export const LoanCalculator = () => {
@@ -45,7 +46,7 @@ export const LoanCalculator = () => {
             {/* Loan Type Selection */}
             <div className="mb-8 md:mb-10">
               <Label className="text-sm md:text-base font-semibold mb-3 md:mb-4 block">Paskolos tipas</Label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 {loanTypes.map((type) => (
                   <button
                     key={type.id}
@@ -57,7 +58,7 @@ export const LoanCalculator = () => {
                     }`}
                   >
                     <div className="font-semibold text-base md:text-lg mb-1 md:mb-2">{type.name}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Nuo {type.rate}% metinių</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Nuo {type.rate}% metinių palūkanų</div>
                   </button>
                 ))}
               </div>
