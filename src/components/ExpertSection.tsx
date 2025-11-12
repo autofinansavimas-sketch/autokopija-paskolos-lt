@@ -64,11 +64,11 @@ export const ExpertSection = () => {
               <div className="mt-6 space-y-3">
                 <div className="flex items-center gap-2 text-lg">
                   <span className="font-semibold">Skambinkite:</span>
-                  <a href="tel:+37060000000" className="text-primary hover:underline font-bold">+370 600 00000</a>
+                  <a href="tel:+37062851439" className="text-primary hover:underline font-bold">+370 628 51439</a>
                 </div>
                 <div className="flex items-center gap-2 text-lg">
                   <span className="font-semibold">El. paštas:</span>
-                  <a href="mailto:info@autopaskolos.lt" className="text-primary hover:underline font-bold">info@autopaskolos.lt</a>
+                  <a href="mailto:autofinansavimas@gmail.com" className="text-primary hover:underline font-bold">autofinansavimas@gmail.com</a>
                 </div>
               </div>
             </div>
