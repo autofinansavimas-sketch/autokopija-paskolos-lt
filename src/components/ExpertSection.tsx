@@ -68,7 +68,7 @@ export const ExpertSection = () => {
                 </div>
                 <div className="flex items-center gap-2 text-lg">
                   <span className="font-semibold">El. paštas:</span>
-                  <a href="mailto:autofinansavimas@gmail.com" className="text-primary hover:underline font-bold">autofinansavimas@gmail.com</a>
+                  <a href="mailto:info@autopaskolos.lt" className="text-primary hover:underline font-bold">info@autopaskolos.lt</a>
                 </div>
               </div>
             </div>
