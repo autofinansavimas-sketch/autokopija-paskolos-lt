@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Calculator, TrendingDown } from "lucide-react";
+import { TrendingDown } from "lucide-react";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 
 type LoanType = "consumer" | "car" | "home" | "refinance";
@@ -34,15 +34,11 @@ export const LoanCalculator = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8 md:mb-12">
-            <div className="inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 md:mb-6">
-              <Calculator className="h-4 w-4 text-primary" />
-              <span className="text-xs md:text-sm font-medium">Nemokama skaičiuoklė</span>
-            </div>
             <h2 className="text-2xl md:text-5xl font-bold mb-3 md:mb-4 uppercase">
-              APSKAIČIUOKITE SAVO <span className="text-primary">PASKOLOS ĮMOKĄ</span>
+              GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="text-primary">VOS PER 30 MINUČIŲ</span>
             </h2>
-            <p className="text-sm md:text-lg text-muted-foreground px-4">
-              Pasirinkite produktą ir sužinokite preliminarią mėnesinę įmoką
+            <p className="text-lg md:text-2xl font-semibold text-foreground uppercase">
+              AUTOPASKOLOS.LT - PASKOLOS NE TIK AUTOMOBILIUI
             </p>
           </div>
 
@@ -136,13 +132,6 @@ export const LoanCalculator = () => {
               </Button>
             </div>
 
-            <p className="text-center text-sm text-muted-foreground mt-6">
-              * Skaičiavimai yra apytiksliai ir skirti informaciniams tikslams. Galutines sąlygas pateiks kreditoriai.
-            </p>
-            
-            <p className="text-center text-xs text-muted-foreground mt-4 leading-relaxed max-w-3xl mx-auto">
-              Tipinis pavyzdys: Jei imtumėte 10,000 Eur vartojimo kreditą, kai sutarties trukmė (ir kredito grąžinimo terminas) – 5 metai (60 mėnesių), taikant 7.5% metinę fiksuotų palūkanų normą, mokant minimalų paslaugų mokestį (1 Eur per mėnesį), mėnesio įmokas 208 Eur mokant anuiteto metodu, bendra vartojimo kredito kainos metinė norma (BVKKMN) būtų 9.16%, o bendra vartojimo kredito gavėjo mokama suma būtų 12,480 Eur.
-            </p>
           </Card>
         </div>
       </div>
