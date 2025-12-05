@@ -21,12 +21,15 @@ export const Hero = () => {
             </div>
             
             <h1 className="text-3xl md:text-5xl font-bold leading-tight uppercase">
-              GAUK{" "}
-              <span className="text-primary">GERIAUSIĄ PASKOLOS</span>{" "}
-              PASIŪLYMĄ VOS PER 30 MINUČIŲ
+              AUTOPASKOLOS.LT -{" "}
+              <span className="text-primary">PASKOLOS NE TIK AUTOMOBILIUI</span>
             </h1>
             
-            <p className="text-base md:text-xl text-muted-foreground leading-relaxed max-w-xl">
+            <p className="text-lg md:text-2xl font-semibold text-foreground uppercase">
+              GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ VOS PER 30 MINUČIŲ
+            </p>
+            
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl">
               Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 30 minučių. Palyginkite 20+ kreditorių pasiūlymus vienoje vietoje ir sutaupykite tūkstančius eurų.
             </p>
 
