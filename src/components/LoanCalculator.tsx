@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Calculator, TrendingDown } from "lucide-react";
+import { ContactFormDialog } from "@/components/ContactFormDialog";
 
 type LoanType = "consumer" | "car" | "home" | "refinance";
 
@@ -18,6 +19,7 @@ export const LoanCalculator = () => {
   const [selectedType, setSelectedType] = useState<LoanType>("consumer");
   const [amount, setAmount] = useState([15000]);
   const [period, setPeriod] = useState([36]);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const currentLoan = loanTypes.find(l => l.id === selectedType)!;
   const monthlyRate = currentLoan.rate / 100 / 12;
@@ -26,6 +28,8 @@ export const LoanCalculator = () => {
   const totalInterest = totalPayment - amount[0];
 
   return (
+    <>
+    <ContactFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     <section id="loan-calculator" className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
@@ -126,9 +130,7 @@ export const LoanCalculator = () => {
               <Button 
                 size="lg" 
                 className="text-base md:text-lg h-16 md:h-14 px-6 md:px-8 w-full md:w-auto font-semibold"
-                onClick={() => {
-                  document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => setDialogOpen(true)}
               >
                 Gauti geriausius pasiūlymus
               </Button>
@@ -145,5 +147,6 @@ export const LoanCalculator = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
