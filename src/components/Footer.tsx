@@ -1,4 +1,5 @@
-import { Facebook, Instagram, Linkedin, Mail, Phone } from "lucide-react";
+import { Facebook, Instagram, Mail, Phone, Shield, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 import autokopersLogo from "@/assets/autokopers-logo.png";
 
 export const Footer = () => {
@@ -8,9 +9,19 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="font-semibold text-lg mb-4">Apie mus</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               AUTOPASKOLOS.LT padeda klientams rasti geriausias paskolų sąlygas Lietuvoje.
             </p>
+            <div className="flex items-center gap-4 mt-4">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Shield className="h-4 w-4 text-primary" />
+                <span>SSL saugumas</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Lock className="h-4 w-4 text-primary" />
+                <span>BDAR</span>
+              </div>
+            </div>
           </div>
           
           <div>
@@ -57,9 +68,19 @@ export const Footer = () => {
         
         <div className="border-t pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              © 2025 AUTOPASKOLOS.LT. Visos teisės saugomos.
-            </p>
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                © 2025 AUTOPASKOLOS.LT. Visos teisės saugomos.
+              </p>
+              <div className="flex gap-4">
+                <Link to="/privatumo-politika" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Privatumo politika
+                </Link>
+                <Link to="/salygos" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Sąlygos
+                </Link>
+              </div>
+            </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Powered by</span>
               <a href="https://www.autokopers.lt" target="_blank" rel="noopener noreferrer">
@@ -67,6 +88,7 @@ export const Footer = () => {
                   src={autokopersLogo} 
                   alt="Autokopers" 
                   className="h-8 hover:opacity-80 transition-opacity"
+                  loading="lazy"
                 />
               </a>
             </div>

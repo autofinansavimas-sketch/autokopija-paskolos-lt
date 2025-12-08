@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Phone, Mail, User, Euro } from "lucide-react";
+import { Phone, Mail, User, Euro, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
@@ -47,7 +48,10 @@ export const ContactFormDialog = ({ open, onOpenChange }: ContactFormDialogProps
     },
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-contact-email', {
         body: {
@@ -75,6 +79,8 @@ export const ContactFormDialog = ({ open, onOpenChange }: ContactFormDialogProps
         description: "Nepavyko išsiųsti paraiškos. Bandykite dar kartą.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -191,8 +197,15 @@ export const ContactFormDialog = ({ open, onOpenChange }: ContactFormDialogProps
               />
             </div>
 
-            <Button type="submit" size="lg" className="w-full h-14 text-base font-semibold">
-              Gauti pasiūlymus
+            <Button type="submit" size="lg" className="w-full h-14 text-base font-semibold" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Siunčiama...
+                </>
+              ) : (
+                "Gauti pasiūlymus"
+              )}
             </Button>
 
             <p className="text-sm text-muted-foreground text-center">

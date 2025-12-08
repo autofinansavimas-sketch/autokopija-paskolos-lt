@@ -14,6 +14,7 @@ export const ExpertSection = () => {
                   src={expertImage} 
                   alt="Paskolų ekspertas"
                   className="w-full h-full object-cover aspect-[3/4]"
+                  loading="lazy"
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-primary text-primary-foreground p-3 rounded-xl shadow-xl">

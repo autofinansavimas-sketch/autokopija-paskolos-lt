@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import testimonialImage from "@/assets/testimonial-couple.jpg";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 const testimonials = [
   {
@@ -44,20 +45,22 @@ export const Testimonials = () => {
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-card border-2 border-border rounded-2xl p-8 hover:border-primary/50 transition-all hover:shadow-xl">
-                <div className="flex gap-1 mb-6">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
-                  ))}
+              <AnimatedSection key={index} delay={index * 100}>
+                <div className="bg-card border-2 border-border rounded-2xl p-8 hover:border-primary/50 transition-all hover:shadow-xl h-full">
+                  <div className="flex gap-1 mb-6">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                    ))}
+                  </div>
+                  <blockquote className="text-base mb-6 leading-relaxed">
+                    "{testimonial.quote}"
+                  </blockquote>
+                  <div>
+                    <div className="font-semibold text-primary">{testimonial.author}</div>
+                    <div className="text-sm text-muted-foreground">{testimonial.location}</div>
+                  </div>
                 </div>
-                <blockquote className="text-base mb-6 leading-relaxed">
-                  "{testimonial.quote}"
-                </blockquote>
-                <div>
-                  <div className="font-semibold text-primary">{testimonial.author}</div>
-                  <div className="text-sm text-muted-foreground">{testimonial.location}</div>
-                </div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
 
@@ -68,6 +71,7 @@ export const Testimonials = () => {
                   src={testimonialImage} 
                   alt="Laimingi klientai"
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <div className="space-y-4">

@@ -1,4 +1,5 @@
 import { Shield, TrendingDown, Zap, Users, BadgeCheck, FileCheck } from "lucide-react";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 const benefits = [
   {
@@ -48,18 +49,17 @@ export const Benefits = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {benefits.map((benefit, index) => (
-            <div
-              key={index}
-              className="bg-card p-6 md:p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg group"
-            >
-              <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary/20 transition-colors">
-                <benefit.icon className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+            <AnimatedSection key={index} delay={index * 100}>
+              <div className="bg-card p-6 md:p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg group h-full">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4 md:mb-6 group-hover:bg-primary/20 transition-colors">
+                  <benefit.icon className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+                </div>
+                <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">{benefit.title}</h3>
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                  {benefit.description}
+                </p>
               </div>
-              <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">{benefit.title}</h3>
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-                {benefit.description}
-              </p>
-            </div>
+            </AnimatedSection>
           ))}
         </div>
       </div>

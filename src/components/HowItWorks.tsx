@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FileText, Search, CheckCircle2, HandCoins } from "lucide-react";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 const steps = [
   {
@@ -48,29 +49,31 @@ export const HowItWorks = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
           {steps.map((step, index) => (
-            <div key={index} className="relative">
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-16 left-[60%] w-[80%] h-0.5 bg-border" />
-              )}
-              
-              <div 
-                className={`relative bg-card p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg ${index === 0 ? 'cursor-pointer' : ''}`}
-                onClick={index === 0 ? () => setDialogOpen(true) : undefined}
-              >
-                <div className="text-6xl font-bold text-primary/10 mb-4">
-                  {step.number}
-                </div>
+            <AnimatedSection key={index} delay={index * 100}>
+              <div className="relative h-full">
+                {index < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-16 left-[60%] w-[80%] h-0.5 bg-border" />
+                )}
                 
-                <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
-                  <step.icon className="h-7 w-7 text-primary" />
+                <div 
+                  className={`relative bg-card p-8 rounded-xl border hover:border-primary/50 transition-all hover:shadow-lg h-full ${index === 0 ? 'cursor-pointer' : ''}`}
+                  onClick={index === 0 ? () => setDialogOpen(true) : undefined}
+                >
+                  <div className="text-6xl font-bold text-primary/10 mb-4">
+                    {step.number}
+                  </div>
+                  
+                  <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                    <step.icon className="h-7 w-7 text-primary" />
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
-                
-                <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {step.description}
-                </p>
               </div>
-            </div>
+            </AnimatedSection>
           ))}
         </div>
       </div>
