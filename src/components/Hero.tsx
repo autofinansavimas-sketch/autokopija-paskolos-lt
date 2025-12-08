@@ -68,6 +68,7 @@ export const Hero = () => {
                 src={heroImage} 
                 alt="Profesionali paskolų konsultantė"
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           </div>
