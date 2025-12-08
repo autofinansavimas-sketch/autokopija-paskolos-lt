@@ -15,6 +15,51 @@ interface ContactEmailRequest {
   amount: string;
 }
 
+// Convert Lithuanian name to vocative case (šauksmininkas)
+function toVocativeCase(name: string): string {
+  if (!name || name.trim() === '') return name;
+  
+  const parts = name.trim().split(/\s+/);
+  const convertedParts = parts.map(part => {
+    const word = part.trim();
+    if (word.length < 2) return word;
+    
+    // Preserve original capitalization
+    const isCapitalized = word[0] === word[0].toUpperCase();
+    const lowerWord = word.toLowerCase();
+    
+    let result = word;
+    
+    // Masculine endings
+    if (lowerWord.endsWith('as')) {
+      result = word.slice(0, -2) + 'ai';
+    } else if (lowerWord.endsWith('is')) {
+      result = word.slice(0, -2) + 'i';
+    } else if (lowerWord.endsWith('us')) {
+      result = word.slice(0, -2) + 'au';
+    } else if (lowerWord.endsWith('ius')) {
+      result = word.slice(0, -3) + 'iau';
+    } else if (lowerWord.endsWith('ys')) {
+      result = word.slice(0, -2) + 'y';
+    }
+    // Feminine endings
+    else if (lowerWord.endsWith('ė')) {
+      result = word.slice(0, -1) + 'e';
+    } else if (lowerWord.endsWith('a')) {
+      result = word.slice(0, -1) + 'a'; // stays the same or becomes -a
+    }
+    
+    // Restore capitalization
+    if (isCapitalized && result.length > 0) {
+      result = result[0].toUpperCase() + result.slice(1).toLowerCase();
+    }
+    
+    return result;
+  });
+  
+  return convertedParts.join(' ');
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -55,6 +100,9 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Failed to send notification email:", await notificationEmail.text());
     }
 
+    // Convert name to vocative case for greeting
+    const vocativeName = toVocativeCase(name);
+    
     // Try to send confirmation to client (will work once API key is fully activated)
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -68,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
         subject: "Gavome jūsų užklausą!",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #2563eb;">Sveiki, ${name}!</h1>
+            <h1 style="color: #2563eb;">Sveiki, ${vocativeName}!</h1>
             <p style="font-size: 16px; line-height: 1.5;">
               Gavome jūsų paskolos užklausą ir susisieksime su jumis artimiausiu metu.
             </p>
