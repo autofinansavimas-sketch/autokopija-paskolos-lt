@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Phone, Mail, User, Euro, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/lib/analytics";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -50,6 +51,13 @@ export const ContactFormDialog = ({ open, onOpenChange }: ContactFormDialogProps
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Track form open
+  useEffect(() => {
+    if (open) {
+      analytics.formOpened('Dialog');
+    }
+  }, [open]);
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
@@ -63,9 +71,12 @@ export const ContactFormDialog = ({ open, onOpenChange }: ContactFormDialogProps
       });
 
       if (error) {
+        analytics.formError(error.message || 'Unknown error');
         throw error;
       }
 
+      analytics.formSubmitted(values.amount ? `${values.amount}€` : undefined);
+      
       toast({
         title: "Paraiška išsiųsta!",
         description: "Susisieksime su Jumis per 30 minučių. Patikrinkite el. paštą.",

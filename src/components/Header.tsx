@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/autopaskolos-logo.png";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { analytics } from "@/lib/analytics";
 
 export const Header = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,7 +40,10 @@ export const Header = () => {
           <div className="flex items-center gap-4">
             <Button 
               className="text-sm md:text-base"
-              onClick={() => setDialogOpen(true)}
+              onClick={() => {
+                analytics.ctaClicked('Header CTA');
+                setDialogOpen(true);
+              }}
             >
               Gauti pasiūlymą
             </Button>
