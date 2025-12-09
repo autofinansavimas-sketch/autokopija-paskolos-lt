@@ -21,7 +21,22 @@ const PrivacyPolicy = () => {
           </p>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">1. Bendrosios nuostatos</h2>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">1. Duomenų valdytojas</h2>
+            <p>
+              Asmens duomenų valdytojas yra:
+            </p>
+            <ul className="list-none space-y-2 mt-4">
+              <li><strong>Įmonės pavadinimas:</strong> Autodealeriai, MB</li>
+              <li><strong>Įmonės kodas:</strong> 305825810</li>
+              <li><strong>Adresas:</strong> Varduvos g. 2, LT-48199 Kaunas</li>
+              <li><strong>Telefonas:</strong> +370 628 51439</li>
+              <li><strong>El. paštas:</strong> info@autopaskolos.lt</li>
+              <li><strong>Svetainė:</strong> autopaskolos.lt</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">2. Bendrosios nuostatos</h2>
             <p>
               AUTOPASKOLOS.LT (toliau – „mes", „mūsų" arba „Svetainė") gerbia Jūsų privatumą ir 
               įsipareigoja saugoti Jūsų asmens duomenis. Ši privatumo politika paaiškina, kaip 
@@ -30,7 +45,7 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">2. Kokie duomenys renkami</h2>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">3. Kokie duomenys renkami</h2>
             <p>Mes galime rinkti šiuos asmens duomenis:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Vardas ir pavardė</li>
@@ -42,7 +57,7 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">3. Duomenų naudojimo tikslai</h2>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">4. Duomenų naudojimo tikslai</h2>
             <p>Jūsų duomenis naudojame šiais tikslais:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Paskolų pasiūlymų paruošimui ir pateikimui</li>
@@ -53,7 +68,7 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">4. Duomenų saugojimas</h2>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">5. Duomenų saugojimas</h2>
             <p>
               Jūsų asmens duomenys saugomi saugiuose serveriuose ir yra apsaugoti nuo 
               neteisėtos prieigos. Duomenis saugome tik tiek, kiek būtina nurodytiems tikslams pasiekti, 
@@ -62,7 +77,7 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">5. Slapukai</h2>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">6. Slapukai</h2>
             <p>
               Svetainėje naudojami slapukai, kurie padeda užtikrinti tinkamą svetainės veikimą 
               ir analizuoti lankomumą. Naudojame šiuos slapukų tipus:
@@ -75,7 +90,7 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">6. Jūsų teisės</h2>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">7. Jūsų teisės</h2>
             <p>Pagal BDAR (GDPR), Jūs turite teisę:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Gauti informaciją apie savo duomenis</li>
@@ -88,14 +103,17 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">7. Kontaktai</h2>
+            <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">8. Kontaktai</h2>
             <p>
               Jei turite klausimų dėl privatumo politikos arba norite pasinaudoti savo teisėmis, 
-              susisiekite su mumis:
+              susisiekite su duomenų valdytoju:
             </p>
             <ul className="list-none space-y-2 mt-4">
+              <li><strong>Autodealeriai, MB</strong></li>
+              <li><strong>Įmonės kodas:</strong> 305825810</li>
+              <li><strong>Adresas:</strong> Varduvos g. 2, LT-48199 Kaunas</li>
               <li><strong>El. paštas:</strong> info@autopaskolos.lt</li>
-              <li><strong>Telefonas:</strong> +37062851439</li>
+              <li><strong>Telefonas:</strong> +370 628 51439</li>
             </ul>
           </section>
         </div>
