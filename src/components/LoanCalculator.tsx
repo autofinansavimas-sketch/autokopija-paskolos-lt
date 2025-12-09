@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { TrendingDown } from "lucide-react";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { analytics } from "@/lib/analytics";
 
 type LoanType = "consumer" | "car" | "home" | "refinance";
 
@@ -50,7 +51,10 @@ export const LoanCalculator = () => {
                 {loanTypes.map((type) => (
                   <button
                     key={type.id}
-                    onClick={() => setSelectedType(type.id)}
+                    onClick={() => {
+                      setSelectedType(type.id);
+                      analytics.calculatorUsed(type.name, amount[0]);
+                    }}
                     className={`p-4 md:p-6 rounded-xl border-2 transition-all text-left ${
                       selectedType === type.id
                         ? "border-primary bg-primary/5 shadow-lg"
@@ -73,6 +77,7 @@ export const LoanCalculator = () => {
               <Slider
                 value={amount}
                 onValueChange={setAmount}
+                onValueCommit={() => analytics.calculatorSliderChanged('amount')}
                 min={1000}
                 max={30000}
                 step={500}
@@ -93,6 +98,7 @@ export const LoanCalculator = () => {
               <Slider
                 value={period}
                 onValueChange={setPeriod}
+                onValueCommit={() => analytics.calculatorSliderChanged('period')}
                 min={6}
                 max={144}
                 step={6}
@@ -126,7 +132,10 @@ export const LoanCalculator = () => {
               <Button 
                 size="lg" 
                 className="text-base md:text-lg h-16 md:h-14 px-6 md:px-8 w-full md:w-auto font-semibold"
-                onClick={() => setDialogOpen(true)}
+                onClick={() => {
+                  analytics.ctaClicked('Calculator CTA');
+                  setDialogOpen(true);
+                }}
               >
                 Gauti geriausius pasiūlymus
               </Button>

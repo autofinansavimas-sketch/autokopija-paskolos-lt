@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { AnimatedSection } from "@/components/AnimatedSection";
+import { analytics } from "@/lib/analytics";
 
 const faqs = [
   {
@@ -30,6 +31,16 @@ const faqs = [
 ];
 
 export const FAQ = () => {
+  const handleAccordionChange = (value: string) => {
+    if (value) {
+      const index = parseInt(value.replace('item-', ''));
+      const faq = faqs[index];
+      if (faq) {
+        analytics.faqOpened(faq.question);
+      }
+    }
+  };
+
   return (
     <section className="py-16 md:py-24 bg-secondary/20">
       <div className="container mx-auto px-4">
@@ -38,7 +49,7 @@ export const FAQ = () => {
         </h2>
         
         <div className="max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-4" onValueChange={handleAccordionChange}>
             {faqs.map((faq, index) => (
               <AnimatedSection key={index} delay={index * 100}>
                 <AccordionItem 
