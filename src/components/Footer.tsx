@@ -13,11 +13,7 @@ export const Footer = () => {
             <p className="text-sm text-muted-foreground mb-4">
               AUTOPASKOLOS.LT padeda klientams rasti geriausias paskolų sąlygas Lietuvoje.
             </p>
-            <div className="text-xs text-muted-foreground space-y-1 mb-4">
-              <p className="font-medium text-foreground">Autodealeriai, MB</p>
-              <p>Įmonės kodas: 305825810</p>
-            </div>
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-4 mt-2">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Shield className="h-4 w-4 text-primary" />
                 <span>SSL saugumas</span>
@@ -106,14 +102,9 @@ export const Footer = () => {
               <p className="text-sm text-muted-foreground">
                 © 2025 AUTOPASKOLOS.LT. Visos teisės saugomos.
               </p>
-              <div className="flex gap-4">
-                <Link to="/privatumo-politika" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Privatumo politika
-                </Link>
-                <Link to="/salygos" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Sąlygos
-                </Link>
-              </div>
+              <Link to="/privatumo-politika" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                Privatumo politika
+              </Link>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Powered by</span>
