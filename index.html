@@ -9,6 +9,16 @@
     <meta name="keywords" content="autopaskolos, paskola automobiliui, vartojimo paskola, refinansavimas, paskolų palyginimas, autokopers, paskola, kreditas, lizingas">
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://autopaskolos.lt" />
+    <meta name="theme-color" content="#3a9a7c" />
+    
+    <!-- Performance: Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://connect.facebook.net" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://autopaskolos.lt" />
@@ -55,6 +65,32 @@
       }
     }
     </script>
+
+    <!-- FAQ Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Kiek kainuoja paskolų palyginimas?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paskolų palyginimas ir konsultacija yra visiškai nemokama. Mokestį gauname tik iš kreditorių."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Per kiek laiko gausiu pasiūlymus?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paprastai pirmuosius pasiūlymus gausite per 30 minučių nuo paraiškos pateikimo."
+          }
+        }
+      ]
+    }
+    </script>
   
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -83,6 +119,9 @@
 </head>
 
   <body>
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">Praleisti į turinį</a>
+    
     <!-- Meta Pixel noscript fallback -->
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=847547334681387&ev=PageView&noscript=1"
