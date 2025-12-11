@@ -1,11 +1,13 @@
-import { Facebook, Instagram, Mail, Phone, Shield, Lock, MapPin } from "lucide-react";
+import { Facebook, Instagram, Mail, Phone, Shield, Lock, MapPin, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import autokopersLogo from "@/assets/autokopers-logo.png";
 import { analytics } from "@/lib/analytics";
 
 export const Footer = () => {
+  const currentYear = new Date().getFullYear();
+  
   return (
-    <footer className="bg-muted/30 border-t">
+    <footer className="bg-muted/30 border-t" role="contentinfo">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
@@ -15,11 +17,11 @@ export const Footer = () => {
             </p>
             <div className="flex items-center gap-4 mt-2">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Shield className="h-4 w-4 text-primary" />
+                <Shield className="h-4 w-4 text-primary" aria-hidden="true" />
                 <span>SSL saugumas</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Lock className="h-4 w-4 text-primary" />
+                <Lock className="h-4 w-4 text-primary" aria-hidden="true" />
                 <span>BDAR</span>
               </div>
             </div>
@@ -27,70 +29,78 @@ export const Footer = () => {
           
           <div>
             <h3 className="font-semibold text-lg mb-4">Nuorodos</h3>
-            <ul className="space-y-2">
-              <li><a href="#how-it-works" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kaip tai veikia</a></li>
-              <li><a href="#faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">DUK</a></li>
-              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Skaičiuoklė</a></li>
-              <li><a href="#contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kontaktai</a></li>
-            </ul>
+            <nav aria-label="Footer nuorodos">
+              <ul className="space-y-2">
+                <li><a href="#kaip-veikia" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kaip tai veikia</a></li>
+                <li><a href="#duk" className="text-sm text-muted-foreground hover:text-primary transition-colors">DUK</a></li>
+                <li><a href="#skaiciuokle" className="text-sm text-muted-foreground hover:text-primary transition-colors">Skaičiuoklė</a></li>
+                <li><a href="#contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">Kontaktai</a></li>
+              </ul>
+            </nav>
           </div>
           
           <div>
             <h3 className="font-semibold text-lg mb-4">Paskolos</h3>
-            <ul className="space-y-2">
-              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Vartojimo paskola</a></li>
-              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Automobilio lizingas</a></li>
-              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Būsto remontas</a></li>
-              <li><a href="#loan-calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Paskolų refinansavimas</a></li>
-            </ul>
+            <nav aria-label="Paskolų tipai">
+              <ul className="space-y-2">
+                <li><a href="#skaiciuokle" className="text-sm text-muted-foreground hover:text-primary transition-colors">Vartojimo paskola</a></li>
+                <li><a href="#skaiciuokle" className="text-sm text-muted-foreground hover:text-primary transition-colors">Automobilio lizingas</a></li>
+                <li><a href="#skaiciuokle" className="text-sm text-muted-foreground hover:text-primary transition-colors">Būsto remontas</a></li>
+                <li><a href="#skaiciuokle" className="text-sm text-muted-foreground hover:text-primary transition-colors">Paskolų refinansavimas</a></li>
+              </ul>
+            </nav>
           </div>
           
           <div>
             <h3 className="font-semibold text-lg mb-4">Kontaktai</h3>
-            <ul className="space-y-2">
-              <li>
-                <a 
-                  href="tel:+37062851439" 
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-                  onClick={() => analytics.phoneClicked()}
-                >
-                  <Phone className="h-4 w-4" />
-                  <span>+370 628 51439</span>
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="mailto:info@autopaskolos.lt" 
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-                  onClick={() => analytics.emailClicked()}
-                >
-                  <Mail className="h-4 w-4" />
-                  <span>info@autopaskolos.lt</span>
-                </a>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>Varduvos g. 2, Kaunas</span>
-              </li>
-            </ul>
+            <address className="not-italic">
+              <ul className="space-y-2">
+                <li>
+                  <a 
+                    href="tel:+37062851439" 
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    onClick={() => analytics.phoneClicked()}
+                  >
+                    <Phone className="h-4 w-4" aria-hidden="true" />
+                    <span>+370 628 51439</span>
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="mailto:info@autopaskolos.lt" 
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    onClick={() => analytics.emailClicked()}
+                  >
+                    <Mail className="h-4 w-4" aria-hidden="true" />
+                    <span>info@autopaskolos.lt</span>
+                  </a>
+                </li>
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" aria-hidden="true" />
+                  <span>Varduvos g. 2, Kaunas</span>
+                </li>
+              </ul>
+            </address>
             <div className="flex gap-4 mt-4">
               <a 
                 href="https://www.facebook.com/Autopaskolos" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors hover:scale-110 transform"
                 onClick={() => analytics.socialClicked('Facebook')}
+                aria-label="Sekite mus Facebook"
               >
-                <Facebook className="h-5 w-5" />
+                <Facebook className="h-5 w-5" aria-hidden="true" />
               </a>
               <a 
                 href="https://www.instagram.com/autopaskolos.lt" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors hover:scale-110 transform"
                 onClick={() => analytics.socialClicked('Instagram')}
+                aria-label="Sekite mus Instagram"
               >
-                <Instagram className="h-5 w-5" />
+                <Instagram className="h-5 w-5" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -99,8 +109,8 @@ export const Footer = () => {
         <div className="border-t pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col md:flex-row items-center gap-4">
-              <p className="text-sm text-muted-foreground">
-                © 2025 AUTOPASKOLOS.LT. Visos teisės saugomos.
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                © {currentYear} AUTOPASKOLOS.LT. Visos teisės saugomos.
               </p>
               <Link to="/privatumo-politika" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                 Privatumo politika
@@ -108,12 +118,19 @@ export const Footer = () => {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Powered by</span>
-              <a href="https://www.autokopers.lt" target="_blank" rel="noopener noreferrer">
+              <a 
+                href="https://www.autokopers.lt" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
                 <img 
                   src={autokopersLogo} 
                   alt="Autokopers" 
-                  className="h-8 hover:opacity-80 transition-opacity"
+                  className="h-8"
                   loading="lazy"
+                  width="32"
+                  height="32"
                 />
               </a>
             </div>
@@ -123,3 +140,4 @@ export const Footer = () => {
     </footer>
   );
 };
+

@@ -14,7 +14,7 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <main>
+      <main id="main-content">
         <LoanCalculator />
         <Hero />
         <ContactForm />
@@ -31,3 +31,4 @@ const Index = () => {
 };
 
 export default Index;
+
