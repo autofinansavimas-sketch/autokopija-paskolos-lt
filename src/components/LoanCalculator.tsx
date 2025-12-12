@@ -143,7 +143,7 @@ export const LoanCalculator = () => {
                       Paskolos laikotarpis
                     </Label>
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent" aria-live="polite">
+                  <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent" aria-live="polite">
                     {period[0]} mėn.
                   </div>
                   <div className="pt-2">
@@ -220,14 +220,14 @@ export const LoanCalculator = () => {
               <div className="flex justify-center">
                 <Button 
                   size="lg" 
-                  className="group text-base md:text-lg h-14 md:h-16 px-8 md:px-12 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover-lift bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  className="group text-lg md:text-xl h-14 md:h-16 px-10 md:px-14 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover-lift bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground"
                   onClick={() => {
                     analytics.ctaClicked('Calculator CTA');
                     setDialogOpen(true);
                   }}
                 >
                   Gauti geriausius pasiūlymus
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  <ArrowRight className="ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </Button>
               </div>
             </Card>
