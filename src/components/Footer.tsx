@@ -127,10 +127,8 @@ export const Footer = () => {
                 <img 
                   src={autokopersLogo} 
                   alt="Autokopers" 
-                  className="h-8"
+                  className="h-8 w-auto"
                   loading="lazy"
-                  width="32"
-                  height="32"
                 />
               </a>
             </div>
