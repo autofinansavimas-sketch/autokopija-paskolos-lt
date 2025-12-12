@@ -42,13 +42,9 @@ export const LoanCalculator = () => {
           <div className="max-w-5xl mx-auto">
             {/* Header */}
             <div className="text-center mb-10 md:mb-14">
-              <h1 className="text-xl md:text-3xl font-bold mb-4 uppercase animate-fade-in tracking-wide">
+              <h1 className="text-xl md:text-3xl font-bold mb-6 uppercase animate-fade-in tracking-wide">
                 AUTOPASKOLOS.LT - <span className="gradient-text">PASKOLOS NE TIK AUTOMOBILIUI</span>
               </h1>
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-6 animate-fade-in backdrop-blur-sm">
-                <Sparkles className="h-4 w-4 text-primary animate-pulse" aria-hidden="true" />
-                <span className="text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Išmanioji skaičiuoklė</span>
-              </div>
               <h2 id="calculator-heading" className="text-2xl md:text-5xl font-bold mb-4 md:mb-5 uppercase animate-fade-in" style={{ animationDelay: '0.1s' }}>
                 GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="gradient-text">VOS PER 30 MINUČIŲ</span>
               </h2>
@@ -204,8 +200,8 @@ export const LoanCalculator = () => {
                       </div>
                       
                       <div className="bg-card/50 rounded-xl p-4 md:p-6 border border-border/50">
-                        <div className="text-xs md:text-sm text-muted-foreground mb-2">Jūsų sutaupymas*</div>
-                        <div className="text-2xl md:text-3xl font-bold text-emerald-500" aria-live="polite">iki {(totalInterest * 0.3).toFixed(0)} €</div>
+                        <div className="text-xs md:text-sm text-muted-foreground mb-2">Jūs sutaupote*</div>
+                        <div className="text-2xl md:text-3xl font-bold text-emerald-500" aria-live="polite">iki {(totalInterest * 0.5).toFixed(0)} €</div>
                         {/* Progress bar showing savings potential */}
                         <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
                           <div 
