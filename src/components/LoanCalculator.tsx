@@ -42,6 +42,9 @@ export const LoanCalculator = () => {
           <div className="max-w-5xl mx-auto">
             {/* Header */}
             <div className="text-center mb-10 md:mb-14">
+              <h1 className="text-xl md:text-3xl font-bold mb-4 uppercase animate-fade-in tracking-wide">
+                AUTOPASKOLOS.LT - <span className="gradient-text">PASKOLOS NE TIK AUTOMOBILIUI</span>
+              </h1>
               <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-6 animate-fade-in backdrop-blur-sm">
                 <Sparkles className="h-4 w-4 text-primary animate-pulse" aria-hidden="true" />
                 <span className="text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Išmanioji skaičiuoklė</span>
@@ -201,16 +204,16 @@ export const LoanCalculator = () => {
                       </div>
                       
                       <div className="bg-card/50 rounded-xl p-4 md:p-6 border border-border/50">
-                        <div className="text-xs md:text-sm text-muted-foreground mb-2">Palūkanos</div>
-                        <div className="text-2xl md:text-3xl font-bold text-amber-500" aria-live="polite">{totalInterest.toFixed(2)} €</div>
-                        {/* Progress bar */}
+                        <div className="text-xs md:text-sm text-muted-foreground mb-2">Jūsų sutaupymas*</div>
+                        <div className="text-2xl md:text-3xl font-bold text-emerald-500" aria-live="polite">iki {(totalInterest * 0.3).toFixed(0)} €</div>
+                        {/* Progress bar showing savings potential */}
                         <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-500"
-                            style={{ width: `${interestPercentage}%` }}
+                            className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500"
+                            style={{ width: '70%' }}
                           />
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">{interestPercentage.toFixed(1)}% nuo bendros sumos</div>
+                        <div className="text-xs text-muted-foreground mt-1">lyginant su kitais pasiūlymais</div>
                       </div>
                     </div>
                   </div>
