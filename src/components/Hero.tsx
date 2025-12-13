@@ -47,18 +47,18 @@ export const Hero = () => {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t animate-slide-up" style={{ animationDelay: '0.4s' }}>
-                <div className="text-center group">
-                  <div className="text-4xl md:text-5xl font-bold text-primary transition-transform group-hover:scale-105">3.9%</div>
-                  <div className="text-base text-muted-foreground mt-2 uppercase">PALŪKANOS NUO</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-border/50 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+                <div className="text-center group p-4 rounded-xl hover:bg-primary/5 transition-all duration-300">
+                  <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent transition-transform group-hover:scale-110 duration-300">3.9%</div>
+                  <div className="text-base text-muted-foreground mt-2 uppercase font-medium">PALŪKANOS NUO</div>
                 </div>
-                <div className="text-center group">
-                  <div className="text-4xl md:text-5xl font-bold text-primary transition-transform group-hover:scale-105">10min</div>
-                  <div className="text-base text-muted-foreground mt-2 uppercase">SPRENDIMAS</div>
+                <div className="text-center group p-4 rounded-xl hover:bg-primary/5 transition-all duration-300">
+                  <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent transition-transform group-hover:scale-110 duration-300">10min</div>
+                  <div className="text-base text-muted-foreground mt-2 uppercase font-medium">SPRENDIMAS</div>
                 </div>
-                <div className="text-center group">
-                  <div className="text-4xl md:text-5xl font-bold text-primary transition-transform group-hover:scale-105">0€</div>
-                  <div className="text-base text-muted-foreground mt-2 uppercase">MOKESTIS</div>
+                <div className="text-center group p-4 rounded-xl hover:bg-primary/5 transition-all duration-300">
+                  <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent transition-transform group-hover:scale-110 duration-300">0€</div>
+                  <div className="text-base text-muted-foreground mt-2 uppercase font-medium">MOKESTIS</div>
                 </div>
               </div>
             </div>
