@@ -22,15 +22,15 @@ export const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b glass">
+      <header className="sticky top-0 z-50 w-full border-b border-border/50 backdrop-blur-xl bg-background/80 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex h-20 items-center justify-between">
             <div className="flex items-center gap-12">
-              <a href="/" className="flex items-center" aria-label="Grįžti į pagrindinį puslapį">
+              <a href="/" className="flex items-center group" aria-label="Grįžti į pagrindinį puslapį">
                 <img 
                   src={logo} 
                   alt="AUTOPASKOLOS.LT" 
-                  className="h-24 md:h-28"
+                  className="h-24 md:h-28 transition-transform duration-300 group-hover:scale-105"
                   width="112"
                   height="112"
                 />
@@ -41,7 +41,7 @@ export const Header = () => {
                   <a 
                     key={link.href}
                     href={link.href} 
-                    className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full"
+                    className="text-sm font-medium text-foreground/70 hover:text-primary transition-all duration-300 relative after:absolute after:bottom-[-4px] after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-primary after:to-primary/50 after:rounded-full after:transition-all after:duration-300 hover:after:w-full"
                   >
                     {link.label}
                   </a>
