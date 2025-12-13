@@ -10,10 +10,10 @@ import { analytics } from "@/lib/analytics";
 type LoanType = "consumer" | "car" | "home" | "refinance";
 
 const loanTypes = [
-  { id: "consumer" as LoanType, name: "Vartojimo paskola", rate: 8.9, icon: Wallet, gradient: "from-emerald-500 to-teal-600" },
-  { id: "car" as LoanType, name: "Automobilio lizingas", rate: 6.9, icon: Car, gradient: "from-blue-500 to-cyan-600" },
-  { id: "home" as LoanType, name: "Būsto remontas", rate: 7.5, icon: Home, gradient: "from-amber-500 to-orange-600" },
-  { id: "refinance" as LoanType, name: "Paskolų refinansavimas", rate: 7.2, icon: RefreshCw, gradient: "from-purple-500 to-pink-600" },
+  { id: "consumer" as LoanType, name: "Vartojimo paskola", displayRate: 5.9, calcRate: 8.9, icon: Wallet, gradient: "from-emerald-500 to-teal-600" },
+  { id: "car" as LoanType, name: "Automobilio lizingas", displayRate: 3.9, calcRate: 6.9, icon: Car, gradient: "from-blue-500 to-cyan-600" },
+  { id: "home" as LoanType, name: "Būsto remontas", displayRate: 4.5, calcRate: 7.5, icon: Home, gradient: "from-amber-500 to-orange-600" },
+  { id: "refinance" as LoanType, name: "Paskolų refinansavimas", displayRate: 4.2, calcRate: 7.2, icon: RefreshCw, gradient: "from-purple-500 to-pink-600" },
 ];
 
 export const LoanCalculator = () => {
@@ -23,7 +23,7 @@ export const LoanCalculator = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const currentLoan = loanTypes.find(l => l.id === selectedType)!;
-  const monthlyRate = currentLoan.rate / 100 / 12;
+  const monthlyRate = currentLoan.calcRate / 100 / 12;
   const monthlyPayment = (amount[0] * monthlyRate * Math.pow(1 + monthlyRate, period[0])) / (Math.pow(1 + monthlyRate, period[0]) - 1);
   const totalPayment = monthlyPayment * period[0];
   const totalInterest = totalPayment - amount[0];
@@ -90,7 +90,7 @@ export const LoanCalculator = () => {
                         </div>
                         <div className="font-bold text-sm md:text-base mb-1 relative z-10">{type.name}</div>
                         <div className="text-xs md:text-sm text-muted-foreground relative z-10">
-                          Nuo <span className="font-semibold text-primary">{type.rate}%</span> metinių palūkanų
+                          Nuo <span className="font-semibold text-primary">{type.displayRate}%</span> metinių palūkanų
                         </div>
                         
                         {/* Selection indicator */}
@@ -180,7 +180,7 @@ export const LoanCalculator = () => {
                         {monthlyPayment.toFixed(2)} €
                       </div>
                       <div className="text-sm text-muted-foreground mt-2">
-                        {currentLoan.rate}% metinių palūkanų
+                        {currentLoan.displayRate}% metinių palūkanų
                       </div>
                     </div>
                     
