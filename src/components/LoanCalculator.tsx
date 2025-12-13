@@ -10,10 +10,10 @@ import { analytics } from "@/lib/analytics";
 type LoanType = "consumer" | "car" | "home" | "refinance";
 
 const loanTypes = [
-  { id: "consumer" as LoanType, name: "Vartojimo paskola", rate: 5.9, icon: Wallet, gradient: "from-emerald-500 to-teal-600" },
-  { id: "car" as LoanType, name: "Automobilio lizingas", rate: 3.9, icon: Car, gradient: "from-blue-500 to-cyan-600" },
-  { id: "home" as LoanType, name: "Būsto remontas", rate: 4.5, icon: Home, gradient: "from-amber-500 to-orange-600" },
-  { id: "refinance" as LoanType, name: "Paskolų refinansavimas", rate: 4.2, icon: RefreshCw, gradient: "from-purple-500 to-pink-600" },
+  { id: "consumer" as LoanType, name: "Vartojimo paskola", rate: 8.9, icon: Wallet, gradient: "from-emerald-500 to-teal-600" },
+  { id: "car" as LoanType, name: "Automobilio lizingas", rate: 6.9, icon: Car, gradient: "from-blue-500 to-cyan-600" },
+  { id: "home" as LoanType, name: "Būsto remontas", rate: 7.5, icon: Home, gradient: "from-amber-500 to-orange-600" },
+  { id: "refinance" as LoanType, name: "Paskolų refinansavimas", rate: 7.2, icon: RefreshCw, gradient: "from-purple-500 to-pink-600" },
 ];
 
 export const LoanCalculator = () => {
@@ -201,7 +201,7 @@ export const LoanCalculator = () => {
                       
                       <div className="bg-card/50 rounded-xl p-4 md:p-6 border border-border/50">
                         <div className="text-xs md:text-sm text-muted-foreground mb-2">Jūs sutaupote*</div>
-                        <div className="text-2xl md:text-3xl font-bold text-emerald-500" aria-live="polite">iki {(totalInterest * 0.5).toFixed(0)} €</div>
+                        <div className="text-2xl md:text-3xl font-bold text-emerald-500" aria-live="polite">iki {(totalInterest * 0.75).toFixed(0)} €</div>
                         {/* Progress bar showing savings potential */}
                         <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
                           <div 
