@@ -42,11 +42,20 @@ export const FAQ = () => {
   };
 
   return (
-    <section className="py-16 md:py-24 bg-secondary/20">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-          5 dažniausi klausimai
-        </h2>
+    <section className="py-20 md:py-28 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-secondary/30 via-background to-secondary/20" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
+            <span className="text-sm font-medium">DUK</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 animate-slide-up">
+            5 dažniausi <span className="gradient-text">klausimai</span>
+          </h2>
+        </div>
         
         <div className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-4" onValueChange={handleAccordionChange}>
@@ -54,12 +63,12 @@ export const FAQ = () => {
               <AnimatedSection key={index} delay={index * 100}>
                 <AccordionItem 
                   value={`item-${index}`}
-                  className="bg-card border border-border rounded-lg px-6"
+                  className="bg-card border-2 border-border/50 hover:border-primary/30 rounded-xl px-6 transition-all duration-300 overflow-hidden"
                 >
-                  <AccordionTrigger className="text-left hover:no-underline py-6">
-                    <h3 className="font-semibold text-lg">{faq.question}</h3>
+                  <AccordionTrigger className="text-left hover:no-underline py-6 group">
+                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{faq.question}</h3>
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-6">
+                  <AccordionContent className="text-muted-foreground pb-6 text-base leading-relaxed">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
