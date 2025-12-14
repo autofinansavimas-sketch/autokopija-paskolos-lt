@@ -117,7 +117,7 @@ export const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col md:flex-row items-center gap-4">
               <p className="text-sm text-muted-foreground flex items-center gap-1">
-                © {currentYear} AUTOPASKOLOS.LT. Visos teisės saugomos.
+                © 2026 AUTOPASKOLOS.LT. Visos teisės saugomos.
               </p>
               <Link to="/privatumo-politika" className="text-sm text-muted-foreground hover:text-primary transition-all duration-300 hover:underline underline-offset-4">
                 Privatumo politika
