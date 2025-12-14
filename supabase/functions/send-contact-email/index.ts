@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,11 +74,35 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { name, email, phone, amount, loanType, loanPeriod }: ContactEmailRequest = await req.json();
 
-    console.log("Sending email to:", email);
+    console.log("Processing contact submission");
+    console.log("Email:", email);
     console.log("Loan type:", loanType);
     console.log("Loan period:", loanPeriod);
 
-    // Send to verified email (for testing during API key activation)
+    // Save submission to database
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    const { data: submissionData, error: dbError } = await supabase
+      .from("contact_submissions")
+      .insert({
+        name: name || null,
+        email,
+        phone,
+        amount: amount || null,
+        loan_type: loanType || null,
+        loan_period: loanPeriod || null,
+        status: "new"
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error("Failed to save submission to database:", dbError);
+    } else {
+      console.log("Submission saved to database with ID:", submissionData.id);
+    }
+
+    // Send notification email to admin
     const notificationEmail = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -97,6 +124,9 @@ const handler = async (req: Request): Promise<Response> => {
               <p><strong>Paskolos suma:</strong> ${amount}€</p>
               <p><strong>Laikotarpis:</strong> ${loanPeriod || 'Nenurodyta'}</p>
             </div>
+            <p style="font-size: 14px; color: #6b7280;">
+              <a href="https://autopaskolos.lt/admin" style="color: #2563eb;">Peržiūrėti admin panelėje →</a>
+            </p>
           </div>
         `,
       }),
@@ -104,12 +134,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!notificationEmail.ok) {
       console.error("Failed to send notification email:", await notificationEmail.text());
+    } else {
+      console.log("Notification email sent to admin");
     }
 
     // Convert name to vocative case for greeting
     const vocativeName = toVocativeCase(name);
     
-    // Try to send confirmation to client (will work once API key is fully activated)
+    // Try to send confirmation to client
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -154,7 +186,6 @@ const handler = async (req: Request): Promise<Response> => {
     if (!emailResponse.ok) {
       const errorData = await emailResponse.json();
       console.error("Failed to send client confirmation:", errorData);
-      // Don't fail the request - notification was sent successfully
     } else {
       console.log("Client confirmation sent successfully");
     }

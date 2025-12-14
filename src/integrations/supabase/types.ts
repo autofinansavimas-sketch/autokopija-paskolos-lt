@@ -14,13 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contact_submissions: {
+        Row: {
+          amount: string | null
+          created_at: string
+          email: string
+          id: string
+          loan_period: string | null
+          loan_type: string | null
+          name: string | null
+          phone: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          loan_period?: string | null
+          loan_type?: string | null
+          name?: string | null
+          phone: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          loan_period?: string | null
+          loan_type?: string | null
+          name?: string | null
+          phone?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      submission_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          submission_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          submission_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_comments_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
