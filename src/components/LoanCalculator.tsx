@@ -31,7 +31,13 @@ export const LoanCalculator = () => {
 
   return (
     <>
-      <ContactFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <ContactFormDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen} 
+        loanType={currentLoan.name}
+        loanAmount={amount[0]}
+        loanPeriod={period[0]}
+      />
       <section id="skaiciuokle" className="py-16 md:py-24 relative overflow-hidden" aria-labelledby="calculator-heading">
         {/* Background decorations */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />

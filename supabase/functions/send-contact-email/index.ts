@@ -13,6 +13,8 @@ interface ContactEmailRequest {
   email: string;
   phone: string;
   amount: string;
+  loanType?: string;
+  loanPeriod?: string;
 }
 
 // Convert Lithuanian name to vocative case (šauksmininkas)
@@ -67,9 +69,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, phone, amount }: ContactEmailRequest = await req.json();
+    const { name, email, phone, amount, loanType, loanPeriod }: ContactEmailRequest = await req.json();
 
     console.log("Sending email to:", email);
+    console.log("Loan type:", loanType);
+    console.log("Loan period:", loanPeriod);
 
     // Send to verified email (for testing during API key activation)
     const notificationEmail = await fetch("https://api.resend.com/emails", {
@@ -81,7 +85,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "AutoPaskolos <info@autopaskolos.lt>",
         to: ["autofinansavimas@gmail.com"],
-        subject: "Nauja paskolos užklausa",
+        subject: `Nauja paskolos užklausa: ${loanType || 'Nenurodyta'}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #2563eb;">Nauja užklausa</h1>
@@ -89,7 +93,9 @@ const handler = async (req: Request): Promise<Response> => {
               <p><strong>Vardas:</strong> ${name}</p>
               <p><strong>El. paštas:</strong> ${email}</p>
               <p><strong>Telefonas:</strong> ${phone}</p>
+              <p><strong>Paskolos tipas:</strong> ${loanType || 'Nenurodyta'}</p>
               <p><strong>Paskolos suma:</strong> ${amount}€</p>
+              <p><strong>Laikotarpis:</strong> ${loanPeriod || 'Nenurodyta'}</p>
             </div>
           </div>
         `,
@@ -121,11 +127,13 @@ const handler = async (req: Request): Promise<Response> => {
               Gavome jūsų paskolos užklausą ir susisieksime su jumis artimiausiu metu.
             </p>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="margin-top: 0; color: #1f2937;">Jūsų užklausos detales:</h2>
+              <h2 style="margin-top: 0; color: #1f2937;">Jūsų užklausos detalės:</h2>
               <p><strong>Vardas:</strong> ${name}</p>
               <p><strong>El. paštas:</strong> ${email}</p>
               <p><strong>Telefonas:</strong> ${phone}</p>
+              <p><strong>Paskolos tipas:</strong> ${loanType || 'Nenurodyta'}</p>
               <p><strong>Paskolos suma:</strong> ${amount}€</p>
+              <p><strong>Laikotarpis:</strong> ${loanPeriod || 'Nenurodyta'}</p>
             </div>
             <p style="font-size: 16px; line-height: 1.5;">
               Mūsų specialistai peržiūrės jūsų užklausą ir susisieks su jumis per <strong>30 minučių</strong>.

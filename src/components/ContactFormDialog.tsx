@@ -34,9 +34,12 @@ const formSchema = z.object({
 interface ContactFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  loanType?: string;
+  loanAmount?: number;
+  loanPeriod?: number;
 }
 
-export const ContactFormDialog = ({ open, onOpenChange }: ContactFormDialogProps) => {
+export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, loanPeriod }: ContactFormDialogProps) => {
   const { toast } = useToast();
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -66,7 +69,9 @@ export const ContactFormDialog = ({ open, onOpenChange }: ContactFormDialogProps
           name: values.name || "Nenurodytas",
           email: values.email,
           phone: values.phone,
-          amount: values.amount || "Nenurodyta",
+          amount: values.amount || (loanAmount ? loanAmount.toString() : "Nenurodyta"),
+          loanType: loanType || "Nenurodyta",
+          loanPeriod: loanPeriod ? `${loanPeriod} mėn.` : "Nenurodyta",
         },
       });
 
