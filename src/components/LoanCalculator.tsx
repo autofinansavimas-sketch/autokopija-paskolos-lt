@@ -220,7 +220,7 @@ export const LoanCalculator = () => {
               <div className="flex justify-center">
                 <Button 
                   size="lg" 
-                  className="group text-lg md:text-xl h-14 md:h-16 px-10 md:px-14 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover-lift bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground"
+                  className="group text-lg md:text-xl h-14 md:h-16 px-10 md:px-14 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover-lift bg-primary hover:bg-primary/90 text-primary-foreground"
                   onClick={() => {
                     analytics.ctaClicked('Calculator CTA');
                     setDialogOpen(true);
