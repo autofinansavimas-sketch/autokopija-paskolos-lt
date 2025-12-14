@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
+import AdminLogin from "./pages/AdminLogin";
+import Admin from "./pages/Admin";
 import { CookieConsent } from "./components/CookieConsent";
 import { WhatsAppButton } from "./components/WhatsAppButton";
 
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/privatumo-politika" element={<PrivacyPolicy />} />
           <Route path="/salygos" element={<Terms />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
