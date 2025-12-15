@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +19,9 @@ import {
   Loader2,
   Send,
   Trash2,
-  Car
+  Car,
+  Plus,
+  X
 } from "lucide-react";
 import {
   Select,
@@ -27,6 +30,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Submission {
   id: string;
@@ -54,6 +75,16 @@ export default function Admin() {
   const [newComments, setNewComments] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submittingComment, setSubmittingComment] = useState<string | null>(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addingSubmission, setAddingSubmission] = useState(false);
+  const [newSubmission, setNewSubmission] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    amount: "",
+    loan_type: "",
+    loan_period: "",
+  });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -140,6 +171,94 @@ export default function Admin() {
         description: "Nepavyko atnaujinti statuso",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDeleteSubmission = async (submissionId: string) => {
+    try {
+      // First delete related comments
+      await supabase
+        .from("submission_comments")
+        .delete()
+        .eq("submission_id", submissionId);
+
+      // Then delete the submission
+      const { error } = await supabase
+        .from("contact_submissions")
+        .delete()
+        .eq("id", submissionId);
+
+      if (error) throw error;
+
+      setSubmissions(prev => prev.filter(s => s.id !== submissionId));
+      setComments(prev => {
+        const newComments = { ...prev };
+        delete newComments[submissionId];
+        return newComments;
+      });
+
+      toast({
+        title: "Užklausa ištrinta",
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko ištrinti užklausos",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddSubmission = async () => {
+    if (!newSubmission.email || !newSubmission.phone) {
+      toast({
+        title: "Klaida",
+        description: "El. paštas ir telefonas yra privalomi",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingSubmission(true);
+    try {
+      const { data, error } = await supabase
+        .from("contact_submissions")
+        .insert({
+          name: newSubmission.name || null,
+          email: newSubmission.email,
+          phone: newSubmission.phone,
+          amount: newSubmission.amount || null,
+          loan_type: newSubmission.loan_type || null,
+          loan_period: newSubmission.loan_period || null,
+          status: "new",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSubmissions(prev => [data, ...prev]);
+      setNewSubmission({
+        name: "",
+        email: "",
+        phone: "",
+        amount: "",
+        loan_type: "",
+        loan_period: "",
+      });
+      setAddDialogOpen(false);
+
+      toast({
+        title: "Klientas pridėtas",
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko pridėti kliento",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingSubmission(false);
     }
   };
 
@@ -230,6 +349,91 @@ export default function Admin() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold">Admin Panelė</h1>
           <div className="flex items-center gap-2">
+            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="default" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Pridėti klientą
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Pridėti naują klientą</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div>
+                    <label className="text-sm font-medium">Vardas</label>
+                    <Input
+                      value={newSubmission.name}
+                      onChange={(e) => setNewSubmission(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Vardas Pavardė"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">El. paštas *</label>
+                    <Input
+                      type="email"
+                      value={newSubmission.email}
+                      onChange={(e) => setNewSubmission(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Telefonas *</label>
+                    <Input
+                      value={newSubmission.phone}
+                      onChange={(e) => setNewSubmission(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="+37061234567"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Paskolos tipas</label>
+                    <Select
+                      value={newSubmission.loan_type}
+                      onValueChange={(value) => setNewSubmission(prev => ({ ...prev, loan_type: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pasirinkite tipą" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Įprasta paskola">Įprasta paskola</SelectItem>
+                        <SelectItem value="Autopaskola">Autopaskola</SelectItem>
+                        <SelectItem value="Vartojimo paskola">Vartojimo paskola</SelectItem>
+                        <SelectItem value="Paskolų refinansavimas">Paskolų refinansavimas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Suma (€)</label>
+                    <Input
+                      value={newSubmission.amount}
+                      onChange={(e) => setNewSubmission(prev => ({ ...prev, amount: e.target.value }))}
+                      placeholder="10000"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Laikotarpis</label>
+                    <Input
+                      value={newSubmission.loan_period}
+                      onChange={(e) => setNewSubmission(prev => ({ ...prev, loan_period: e.target.value }))}
+                      placeholder="36 mėn."
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleAddSubmission} 
+                    className="w-full"
+                    disabled={addingSubmission}
+                  >
+                    {addingSubmission ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    Pridėti
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button variant="outline" size="sm" onClick={fetchSubmissions} disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Atnaujinti
@@ -274,20 +478,46 @@ export default function Admin() {
                         {formatDate(submission.created_at)}
                       </span>
                     </div>
-                    <Select
-                      value={submission.status}
-                      onValueChange={(value) => handleStatusChange(submission.id, value)}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">Naujas</SelectItem>
-                        <SelectItem value="contacted">Susisiekta</SelectItem>
-                        <SelectItem value="completed">Užbaigtas</SelectItem>
-                        <SelectItem value="cancelled">Atšauktas</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={submission.status}
+                        onValueChange={(value) => handleStatusChange(submission.id, value)}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">Naujas</SelectItem>
+                          <SelectItem value="contacted">Susisiekta</SelectItem>
+                          <SelectItem value="completed">Užbaigtas</SelectItem>
+                          <SelectItem value="cancelled">Atšauktas</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Ištrinti užklausą?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Ši užklausa ir visi jos komentarai bus ištrinti negrįžtamai.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeleteSubmission(submission.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Ištrinti
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6">
