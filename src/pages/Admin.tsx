@@ -21,8 +21,15 @@ import {
   Trash2,
   Car,
   Plus,
-  X
+  X,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -78,6 +85,7 @@ export default function Admin() {
   const [submittingComment, setSubmittingComment] = useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addingSubmission, setAddingSubmission] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -489,153 +497,195 @@ export default function Admin() {
             </p>
             
             {submissions.map((submission) => (
-              <Card key={submission.id} className="overflow-hidden">
-                <CardHeader className="bg-muted/50">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Badge className={getStatusColor(submission.status)}>
-                        {submission.status}
-                      </Badge>
-                      <Badge variant="secondary">
-                        {submission.source === "autokopers" ? "Autokopers" : "Autopaskolos"}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(submission.created_at)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={submission.status}
-                        onValueChange={(value) => handleStatusChange(submission.id, value)}
-                      >
-                        <SelectTrigger className="w-40">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="new">Naujas</SelectItem>
-                          <SelectItem value="contacted">Susisiekta</SelectItem>
-                          <SelectItem value="completed">Užbaigtas</SelectItem>
-                          <SelectItem value="cancelled">Atšauktas</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Ištrinti užklausą?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Ši užklausa ir visi jos komentarai bus ištrinti negrįžtamai.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Atšaukti</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDeleteSubmission(submission.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Ištrinti
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Contact Info */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{submission.name || "Nenurodytas"}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <a href={`tel:${submission.phone}`} className="text-primary hover:underline">
+              <Collapsible
+                key={submission.id}
+                open={expandedId === submission.id}
+                onOpenChange={(open) => setExpandedId(open ? submission.id : null)}
+              >
+                <Card className="overflow-hidden">
+                  {/* Compact Header Row */}
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-3 flex-wrap min-w-0">
+                        <Badge className={`${getStatusColor(submission.status)} shrink-0`}>
+                          {submission.status}
+                        </Badge>
+                        <Badge variant="secondary" className="shrink-0">
+                          {submission.source === "autokopers" ? "Autokopers" : "Autopaskolos"}
+                        </Badge>
+                        <span className="font-medium truncate">{submission.name || "Nežinomas"}</span>
+                        <a 
+                          href={`tel:${submission.phone}`} 
+                          className="text-primary hover:underline flex items-center gap-1 shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Phone className="h-3 w-3" />
                           {submission.phone}
                         </a>
+                        {submission.amount && (
+                          <span className="text-muted-foreground flex items-center gap-1 shrink-0">
+                            <Euro className="h-3 w-3" />
+                            {submission.amount}€
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {formatDate(submission.created_at)}
+                        </span>
+                        {(comments[submission.id]?.length || 0) > 0 && (
+                          <Badge variant="outline" className="shrink-0">
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            {comments[submission.id]?.length}
+                          </Badge>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <a href={`mailto:${submission.email}`} className="text-primary hover:underline">
-                          {submission.email}
-                        </a>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {expandedId === submission.id ? (
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                        )}
                       </div>
                     </div>
+                  </CollapsibleTrigger>
 
-                    {/* Loan Info */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Car className="h-4 w-4 text-muted-foreground" />
-                        <span>Tipas: <strong>{submission.loan_type || "Nenurodyta"}</strong></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Euro className="h-4 w-4 text-muted-foreground" />
-                        <span>Suma: <strong>{submission.amount || "Nenurodyta"}€</strong></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>Laikotarpis: <strong>{submission.loan_period || "Nenurodyta"}</strong></span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Comments Section */}
-                  <div className="mt-6 pt-6 border-t">
-                    <h4 className="font-semibold mb-4 flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      Komentarai ({comments[submission.id]?.length || 0})
-                    </h4>
-
-                    {/* Existing Comments */}
-                    {comments[submission.id]?.map((comment) => (
-                      <div key={comment.id} className="bg-muted/50 rounded-lg p-3 mb-2 group">
-                        <div className="flex justify-between items-start gap-2">
-                          <p className="text-sm">{comment.comment}</p>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
-                            onClick={() => handleDeleteComment(comment.id, submission.id)}
+                  {/* Expanded Details */}
+                  <CollapsibleContent>
+                    <CardContent className="pt-0 pb-6 border-t">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={submission.status}
+                            onValueChange={(value) => handleStatusChange(submission.id, value)}
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <SelectTrigger className="w-40">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="new">Naujas</SelectItem>
+                              <SelectItem value="contacted">Susisiekta</SelectItem>
+                              <SelectItem value="completed">Užbaigtas</SelectItem>
+                              <SelectItem value="cancelled">Atšauktas</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Ištrinti
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Ištrinti užklausą?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Ši užklausa ir visi jos komentarai bus ištrinti negrįžtamai.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDeleteSubmission(submission.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Ištrinti
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* Contact Info */}
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{submission.name || "Nenurodytas"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <a href={`tel:${submission.phone}`} className="text-primary hover:underline">
+                              {submission.phone}
+                            </a>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <a href={`mailto:${submission.email}`} className="text-primary hover:underline">
+                              {submission.email}
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* Loan Info */}
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Car className="h-4 w-4 text-muted-foreground" />
+                            <span>Tipas: <strong>{submission.loan_type || "Nenurodyta"}</strong></span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Euro className="h-4 w-4 text-muted-foreground" />
+                            <span>Suma: <strong>{submission.amount || "Nenurodyta"}€</strong></span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>Laikotarpis: <strong>{submission.loan_period || "Nenurodyta"}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Comments Section */}
+                      <div className="mt-6 pt-6 border-t">
+                        <h4 className="font-semibold mb-4 flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4" />
+                          Komentarai ({comments[submission.id]?.length || 0})
+                        </h4>
+
+                        {/* Existing Comments */}
+                        {comments[submission.id]?.map((comment) => (
+                          <div key={comment.id} className="bg-muted/50 rounded-lg p-3 mb-2 group">
+                            <div className="flex justify-between items-start gap-2">
+                              <p className="text-sm">{comment.comment}</p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                                onClick={() => handleDeleteComment(comment.id, submission.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatDate(comment.created_at)}
+                            </p>
+                          </div>
+                        ))}
+
+                        {/* Add Comment */}
+                        <div className="flex gap-2 mt-3">
+                          <Textarea
+                            placeholder="Rašyti komentarą... (Enter išsaugoti)"
+                            value={newComments[submission.id] || ""}
+                            onChange={(e) => handleCommentChange(submission.id, e.target.value)}
+                            onKeyDown={(e) => handleCommentKeyDown(e, submission.id)}
+                            className="min-h-[60px]"
+                          />
+                          <Button
+                            onClick={() => handleAddComment(submission.id)}
+                            disabled={!newComments[submission.id]?.trim() || submittingComment === submission.id}
+                            className="shrink-0"
+                          >
+                            {submittingComment === submission.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
                           </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatDate(comment.created_at)}
-                        </p>
                       </div>
-                    ))}
-
-                    {/* Add Comment */}
-                    <div className="flex gap-2 mt-3">
-                      <Textarea
-                        placeholder="Rašyti komentarą... (Enter išsaugoti)"
-                        value={newComments[submission.id] || ""}
-                        onChange={(e) => handleCommentChange(submission.id, e.target.value)}
-                        onKeyDown={(e) => handleCommentKeyDown(e, submission.id)}
-                        className="min-h-[80px]"
-                      />
-                      <Button
-                        onClick={() => handleAddComment(submission.id)}
-                        disabled={!newComments[submission.id]?.trim() || submittingComment === submission.id}
-                        className="shrink-0"
-                      >
-                        {submittingComment === submission.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             ))}
           </div>
         )}
