@@ -24,6 +24,7 @@ export type Database = {
           loan_type: string | null
           name: string | null
           phone: string
+          source: string | null
           status: string | null
           updated_at: string
         }
@@ -36,6 +37,7 @@ export type Database = {
           loan_type?: string | null
           name?: string | null
           phone: string
+          source?: string | null
           status?: string | null
           updated_at?: string
         }
@@ -48,6 +50,7 @@ export type Database = {
           loan_type?: string | null
           name?: string | null
           phone?: string
+          source?: string | null
           status?: string | null
           updated_at?: string
         }
