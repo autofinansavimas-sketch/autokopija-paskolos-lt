@@ -296,10 +296,13 @@ export default function Admin() {
     }
   };
 
-  const handleCommentKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, submissionId: string) => {
+  const handleCommentKeyDown = (e: React.KeyboardEvent, submissionId: string) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleAddComment(submissionId);
+      const commentText = newComments[submissionId]?.trim();
+      if (commentText) {
+        handleAddComment(submissionId);
+      }
     }
   };
 
