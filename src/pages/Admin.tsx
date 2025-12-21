@@ -296,6 +296,13 @@ export default function Admin() {
     }
   };
 
+  const handleCommentKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>, submissionId: string) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleAddComment(submissionId);
+    }
+  };
+
   const handleDeleteComment = async (commentId: string, submissionId: string) => {
     try {
       const { error } = await supabase
@@ -589,12 +596,13 @@ export default function Admin() {
                     {/* Add Comment */}
                     <div className="flex gap-2 mt-3">
                       <Textarea
-                        placeholder="Rašyti komentarą..."
+                        placeholder="Rašyti komentarą... (Enter išsaugoti)"
                         value={newComments[submission.id] || ""}
                         onChange={(e) => setNewComments(prev => ({ 
                           ...prev, 
                           [submission.id]: e.target.value 
                         }))}
+                        onKeyDown={(e) => handleCommentKeyDown(e, submission.id)}
                         className="min-h-[80px]"
                       />
                       <Button
