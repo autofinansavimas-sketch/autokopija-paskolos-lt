@@ -58,6 +58,7 @@ interface Submission {
   loan_type: string | null;
   loan_period: string | null;
   status: string;
+  source?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -262,8 +263,8 @@ export default function Admin() {
     }
   };
 
-  const handleAddComment = async (submissionId: string) => {
-    const commentText = newComments[submissionId]?.trim();
+  const handleAddComment = async (submissionId: string, text?: string) => {
+    const commentText = (text ?? newComments[submissionId] ?? "").trim();
     if (!commentText) return;
 
     setSubmittingComment(submissionId);
@@ -276,11 +277,11 @@ export default function Admin() {
 
       if (error) throw error;
 
-      setComments(prev => ({
+      setComments((prev) => ({
         ...prev,
-        [submissionId]: [...(prev[submissionId] || []), data]
+        [submissionId]: [...(prev[submissionId] || []), data],
       }));
-      setNewComments(prev => ({ ...prev, [submissionId]: "" }));
+      setNewComments((prev) => ({ ...prev, [submissionId]: "" }));
 
       toast({
         title: "Komentaras pridėtas",
@@ -296,13 +297,25 @@ export default function Admin() {
     }
   };
 
-  const handleCommentKeyDown = (e: React.KeyboardEvent, submissionId: string) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      const commentText = newComments[submissionId]?.trim();
-      if (commentText) {
-        handleAddComment(submissionId);
+  const handleCommentChange = (submissionId: string, value: string) => {
+    // Mobiliose klaviatūrose Enter dažnai įrašo naują eilutę vietoj keyDown įvykio.
+    if (value.endsWith("\n")) {
+      const cleaned = value.replace(/\n+$/g, "");
+      setNewComments((prev) => ({ ...prev, [submissionId]: cleaned }));
+      if (cleaned.trim()) {
+        handleAddComment(submissionId, cleaned);
       }
+      return;
+    }
+
+    setNewComments((prev) => ({ ...prev, [submissionId]: value }));
+  };
+
+  const handleCommentKeyDown = (e: React.KeyboardEvent, submissionId: string) => {
+    const code = (e as unknown as { code?: string }).code;
+    if ((e.key === "Enter" || code === "NumpadEnter") && !e.shiftKey) {
+      e.preventDefault();
+      handleAddComment(submissionId);
     }
   };
 
@@ -483,6 +496,9 @@ export default function Admin() {
                       <Badge className={getStatusColor(submission.status)}>
                         {submission.status}
                       </Badge>
+                      <Badge variant="secondary">
+                        {submission.source === "autokopers" ? "Autokopers" : "Autopaskolos"}
+                      </Badge>
                       <span className="text-sm text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         {formatDate(submission.created_at)}
@@ -601,10 +617,7 @@ export default function Admin() {
                       <Textarea
                         placeholder="Rašyti komentarą... (Enter išsaugoti)"
                         value={newComments[submission.id] || ""}
-                        onChange={(e) => setNewComments(prev => ({ 
-                          ...prev, 
-                          [submission.id]: e.target.value 
-                        }))}
+                        onChange={(e) => handleCommentChange(submission.id, e.target.value)}
                         onKeyDown={(e) => handleCommentKeyDown(e, submission.id)}
                         className="min-h-[80px]"
                       />
