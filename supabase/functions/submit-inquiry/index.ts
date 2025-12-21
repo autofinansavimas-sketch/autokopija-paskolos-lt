@@ -11,14 +11,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface ContactEmailRequest {
+interface InquiryRequest {
   name: string;
   email: string;
   phone: string;
-  amount: string;
+  amount?: string;
   loanType?: string;
   loanPeriod?: string;
-  source?: string;
+  source: string;
 }
 
 // Brand configurations
@@ -48,13 +48,11 @@ function toVocativeCase(name: string): string {
     const word = part.trim();
     if (word.length < 2) return word;
     
-    // Preserve original capitalization
     const isCapitalized = word[0] === word[0].toUpperCase();
     const lowerWord = word.toLowerCase();
     
     let result = word;
     
-    // Masculine endings
     if (lowerWord.endsWith('as')) {
       result = word.slice(0, -2) + 'ai';
     } else if (lowerWord.endsWith('is')) {
@@ -65,15 +63,12 @@ function toVocativeCase(name: string): string {
       result = word.slice(0, -3) + 'iau';
     } else if (lowerWord.endsWith('ys')) {
       result = word.slice(0, -2) + 'y';
-    }
-    // Feminine endings
-    else if (lowerWord.endsWith('ė')) {
+    } else if (lowerWord.endsWith('ė')) {
       result = word.slice(0, -1) + 'e';
     } else if (lowerWord.endsWith('a')) {
-      result = word.slice(0, -1) + 'a'; // stays the same or becomes -a
+      result = word.slice(0, -1) + 'a';
     }
     
-    // Restore capitalization
     if (isCapitalized && result.length > 0) {
       result = result[0].toUpperCase() + result.slice(1).toLowerCase();
     }
@@ -91,15 +86,31 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, phone, amount, loanType, loanPeriod, source = "autopaskolos" }: ContactEmailRequest = await req.json();
+    const { name, email, phone, amount, loanType, loanPeriod, source }: InquiryRequest = await req.json();
 
-    // Get brand configuration
-    const brand = brandConfig[source as keyof typeof brandConfig] || brandConfig.autopaskolos;
+    // Validate required fields
+    if (!email || !phone) {
+      return new Response(
+        JSON.stringify({ success: false, error: "El. paštas ir telefonas yra privalomi" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
-    console.log("Processing contact submission");
+    // Validate source
+    const validSources = ["autopaskolos", "autokopers"];
+    const normalizedSource = source?.toLowerCase() || "autopaskolos";
+    
+    if (!validSources.includes(normalizedSource)) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Neteisingas šaltinis" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const brand = brandConfig[normalizedSource as keyof typeof brandConfig];
+
+    console.log("Processing inquiry from:", normalizedSource);
     console.log("Email:", email);
-    console.log("Source:", source);
-    console.log("Brand:", brand.name);
 
     // Save submission to database
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
@@ -114,16 +125,20 @@ const handler = async (req: Request): Promise<Response> => {
         loan_type: loanType || null,
         loan_period: loanPeriod || null,
         status: "new",
-        source: source || "autopaskolos"
+        source: normalizedSource
       })
       .select()
       .single();
 
     if (dbError) {
       console.error("Failed to save submission to database:", dbError);
-    } else {
-      console.log("Submission saved to database with ID:", submissionData.id);
+      return new Response(
+        JSON.stringify({ success: false, error: "Nepavyko išsaugoti užklausos" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
+
+    console.log("Submission saved with ID:", submissionData.id);
 
     // Send notification email to admin
     const notificationEmail = await fetch("https://api.resend.com/emails", {
@@ -141,11 +156,11 @@ const handler = async (req: Request): Promise<Response> => {
             <h1 style="color: ${brand.primaryColor};">Nauja užklausa (${brand.name})</h1>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <p><strong>Šaltinis:</strong> ${brand.website}</p>
-              <p><strong>Vardas:</strong> ${name}</p>
+              <p><strong>Vardas:</strong> ${name || 'Nenurodyta'}</p>
               <p><strong>El. paštas:</strong> ${email}</p>
               <p><strong>Telefonas:</strong> ${phone}</p>
               <p><strong>Paskolos tipas:</strong> ${loanType || 'Nenurodyta'}</p>
-              <p><strong>Paskolos suma:</strong> ${amount}€</p>
+              <p><strong>Paskolos suma:</strong> ${amount || 'Nenurodyta'}€</p>
               <p><strong>Laikotarpis:</strong> ${loanPeriod || 'Nenurodyta'}</p>
             </div>
             <p style="font-size: 14px; color: #6b7280;">
@@ -158,14 +173,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!notificationEmail.ok) {
       console.error("Failed to send notification email:", await notificationEmail.text());
-    } else {
-      console.log("Notification email sent to admin");
     }
 
-    // Convert name to vocative case for greeting
+    // Send confirmation to client
     const vocativeName = toVocativeCase(name);
     
-    // Try to send confirmation to client
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -178,17 +190,17 @@ const handler = async (req: Request): Promise<Response> => {
         subject: "Gavome jūsų užklausą!",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: ${brand.primaryColor};">Sveiki, ${vocativeName}!</h1>
+            <h1 style="color: ${brand.primaryColor};">Sveiki, ${vocativeName || 'Kliente'}!</h1>
             <p style="font-size: 16px; line-height: 1.5;">
               Gavome jūsų paskolos užklausą ir susisieksime su jumis artimiausiu metu.
             </p>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h2 style="margin-top: 0; color: #1f2937;">Jūsų užklausos detalės:</h2>
-              <p><strong>Vardas:</strong> ${name}</p>
+              <p><strong>Vardas:</strong> ${name || 'Nenurodyta'}</p>
               <p><strong>El. paštas:</strong> ${email}</p>
               <p><strong>Telefonas:</strong> ${phone}</p>
               <p><strong>Paskolos tipas:</strong> ${loanType || 'Nenurodyta'}</p>
-              <p><strong>Paskolos suma:</strong> ${amount}€</p>
+              <p><strong>Paskolos suma:</strong> ${amount || 'Nenurodyta'}€</p>
               <p><strong>Laikotarpis:</strong> ${loanPeriod || 'Nenurodyta'}</p>
             </div>
             <p style="font-size: 16px; line-height: 1.5;">
@@ -208,30 +220,22 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (!emailResponse.ok) {
-      const errorData = await emailResponse.json();
-      console.error("Failed to send client confirmation:", errorData);
-    } else {
-      console.log("Client confirmation sent successfully");
+      console.error("Failed to send client confirmation:", await emailResponse.text());
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: "Užklausa gauta. Susisieksime su jumis greitai." 
+      message: "Užklausa gauta. Susisieksime su jumis greitai.",
+      id: submissionData.id
     }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error in send-contact-email function:", error);
+    console.error("Error in submit-inquiry function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 };
