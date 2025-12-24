@@ -28,9 +28,9 @@ export const Hero = () => {
                 AUTOPASKOLOS.LT - <span className="gradient-text">PASKOLOS NE TIK AUTOMOBILIUI</span>
               </h1>
               
-              <p className="text-base md:text-xl font-semibold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ VOS PER 30 MINUČIŲ
-              </p>
+              <h2 className="text-2xl md:text-4xl font-bold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="gradient-text">VOS PER 30 MINUČIŲ</span>
+              </h2>
               
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 Palyginame 20+ kreditorių pasiūlymus vienoje vietoje. Užpildykite paraišką per 3 minutes ir sutaupykite tūkstančius eurų.
