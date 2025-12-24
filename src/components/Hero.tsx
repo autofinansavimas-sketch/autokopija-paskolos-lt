@@ -24,11 +24,11 @@ export const Hero = () => {
                 <span className="text-xs md:text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
               </div>
               
-              <h1 id="hero-heading" className="text-xl md:text-2xl lg:text-3xl font-bold leading-tight uppercase animate-slide-up">
+              <h1 id="hero-heading" className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight uppercase animate-slide-up">
                 AUTOPASKOLOS.LT - <span className="gradient-text">PASKOLOS NE TIK AUTOMOBILIUI</span>
               </h1>
               
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
                 GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="gradient-text">VOS PER 30 MINUČIŲ</span>
               </h2>
               
