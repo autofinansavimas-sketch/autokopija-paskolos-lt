@@ -24,16 +24,16 @@ export const Hero = () => {
                 <span className="text-xs md:text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
               </div>
               
-              <h2 id="hero-heading" className="text-3xl md:text-5xl font-bold leading-tight uppercase animate-slide-up">
-                KODĖL <span className="gradient-text">RINKTIS MUS?</span>
-              </h2>
+              <h1 id="hero-heading" className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight uppercase animate-slide-up">
+                AUTOPASKOLOS.LT - <span className="gradient-text">PASKOLOS NE TIK AUTOMOBILIUI</span>
+              </h1>
               
-              <p className="text-lg md:text-2xl font-semibold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                PALYGINAME 20+ KREDITORIŲ IR RANDAME GERIAUSIĄ PASIŪLYMĄ
+              <p className="text-base md:text-xl font-semibold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ VOS PER 30 MINUČIŲ
               </p>
               
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                Užpildykite paraišką per 3 minutes ir gaukite atsakymus per 30 minučių. Palyginkite 20+ kreditorių pasiūlymus vienoje vietoje ir sutaupykite tūkstančius eurų.
+                Palyginame 20+ kreditorių pasiūlymus vienoje vietoje. Užpildykite paraišką per 3 minutes ir sutaupykite tūkstančius eurų.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
