@@ -17,7 +17,7 @@ const Index = () => {
       <Header />
       <main id="main-content">
         <LoanCalculator />
-        <Partners />
+        {/* <Partners /> */}{/* TODO: grąžinti vėliau */}
         <Hero />
         <ContactForm />
         <ExpertSection />
