@@ -180,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: ${brand.primaryColor};">Sveiki, ${vocativeName}!</h1>
             <p style="font-size: 16px; line-height: 1.5;">
-              Gavome jūsų paskolos užklausą ir susisieksime su jumis artimiausiu metu.
+              Gavome jūsų paskolos užklausą ir nekantraujame jums padėti.
             </p>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h2 style="margin-top: 0; color: #1f2937;">Jūsų užklausos detalės:</h2>
