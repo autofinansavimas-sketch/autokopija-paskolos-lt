@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, Mail, Loader2 } from "lucide-react";
+import { Lock, Mail, Loader2, ArrowLeft } from "lucide-react";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -81,6 +83,122 @@ export default function AdminLogin() {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Klaida",
+        description: "Įveskite el. pašto adresą",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin-login`,
+      });
+
+      if (error) {
+        toast({
+          title: "Klaida",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setResetSent(true);
+      toast({
+        title: "Laiškas išsiųstas!",
+        description: "Patikrinkite savo el. paštą ir sekite nuorodą slaptažodžio atstatymui.",
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Įvyko nenumatyta klaida. Bandykite dar kartą.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (resetMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">Slaptažodžio atstatymas</CardTitle>
+            <CardDescription>
+              {resetSent 
+                ? "Patikrinkite savo el. paštą" 
+                : "Įveskite savo el. pašto adresą"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {resetSent ? (
+              <div className="text-center space-y-4">
+                <p className="text-muted-foreground">
+                  Slaptažodžio atstatymo nuoroda išsiųsta į <strong>{email}</strong>
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setResetMode(false);
+                    setResetSent(false);
+                  }}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Grįžti į prisijungimą
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handlePasswordReset} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">El. paštas</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="jusu@email.lt"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Siunčiama...
+                    </>
+                  ) : (
+                    "Siųsti atstatymo nuorodą"
+                  )}
+                </Button>
+                <Button 
+                  type="button"
+                  variant="ghost" 
+                  className="w-full"
+                  onClick={() => setResetMode(false)}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Grįžti į prisijungimą
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
       <Card className="w-full max-w-md">
@@ -131,6 +249,14 @@ export default function AdminLogin() {
               ) : (
                 "Prisijungti"
               )}
+            </Button>
+            <Button 
+              type="button"
+              variant="link" 
+              className="w-full text-sm"
+              onClick={() => setResetMode(true)}
+            >
+              Pamiršote slaptažodį?
             </Button>
           </form>
         </CardContent>
