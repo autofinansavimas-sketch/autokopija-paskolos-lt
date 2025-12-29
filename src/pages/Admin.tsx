@@ -77,13 +77,33 @@ interface Comment {
   created_at: string;
 }
 
-const STATUS_CONFIG = [
+const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
   { value: "contacted", label: "Susisiekta", color: "bg-yellow-500", borderColor: "border-yellow-500" },
   { value: "completed", label: "Užbaigti", color: "bg-green-500", borderColor: "border-green-500" },
   { value: "not_financed", label: "Nefinansuojami", color: "bg-orange-500", borderColor: "border-orange-500" },
   { value: "cancelled", label: "Atšaukti", color: "bg-red-500", borderColor: "border-red-500" },
 ];
+
+const AVAILABLE_COLORS = [
+  { color: "bg-blue-500", borderColor: "border-blue-500" },
+  { color: "bg-yellow-500", borderColor: "border-yellow-500" },
+  { color: "bg-green-500", borderColor: "border-green-500" },
+  { color: "bg-orange-500", borderColor: "border-orange-500" },
+  { color: "bg-red-500", borderColor: "border-red-500" },
+  { color: "bg-purple-500", borderColor: "border-purple-500" },
+  { color: "bg-pink-500", borderColor: "border-pink-500" },
+  { color: "bg-teal-500", borderColor: "border-teal-500" },
+  { color: "bg-indigo-500", borderColor: "border-indigo-500" },
+  { color: "bg-cyan-500", borderColor: "border-cyan-500" },
+];
+
+interface StatusConfig {
+  value: string;
+  label: string;
+  color: string;
+  borderColor: string;
+}
 
 export default function Admin() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -96,6 +116,13 @@ export default function Admin() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(() => {
+    const saved = localStorage.getItem("admin_status_config");
+    return saved ? JSON.parse(saved) : DEFAULT_STATUS_CONFIG;
+  });
+  const [addColumnDialogOpen, setAddColumnDialogOpen] = useState(false);
+  const [newColumnName, setNewColumnName] = useState("");
+  const [newColumnColor, setNewColumnColor] = useState(AVAILABLE_COLORS[0]);
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -419,6 +446,69 @@ export default function Admin() {
     await handleStatusChange(submissionId, newStatus);
   };
 
+  const handleAddColumn = () => {
+    if (!newColumnName.trim()) {
+      toast({
+        title: "Klaida",
+        description: "Įveskite kolonėlės pavadinimą",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const value = newColumnName.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+    
+    if (statusConfig.some(s => s.value === value)) {
+      toast({
+        title: "Klaida",
+        description: "Tokia kolonėlė jau egzistuoja",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newStatus: StatusConfig = {
+      value,
+      label: newColumnName.trim(),
+      color: newColumnColor.color,
+      borderColor: newColumnColor.borderColor,
+    };
+
+    const updatedConfig = [...statusConfig, newStatus];
+    setStatusConfig(updatedConfig);
+    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+    
+    setNewColumnName("");
+    setNewColumnColor(AVAILABLE_COLORS[0]);
+    setAddColumnDialogOpen(false);
+    
+    toast({
+      title: "Kolonėlė pridėta",
+    });
+  };
+
+  const handleDeleteColumn = (columnValue: string) => {
+    const column = statusConfig.find(s => s.value === columnValue);
+    const columnSubmissions = submissions.filter(s => s.status === columnValue);
+    
+    if (columnSubmissions.length > 0) {
+      toast({
+        title: "Negalima ištrinti",
+        description: "Kolonėlėje yra paraiškų. Perkelkite jas į kitą kolonėlę.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedConfig = statusConfig.filter(s => s.value !== columnValue);
+    setStatusConfig(updatedConfig);
+    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+    
+    toast({
+      title: `Kolonėlė "${column?.label}" ištrinta`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
@@ -511,6 +601,52 @@ export default function Admin() {
                 </div>
               </DialogContent>
             </Dialog>
+            
+            {/* Add Column Dialog */}
+            <Dialog open={addColumnDialogOpen} onOpenChange={setAddColumnDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Kolonėlė
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Pridėti naują kolonėlę</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div>
+                    <label className="text-sm font-medium">Pavadinimas</label>
+                    <Input
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      placeholder="Pvz.: Laukia dokumentų"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Spalva</label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {AVAILABLE_COLORS.map((colorOption, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`w-8 h-8 rounded-full ${colorOption.color} transition-all ${
+                            newColumnColor.color === colorOption.color 
+                              ? 'ring-2 ring-offset-2 ring-foreground' 
+                              : 'hover:scale-110'
+                          }`}
+                          onClick={() => setNewColumnColor(colorOption)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <Button onClick={handleAddColumn} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Pridėti kolonėlę
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button variant="outline" size="sm" onClick={fetchSubmissions} disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Atnaujinti
@@ -531,29 +667,41 @@ export default function Admin() {
           </div>
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-4">
-            {STATUS_CONFIG.map(statusConfig => {
-              const statusSubmissions = getSubmissionsByStatus(statusConfig.value);
-              const isDropTarget = dragOverColumn === statusConfig.value;
+            {statusConfig.map(colConfig => {
+              const statusSubmissions = getSubmissionsByStatus(colConfig.value);
+              const isDropTarget = dragOverColumn === colConfig.value;
               return (
                 <div 
-                  key={statusConfig.value} 
+                  key={colConfig.value} 
                   className={`flex-shrink-0 w-72 bg-muted/50 rounded-lg transition-all ${
                     isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : ''
                   }`}
-                  onDragOver={(e) => handleDragOver(e, statusConfig.value)}
+                  onDragOver={(e) => handleDragOver(e, colConfig.value)}
                   onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, statusConfig.value)}
+                  onDrop={(e) => handleDrop(e, colConfig.value)}
                 >
                   {/* Column Header */}
-                  <div className={`p-3 border-b-2 ${statusConfig.borderColor} rounded-t-lg`}>
+                  <div className={`p-3 border-b-2 ${colConfig.borderColor} rounded-t-lg`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${statusConfig.color}`} />
-                        <span className="font-semibold text-sm">{statusConfig.label}</span>
+                        <div className={`w-3 h-3 rounded-full ${colConfig.color}`} />
+                        <span className="font-semibold text-sm">{colConfig.label}</span>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {statusSubmissions.length}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {statusSubmissions.length}
+                        </Badge>
+                        {statusSubmissions.length === 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDeleteColumn(colConfig.value)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -655,7 +803,7 @@ export default function Admin() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {STATUS_CONFIG.map(s => (
+                      {statusConfig.map(s => (
                         <SelectItem key={s.value} value={s.value}>
                           <div className="flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${s.color}`} />
