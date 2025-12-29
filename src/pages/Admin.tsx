@@ -359,6 +359,7 @@ export default function Admin() {
       case "contacted": return "bg-yellow-500";
       case "completed": return "bg-green-500";
       case "cancelled": return "bg-red-500";
+      case "not_financed": return "bg-orange-500";
       default: return "bg-gray-500";
     }
   };
@@ -565,6 +566,7 @@ export default function Admin() {
                               <SelectItem value="contacted">Susisiekta</SelectItem>
                               <SelectItem value="completed">Užbaigtas</SelectItem>
                               <SelectItem value="cancelled">Atšauktas</SelectItem>
+                              <SelectItem value="not_financed">Nefinansuojamas</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
