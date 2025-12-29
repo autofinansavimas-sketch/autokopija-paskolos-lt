@@ -94,6 +94,8 @@ export default function Admin() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addingSubmission, setAddingSubmission] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -384,6 +386,39 @@ export default function Admin() {
     return submissions.filter(s => s.status === status);
   };
 
+  const handleDragStart = (e: React.DragEvent, submissionId: string) => {
+    setDraggedSubmission(submissionId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", submissionId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSubmission(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, status: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverColumn(status);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: string) => {
+    e.preventDefault();
+    const submissionId = e.dataTransfer.getData("text/plain");
+    setDragOverColumn(null);
+    setDraggedSubmission(null);
+
+    const submission = submissions.find(s => s.id === submissionId);
+    if (!submission || submission.status === newStatus) return;
+
+    await handleStatusChange(submissionId, newStatus);
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
@@ -498,10 +533,16 @@ export default function Admin() {
           <div className="flex gap-4 overflow-x-auto pb-4">
             {STATUS_CONFIG.map(statusConfig => {
               const statusSubmissions = getSubmissionsByStatus(statusConfig.value);
+              const isDropTarget = dragOverColumn === statusConfig.value;
               return (
                 <div 
                   key={statusConfig.value} 
-                  className="flex-shrink-0 w-72 bg-muted/50 rounded-lg"
+                  className={`flex-shrink-0 w-72 bg-muted/50 rounded-lg transition-all ${
+                    isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : ''
+                  }`}
+                  onDragOver={(e) => handleDragOver(e, statusConfig.value)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, statusConfig.value)}
                 >
                   {/* Column Header */}
                   <div className={`p-3 border-b-2 ${statusConfig.borderColor} rounded-t-lg`}>
@@ -519,21 +560,33 @@ export default function Admin() {
                   {/* Column Cards */}
                   <div className="p-2 space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
                     {statusSubmissions.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground text-sm">
-                        Nėra paraiškų
+                      <div className={`text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg ${
+                        isDropTarget ? 'border-primary' : 'border-transparent'
+                      }`}>
+                        {isDropTarget ? 'Paleiskite čia' : 'Nėra paraiškų'}
                       </div>
                     ) : (
                       statusSubmissions.map(submission => (
                         <Card 
                           key={submission.id} 
-                          className="cursor-pointer hover:shadow-md transition-shadow bg-card"
+                          className={`cursor-grab hover:shadow-md transition-all bg-card ${
+                            draggedSubmission === submission.id 
+                              ? 'opacity-50 scale-95 rotate-2' 
+                              : ''
+                          }`}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, submission.id)}
+                          onDragEnd={handleDragEnd}
                           onClick={() => setSelectedSubmission(submission)}
                         >
                           <CardContent className="p-3 space-y-2">
                             <div className="flex items-start justify-between gap-2">
-                              <span className="font-medium text-sm truncate">
-                                {submission.name || "Nežinomas"}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+                                <span className="font-medium text-sm truncate">
+                                  {submission.name || "Nežinomas"}
+                                </span>
+                              </div>
                               <Badge variant="outline" className="text-xs shrink-0">
                                 {submission.source === "autokopers" ? "AK" : "AP"}
                               </Badge>
