@@ -56,6 +56,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          approved: boolean
+          created_at: string
+          email: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       submission_comments: {
         Row: {
           comment: string
@@ -91,6 +118,7 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      is_approved: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

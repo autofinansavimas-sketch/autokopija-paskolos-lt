@@ -22,7 +22,9 @@ import {
   Car,
   Plus,
   X,
-  GripVertical
+  GripVertical,
+  Users,
+  LayoutDashboard
 } from "lucide-react";
 import {
   Select,
@@ -55,6 +57,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import UserManagement from "@/components/UserManagement";
 
 interface Submission {
   id: string;
@@ -659,14 +668,27 @@ export default function Admin() {
         </div>
       </header>
 
-      {/* Kanban Board */}
+      {/* Main Content with Tabs */}
       <main className="container mx-auto px-4 py-6">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="flex gap-4 overflow-x-auto pb-4">
+        <Tabs defaultValue="kanban" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="kanban" className="flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              Paraiškos
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Vartotojai
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="kanban">
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="flex gap-4 overflow-x-auto pb-4">
             {statusConfig.map(colConfig => {
               const statusSubmissions = getSubmissionsByStatus(colConfig.value);
               const isDropTarget = dragOverColumn === colConfig.value;
@@ -777,6 +799,12 @@ export default function Admin() {
             })}
           </div>
         )}
+          </TabsContent>
+          
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Detail Sheet */}
