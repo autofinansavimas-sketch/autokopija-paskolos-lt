@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="lt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin login – Autopaskolos.lt</title>
+    <script>
+      // GitHub Pages direct-load fix for SPA routes.
+      // Redirect /admin-login -> /?/admin-login so index.html can restore the route.
+      (function () {
+        var l = window.location;
+        var target = l.origin + "/?/admin-login" + (l.search ? "&" + l.search.slice(1) : "") + l.hash;
+        l.replace(target);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
