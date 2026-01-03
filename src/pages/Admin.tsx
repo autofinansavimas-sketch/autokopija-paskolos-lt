@@ -522,163 +522,167 @@ export default function Admin() {
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
       <header className="bg-card border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Admin Panelė</h1>
-          <div className="flex items-center gap-2">
-            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="default" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Pridėti
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Pridėti naują klientą</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div>
-                    <label className="text-sm font-medium">Vardas</label>
-                    <Input
-                      value={newSubmission.name}
-                      onChange={(e) => setNewSubmission(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Vardas Pavardė"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">El. paštas *</label>
-                    <Input
-                      type="email"
-                      value={newSubmission.email}
-                      onChange={(e) => setNewSubmission(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="email@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Telefonas *</label>
-                    <Input
-                      value={newSubmission.phone}
-                      onChange={(e) => setNewSubmission(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="+37061234567"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Paskolos tipas</label>
-                    <Select
-                      value={newSubmission.loan_type}
-                      onValueChange={(value) => setNewSubmission(prev => ({ ...prev, loan_type: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pasirinkite tipą" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Įprasta paskola">Įprasta paskola</SelectItem>
-                        <SelectItem value="Autopaskola">Autopaskola</SelectItem>
-                        <SelectItem value="Vartojimo paskola">Vartojimo paskola</SelectItem>
-                        <SelectItem value="Paskolų refinansavimas">Paskolų refinansavimas</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Suma (€)</label>
-                    <Input
-                      value={newSubmission.amount}
-                      onChange={(e) => setNewSubmission(prev => ({ ...prev, amount: e.target.value }))}
-                      placeholder="10000"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Laikotarpis</label>
-                    <Input
-                      value={newSubmission.loan_period}
-                      onChange={(e) => setNewSubmission(prev => ({ ...prev, loan_period: e.target.value }))}
-                      placeholder="36 mėn."
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleAddSubmission} 
-                    className="w-full"
-                    disabled={addingSubmission}
-                  >
-                    {addingSubmission ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Plus className="h-4 w-4 mr-2" />
-                    )}
-                    Pridėti
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-lg sm:text-xl font-bold truncate">Admin Panelė</h1>
             
-            {/* Add Column Dialog */}
-            <Dialog open={addColumnDialogOpen} onOpenChange={setAddColumnDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Kolonėlė
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Pridėti naują kolonėlę</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div>
-                    <label className="text-sm font-medium">Pavadinimas</label>
-                    <Input
-                      value={newColumnName}
-                      onChange={(e) => setNewColumnName(e.target.value)}
-                      placeholder="Pvz.: Laukia dokumentų"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Spalva</label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {AVAILABLE_COLORS.map((colorOption, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={`w-8 h-8 rounded-full ${colorOption.color} transition-all ${
-                            newColumnColor.color === colorOption.color 
-                              ? 'ring-2 ring-offset-2 ring-foreground' 
-                              : 'hover:scale-110'
-                          }`}
-                          onClick={() => setNewColumnColor(colorOption)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <Button onClick={handleAddColumn} className="w-full">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Pridėti kolonėlę
+            {/* Mobile: condensed actions */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="default" size="sm" className="h-8 sm:h-9 px-2 sm:px-3">
+                    <Plus className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Pridėti</span>
                   </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            <Button variant="outline" size="sm" onClick={fetchSubmissions} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Atnaujinti
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Atsijungti
-            </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Pridėti naują klientą</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4 max-h-[70vh] overflow-y-auto">
+                    <div>
+                      <label className="text-sm font-medium">Vardas</label>
+                      <Input
+                        value={newSubmission.name}
+                        onChange={(e) => setNewSubmission(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Vardas Pavardė"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">El. paštas *</label>
+                      <Input
+                        type="email"
+                        value={newSubmission.email}
+                        onChange={(e) => setNewSubmission(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="email@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Telefonas *</label>
+                      <Input
+                        value={newSubmission.phone}
+                        onChange={(e) => setNewSubmission(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="+37061234567"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Paskolos tipas</label>
+                      <Select
+                        value={newSubmission.loan_type}
+                        onValueChange={(value) => setNewSubmission(prev => ({ ...prev, loan_type: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pasirinkite tipą" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Įprasta paskola">Įprasta paskola</SelectItem>
+                          <SelectItem value="Autopaskola">Autopaskola</SelectItem>
+                          <SelectItem value="Vartojimo paskola">Vartojimo paskola</SelectItem>
+                          <SelectItem value="Paskolų refinansavimas">Paskolų refinansavimas</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Suma (€)</label>
+                      <Input
+                        value={newSubmission.amount}
+                        onChange={(e) => setNewSubmission(prev => ({ ...prev, amount: e.target.value }))}
+                        placeholder="10000"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Laikotarpis</label>
+                      <Input
+                        value={newSubmission.loan_period}
+                        onChange={(e) => setNewSubmission(prev => ({ ...prev, loan_period: e.target.value }))}
+                        placeholder="36 mėn."
+                      />
+                    </div>
+                    <Button 
+                      onClick={handleAddSubmission} 
+                      className="w-full"
+                      disabled={addingSubmission}
+                    >
+                      {addingSubmission ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Plus className="h-4 w-4 mr-2" />
+                      )}
+                      Pridėti
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
+              {/* Add Column Dialog */}
+              <Dialog open={addColumnDialogOpen} onOpenChange={setAddColumnDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-3">
+                    <Plus className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Kolonėlė</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Pridėti naują kolonėlę</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <label className="text-sm font-medium">Pavadinimas</label>
+                      <Input
+                        value={newColumnName}
+                        onChange={(e) => setNewColumnName(e.target.value)}
+                        placeholder="Pvz.: Laukia dokumentų"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Spalva</label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {AVAILABLE_COLORS.map((colorOption, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            className={`w-8 h-8 rounded-full ${colorOption.color} transition-all ${
+                              newColumnColor.color === colorOption.color 
+                                ? 'ring-2 ring-offset-2 ring-foreground' 
+                                : 'hover:scale-110'
+                            }`}
+                            onClick={() => setNewColumnColor(colorOption)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <Button onClick={handleAddColumn} className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Pridėti kolonėlę
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              
+              <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-3" onClick={fetchSubmissions} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+              
+              <Button variant="ghost" size="sm" className="h-8 sm:h-9 px-2 sm:px-3" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content with Tabs */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs defaultValue="kanban" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="kanban" className="flex items-center gap-2">
+          <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex">
+            <TabsTrigger value="kanban" className="flex items-center justify-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
-              Paraiškos
+              <span className="hidden xs:inline">Paraiškos</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
+            <TabsTrigger value="users" className="flex items-center justify-center gap-2">
               <Users className="h-4 w-4" />
-              Vartotojai
+              <span className="hidden xs:inline">Vartotojai</span>
             </TabsTrigger>
           </TabsList>
           
@@ -688,14 +692,14 @@ export default function Admin() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="flex gap-4 overflow-x-auto pb-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:gap-4 lg:overflow-x-auto pb-4">
             {statusConfig.map(colConfig => {
               const statusSubmissions = getSubmissionsByStatus(colConfig.value);
               const isDropTarget = dragOverColumn === colConfig.value;
               return (
                 <div 
                   key={colConfig.value} 
-                  className={`flex-shrink-0 w-72 bg-muted/50 rounded-lg transition-all ${
+                  className={`flex-shrink-0 w-full lg:w-72 bg-muted/50 rounded-lg transition-all ${
                     isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : ''
                   }`}
                   onDragOver={(e) => handleDragOver(e, colConfig.value)}
@@ -728,9 +732,9 @@ export default function Admin() {
                   </div>
 
                   {/* Column Cards */}
-                  <div className="p-2 space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+                  <div className="p-2 space-y-2 lg:max-h-[calc(100vh-200px)] overflow-y-auto">
                     {statusSubmissions.length === 0 ? (
-                      <div className={`text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg ${
+                      <div className={`text-center py-4 lg:py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg ${
                         isDropTarget ? 'border-primary' : 'border-transparent'
                       }`}>
                         {isDropTarget ? 'Paleiskite čia' : 'Nėra paraiškų'}
