@@ -197,11 +197,11 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Vartotojų valdymas</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg sm:text-xl font-semibold">Vartotojų valdymas</h2>
         <Button variant="outline" size="sm" onClick={fetchProfiles} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Atnaujinti
+          <RefreshCw className={`h-4 w-4 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <span className="hidden sm:inline">Atnaujinti</span>
         </Button>
       </div>
 
@@ -209,152 +209,113 @@ export default function UserManagement() {
       {pendingUsers.length > 0 && (
         <Card className="border-yellow-500/50 bg-yellow-500/5">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
               <UserX className="h-5 w-5 text-yellow-500" />
               Laukia patvirtinimo ({pendingUsers.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>El. paštas</TableHead>
-                  <TableHead>Registracijos data</TableHead>
-                  <TableHead className="text-right">Veiksmai</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingUsers.map(profile => (
-                  <TableRow key={profile.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        {profile.email}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(profile.created_at)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
+          <CardContent className="p-3 sm:p-6">
+            {/* Mobile view - cards */}
+            <div className="space-y-3 sm:hidden">
+              {pendingUsers.map(profile => (
+                <div key={profile.id} className="bg-card border rounded-lg p-3 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="font-medium text-sm truncate">{profile.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    {formatDate(profile.created_at)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="flex-1"
+                      onClick={() => handleApprove(profile.user_id)}
+                      disabled={actionLoading === profile.user_id}
+                    >
+                      {actionLoading === profile.user_id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-1" />
+                          Patvirtinti
+                        </>
+                      )}
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
                         <Button
                           size="sm"
-                          variant="default"
-                          onClick={() => handleApprove(profile.user_id)}
+                          variant="destructive"
                           disabled={actionLoading === profile.user_id}
                         >
-                          {actionLoading === profile.user_id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <Check className="h-4 w-4 mr-1" />
-                              Patvirtinti
-                            </>
-                          )}
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              disabled={actionLoading === profile.user_id}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Ištrinti vartotoją?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Ar tikrai norite ištrinti vartotoją {profile.email}? Šis veiksmas negrįžtamas.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Atšaukti</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(profile.user_id, profile.email)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Ištrinti
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="max-w-[95vw] sm:max-w-md">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Ištrinti vartotoją?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Ar tikrai norite ištrinti vartotoją {profile.email}? Šis veiksmas negrįžtamas.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(profile.user_id, profile.email)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Ištrinti
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Desktop view - table */}
+            <div className="hidden sm:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>El. paštas</TableHead>
+                    <TableHead>Registracijos data</TableHead>
+                    <TableHead className="text-right">Veiksmai</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Approved Users */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-green-500" />
-            Patvirtinti vartotojai ({approvedUsers.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {approvedUsers.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              Nėra patvirtintų vartotojų
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>El. paštas</TableHead>
-                  <TableHead>Statusas</TableHead>
-                  <TableHead>Registracijos data</TableHead>
-                  <TableHead className="text-right">Veiksmai</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {approvedUsers.map(profile => (
-                  <TableRow key={profile.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        {profile.email}
-                        {profile.email === "autofinansavimas@gmail.com" && (
-                          <Badge variant="secondary" className="text-xs">Admin</Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                        <Check className="h-3 w-3 mr-1" />
-                        Patvirtintas
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(profile.created_at)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {profile.email !== "autofinansavimas@gmail.com" && (
+                </TableHeader>
+                <TableBody>
+                  {pendingUsers.map(profile => (
+                    <TableRow key={profile.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          {profile.email}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(profile.created_at)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleReject(profile.user_id)}
+                            variant="default"
+                            onClick={() => handleApprove(profile.user_id)}
                             disabled={actionLoading === profile.user_id}
                           >
                             {actionLoading === profile.user_id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                               <>
-                                <X className="h-4 w-4 mr-1" />
-                                Atmesti
+                                <Check className="h-4 w-4 mr-1" />
+                                Patvirtinti
                               </>
                             )}
                           </Button>
@@ -387,12 +348,194 @@ export default function UserManagement() {
                             </AlertDialogContent>
                           </AlertDialog>
                         </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Approved Users */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+            <UserCheck className="h-5 w-5 text-green-500" />
+            Patvirtinti vartotojai ({approvedUsers.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-6">
+          {approvedUsers.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              Nėra patvirtintų vartotojų
+            </p>
+          ) : (
+            <>
+              {/* Mobile view - cards */}
+              <div className="space-y-3 sm:hidden">
+                {approvedUsers.map(profile => (
+                  <div key={profile.id} className="bg-muted/30 border rounded-lg p-3 space-y-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="font-medium text-sm truncate">{profile.email}</span>
+                      {profile.email === "autofinansavimas@gmail.com" && (
+                        <Badge variant="secondary" className="text-xs">Admin</Badge>
                       )}
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-xs">
+                        <Check className="h-3 w-3 mr-1" />
+                        Patvirtintas
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {formatDate(profile.created_at)}
+                    </div>
+                    {profile.email !== "autofinansavimas@gmail.com" && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => handleReject(profile.user_id)}
+                          disabled={actionLoading === profile.user_id}
+                        >
+                          {actionLoading === profile.user_id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <X className="h-4 w-4 mr-1" />
+                              Atmesti
+                            </>
+                          )}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              disabled={actionLoading === profile.user_id}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="max-w-[95vw] sm:max-w-md">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Ištrinti vartotoją?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Ar tikrai norite ištrinti vartotoją {profile.email}? Šis veiksmas negrįžtamas.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(profile.user_id, profile.email)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Ištrinti
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+              
+              {/* Desktop view - table */}
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>El. paštas</TableHead>
+                      <TableHead>Statusas</TableHead>
+                      <TableHead>Registracijos data</TableHead>
+                      <TableHead className="text-right">Veiksmai</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {approvedUsers.map(profile => (
+                      <TableRow key={profile.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            {profile.email}
+                            {profile.email === "autofinansavimas@gmail.com" && (
+                              <Badge variant="secondary" className="text-xs">Admin</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                            <Check className="h-3 w-3 mr-1" />
+                            Patvirtintas
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            {formatDate(profile.created_at)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {profile.email !== "autofinansavimas@gmail.com" && (
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleReject(profile.user_id)}
+                                disabled={actionLoading === profile.user_id}
+                              >
+                                {actionLoading === profile.user_id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <X className="h-4 w-4 mr-1" />
+                                    Atmesti
+                                  </>
+                                )}
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    disabled={actionLoading === profile.user_id}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Ištrinti vartotoją?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Ar tikrai norite ištrinti vartotoją {profile.email}? Šis veiksmas negrįžtamas.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(profile.user_id, profile.email)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Ištrinti
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
