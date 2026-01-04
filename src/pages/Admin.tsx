@@ -24,7 +24,8 @@ import {
   X,
   GripVertical,
   Users,
-  LayoutDashboard
+  LayoutDashboard,
+  Search
 } from "lucide-react";
 import {
   Select,
@@ -132,6 +133,7 @@ export default function Admin() {
   const [addColumnDialogOpen, setAddColumnDialogOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnColor, setNewColumnColor] = useState(AVAILABLE_COLORS[0]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -419,7 +421,17 @@ export default function Admin() {
   };
 
   const getSubmissionsByStatus = (status: string) => {
-    return submissions.filter(s => s.status === status);
+    const query = searchQuery.toLowerCase().trim();
+    return submissions.filter(s => {
+      if (s.status !== status) return false;
+      if (!query) return true;
+      return (
+        (s.name?.toLowerCase().includes(query)) ||
+        (s.email?.toLowerCase().includes(query)) ||
+        (s.phone?.toLowerCase().includes(query)) ||
+        (s.loan_type?.toLowerCase().includes(query))
+      );
+    });
   };
 
   const handleDragStart = (e: React.DragEvent, submissionId: string) => {
@@ -687,6 +699,17 @@ export default function Admin() {
           </TabsList>
           
           <TabsContent value="kanban">
+            {/* Search Bar */}
+            <div className="mb-4 relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Ieškoti pagal vardą, el. paštą, telefoną..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
