@@ -24,6 +24,7 @@ import {
   X,
   GripVertical,
   Users,
+  Copy,
   LayoutDashboard,
   Search
 } from "lucide-react";
@@ -789,14 +790,28 @@ export default function Admin() {
                               </Badge>
                             </div>
                             
-                            <a 
-                              href={`tel:${submission.phone}`}
-                              className="flex items-center gap-1 text-xs text-primary hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Phone className="h-3 w-3" />
-                              {submission.phone}
-                            </a>
+                            <div className="flex items-center gap-1">
+                              <a 
+                                href={`tel:${submission.phone}`}
+                                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Phone className="h-3 w-3" />
+                                {submission.phone}
+                              </a>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 text-muted-foreground hover:text-primary"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(submission.phone);
+                                  toast({ title: "Nukopijuota!", description: submission.phone });
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
 
                             {submission.amount && (
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -876,20 +891,46 @@ export default function Admin() {
                     Kontaktai
                   </h4>
                   <div className="space-y-2">
-                    <a 
-                      href={`tel:${selectedSubmission.phone}`}
-                      className="flex items-center gap-2 text-primary hover:underline"
-                    >
-                      <Phone className="h-4 w-4" />
-                      {selectedSubmission.phone}
-                    </a>
-                    <a 
-                      href={`mailto:${selectedSubmission.email}`}
-                      className="flex items-center gap-2 text-primary hover:underline"
-                    >
-                      <Mail className="h-4 w-4" />
-                      {selectedSubmission.email}
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <a 
+                        href={`tel:${selectedSubmission.phone}`}
+                        className="flex items-center gap-2 text-primary hover:underline"
+                      >
+                        <Phone className="h-4 w-4" />
+                        {selectedSubmission.phone}
+                      </a>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedSubmission.phone);
+                          toast({ title: "Nukopijuota!", description: selectedSubmission.phone });
+                        }}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a 
+                        href={`mailto:${selectedSubmission.email}`}
+                        className="flex items-center gap-2 text-primary hover:underline"
+                      >
+                        <Mail className="h-4 w-4" />
+                        {selectedSubmission.email}
+                      </a>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedSubmission.email);
+                          toast({ title: "Nukopijuota!", description: selectedSubmission.email });
+                        }}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
