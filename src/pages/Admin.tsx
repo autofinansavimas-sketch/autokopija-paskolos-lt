@@ -27,7 +27,9 @@ import {
   Copy,
   LayoutDashboard,
   Search,
-  Clock
+  Clock,
+  RotateCcw,
+  Archive
 } from "lucide-react";
 import {
   Select,
@@ -81,6 +83,7 @@ interface Submission {
   source?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 interface Comment {
@@ -90,6 +93,7 @@ interface Comment {
   created_at: string;
   user_id: string | null;
   user_email?: string;
+  user_display_name?: string;
 }
 
 const DEFAULT_STATUS_CONFIG = [
@@ -122,6 +126,7 @@ interface StatusConfig {
 
 export default function Admin() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [deletedSubmissions, setDeletedSubmissions] = useState<Submission[]>([]);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [newComments, setNewComments] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -139,7 +144,7 @@ export default function Admin() {
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnColor, setNewColumnColor] = useState(AVAILABLE_COLORS[0]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [profiles, setProfiles] = useState<{ user_id: string; email: string }[]>([]);
+  const [profiles, setProfiles] = useState<{ user_id: string; email: string; display_name?: string | null }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [newSubmission, setNewSubmission] = useState({
     name: "",
@@ -180,30 +185,45 @@ export default function Admin() {
     // Fetch profiles for comment author display
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("user_id, email")
+      .select("user_id, email, display_name")
       .eq("approved", true);
     
-    setProfiles(profilesData || []);
+    // Cast to handle new column not yet in types
+    const typedProfiles = (profilesData as unknown as { user_id: string; email: string; display_name?: string | null }[] | null) || [];
+    setProfiles(typedProfiles);
     
-    fetchSubmissions(profilesData || []);
+    fetchSubmissions(typedProfiles);
   };
 
-  const fetchSubmissions = async (profilesList?: { user_id: string; email: string }[]) => {
+  const fetchSubmissions = async (profilesList?: { user_id: string; email: string; display_name?: string | null }[]) => {
     setLoading(true);
     try {
+      // Fetch active submissions (not deleted)
       const { data, error } = await supabase
         .from("contact_submissions")
         .select("*")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       setSubmissions(data || []);
 
-      if (data && data.length > 0) {
+      // Fetch deleted submissions for trash
+      const { data: deletedData } = await supabase
+        .from("contact_submissions")
+        .select("*")
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+      
+      setDeletedSubmissions(deletedData || []);
+
+      const allSubmissions = [...(data || []), ...(deletedData || [])];
+
+      if (allSubmissions.length > 0) {
         const { data: commentsData, error: commentsError } = await supabase
           .from("submission_comments")
           .select("*")
-          .in("submission_id", data.map(s => s.id))
+          .in("submission_id", allSubmissions.map(s => s.id))
           .order("created_at", { ascending: true });
 
         if (commentsError) throw commentsError;
@@ -215,7 +235,8 @@ export default function Admin() {
           const profile = profilesToUse.find(p => p.user_id === comment.user_id);
           const commentWithEmail: Comment = {
             ...comment,
-            user_email: profile?.email || "Nežinomas"
+            user_email: profile?.email || "Nežinomas",
+            user_display_name: profile?.display_name || undefined
           };
           if (!groupedComments[comment.submission_id]) {
             groupedComments[comment.submission_id] = [];
@@ -270,7 +291,66 @@ export default function Admin() {
     }
   };
 
+  // Soft delete - move to trash
   const handleDeleteSubmission = async (submissionId: string) => {
+    try {
+      const { error } = await supabase
+        .from("contact_submissions")
+        .update({ deleted_at: new Date().toISOString() } as any)
+        .eq("id", submissionId);
+
+      if (error) throw error;
+
+      const deletedSubmission = submissions.find(s => s.id === submissionId);
+      if (deletedSubmission) {
+        setSubmissions(prev => prev.filter(s => s.id !== submissionId));
+        setDeletedSubmissions(prev => [{ ...deletedSubmission, deleted_at: new Date().toISOString() }, ...prev]);
+      }
+      setSelectedSubmission(null);
+
+      toast({
+        title: "Perkelta į šiukšliadėžę",
+        description: "Paraiška bus ištrinta po 3 mėnesių",
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko perkelti į šiukšliadėžę",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Restore from trash
+  const handleRestoreSubmission = async (submissionId: string) => {
+    try {
+      const { error } = await supabase
+        .from("contact_submissions")
+        .update({ deleted_at: null } as any)
+        .eq("id", submissionId);
+
+      if (error) throw error;
+
+      const restoredSubmission = deletedSubmissions.find(s => s.id === submissionId);
+      if (restoredSubmission) {
+        setDeletedSubmissions(prev => prev.filter(s => s.id !== submissionId));
+        setSubmissions(prev => [{ ...restoredSubmission, deleted_at: null }, ...prev]);
+      }
+
+      toast({
+        title: "Paraiška atkurta",
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko atkurti paraiškos",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Permanent delete
+  const handlePermanentDelete = async (submissionId: string) => {
     try {
       await supabase
         .from("submission_comments")
@@ -284,21 +364,20 @@ export default function Admin() {
 
       if (error) throw error;
 
-      setSubmissions(prev => prev.filter(s => s.id !== submissionId));
+      setDeletedSubmissions(prev => prev.filter(s => s.id !== submissionId));
       setComments(prev => {
         const newComments = { ...prev };
         delete newComments[submissionId];
         return newComments;
       });
-      setSelectedSubmission(null);
 
       toast({
-        title: "Užklausa ištrinta",
+        title: "Ištrinta visam laikui",
       });
     } catch (error) {
       toast({
         title: "Klaida",
-        description: "Nepavyko ištrinti užklausos",
+        description: "Nepavyko ištrinti paraiškos",
         variant: "destructive",
       });
     }
@@ -734,10 +813,19 @@ export default function Admin() {
       {/* Main Content with Tabs */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs defaultValue="kanban" className="space-y-4">
-          <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex">
+          <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden xs:inline">Paraiškos</span>
+            </TabsTrigger>
+            <TabsTrigger value="trash" className="flex items-center justify-center gap-2">
+              <Archive className="h-4 w-4" />
+              <span className="hidden xs:inline">Šiukšliadėžė</span>
+              {deletedSubmissions.length > 0 && (
+                <Badge variant="secondary" className="text-xs ml-1">
+                  {deletedSubmissions.length}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="hours" className="flex items-center justify-center gap-2">
               <Clock className="h-4 w-4" />
@@ -897,6 +985,92 @@ export default function Admin() {
         )}
           </TabsContent>
           
+          {/* Trash Tab */}
+          <TabsContent value="trash">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Paraiškos automatiškai ištrinamos po 3 mėnesių
+                </p>
+              </div>
+              
+              {deletedSubmissions.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Archive className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Šiukšliadėžė tuščia</p>
+                </div>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {deletedSubmissions.map(submission => (
+                    <Card key={submission.id} className="bg-muted/30">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{submission.name || "Nežinomas"}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {submission.source === "autokopers" ? "AK" : "AP"}
+                          </Badge>
+                        </div>
+                        
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-3 w-3" />
+                            {submission.phone}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3 w-3" />
+                            {submission.email}
+                          </div>
+                        </div>
+                        
+                        {submission.deleted_at && (
+                          <p className="text-xs text-muted-foreground">
+                            Ištrinta: {formatDate(submission.deleted_at)}
+                          </p>
+                        )}
+                        
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => handleRestoreSubmission(submission.id)}
+                          >
+                            <RotateCcw className="h-4 w-4 mr-1" />
+                            Atkurti
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Ištrinti visam laikui?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Ši paraiška ir visi jos komentarai bus ištrinti negrįžtamai.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handlePermanentDelete(submission.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Ištrinti
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
           <TabsContent value="hours">
             <WorkHours />
           </TabsContent>
@@ -1046,7 +1220,7 @@ export default function Admin() {
                             <p className="text-sm">{comment.comment}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-xs font-medium text-primary">
-                                {comment.user_email || "Nežinomas"}
+                                {comment.user_display_name || comment.user_email || "Nežinomas"}
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 • {formatDate(comment.created_at)}

@@ -13,7 +13,8 @@ import {
   UserCheck,
   UserX,
   Mail,
-  Calendar
+  Calendar,
+  Pencil
 } from "lucide-react";
 import {
   AlertDialog,
@@ -34,7 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { Input } from "@/components/ui/input";
 interface Profile {
   id: string;
   user_id: string;
@@ -42,12 +43,15 @@ interface Profile {
   approved: boolean;
   created_at: string;
   updated_at: string;
+  display_name?: string | null;
 }
 
 export default function UserManagement() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [tempName, setTempName] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,11 +63,12 @@ export default function UserManagement() {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, user_id, email, approved, created_at, updated_at, display_name")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setProfiles(data || []);
+      // Cast to handle new column
+      setProfiles((data as unknown as Profile[]) || []);
     } catch (error) {
       console.error("Error fetching profiles:", error);
       toast({
@@ -73,6 +78,37 @@ export default function UserManagement() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateDisplayName = async (userId: string) => {
+    setActionLoading(userId);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ display_name: tempName.trim() || null } as any)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      setProfiles(prev =>
+        prev.map(p => p.user_id === userId ? { ...p, display_name: tempName.trim() || null } : p)
+      );
+      setEditingName(null);
+      setTempName("");
+
+      toast({
+        title: "Vardas atnaujintas",
+      });
+    } catch (error) {
+      console.error("Error updating display name:", error);
+      toast({
+        title: "Klaida",
+        description: "Nepavyko atnaujinti vardo",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -384,6 +420,56 @@ export default function UserManagement() {
                         <Badge variant="secondary" className="text-xs">Admin</Badge>
                       )}
                     </div>
+                    
+                    {/* Display Name */}
+                    <div className="flex items-center gap-2">
+                      {editingName === profile.user_id ? (
+                        <div className="flex items-center gap-2 flex-1">
+                          <Input
+                            value={tempName}
+                            onChange={(e) => setTempName(e.target.value)}
+                            placeholder="Įveskite vardą"
+                            className="h-8 text-sm"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => handleUpdateDisplayName(profile.user_id)}
+                            disabled={actionLoading === profile.user_id}
+                          >
+                            {actionLoading === profile.user_id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => { setEditingName(null); setTempName(""); }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            Vardas: {profile.display_name || "(nenustatytas)"}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0"
+                            onClick={() => {
+                              setEditingName(profile.user_id);
+                              setTempName(profile.display_name || "");
+                            }}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="flex items-center gap-2">
                       <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-xs">
                         <Check className="h-3 w-3 mr-1" />
@@ -452,6 +538,7 @@ export default function UserManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>El. paštas</TableHead>
+                      <TableHead>Vardas</TableHead>
                       <TableHead>Statusas</TableHead>
                       <TableHead>Registracijos data</TableHead>
                       <TableHead className="text-right">Veiksmai</TableHead>
@@ -468,6 +555,55 @@ export default function UserManagement() {
                               <Badge variant="secondary" className="text-xs">Admin</Badge>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          {editingName === profile.user_id ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={tempName}
+                                onChange={(e) => setTempName(e.target.value)}
+                                placeholder="Įveskite vardą"
+                                className="h-8 w-32"
+                              />
+                              <Button
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleUpdateDisplayName(profile.user_id)}
+                                disabled={actionLoading === profile.user_id}
+                              >
+                                {actionLoading === profile.user_id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Check className="h-4 w-4" />
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                onClick={() => { setEditingName(null); setTempName(""); }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground">
+                                {profile.display_name || "-"}
+                              </span>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 w-6 p-0"
+                                onClick={() => {
+                                  setEditingName(profile.user_id);
+                                  setTempName(profile.display_name || "");
+                                }}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge variant="default" className="bg-green-500 hover:bg-green-600">
