@@ -26,7 +26,8 @@ import {
   Users,
   Copy,
   LayoutDashboard,
-  Search
+  Search,
+  Clock
 } from "lucide-react";
 import {
   Select,
@@ -66,6 +67,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import UserManagement from "@/components/UserManagement";
+import WorkHours from "@/components/WorkHours";
 
 interface Submission {
   id: string;
@@ -86,6 +88,8 @@ interface Comment {
   submission_id: string;
   comment: string;
   created_at: string;
+  user_id: string | null;
+  user_email?: string;
 }
 
 const DEFAULT_STATUS_CONFIG = [
@@ -135,6 +139,8 @@ export default function Admin() {
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnColor, setNewColumnColor] = useState(AVAILABLE_COLORS[0]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [profiles, setProfiles] = useState<{ user_id: string; email: string }[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -152,14 +158,37 @@ export default function Admin() {
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session || session.user.email !== "autofinansavimas@gmail.com") {
+    if (!session) {
       navigate("/admin-login");
       return;
     }
-    fetchSubmissions();
+    
+    // Check if user is approved
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("approved")
+      .eq("user_id", session.user.id)
+      .single();
+    
+    if (!profile?.approved) {
+      navigate("/admin-login");
+      return;
+    }
+    
+    setCurrentUserId(session.user.id);
+    
+    // Fetch profiles for comment author display
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("user_id, email")
+      .eq("approved", true);
+    
+    setProfiles(profilesData || []);
+    
+    fetchSubmissions(profilesData || []);
   };
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = async (profilesList?: { user_id: string; email: string }[]) => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -179,12 +208,19 @@ export default function Admin() {
 
         if (commentsError) throw commentsError;
 
+        const profilesToUse = profilesList || profiles;
+        
         const groupedComments: Record<string, Comment[]> = {};
         commentsData?.forEach(comment => {
+          const profile = profilesToUse.find(p => p.user_id === comment.user_id);
+          const commentWithEmail: Comment = {
+            ...comment,
+            user_email: profile?.email || "Nežinomas"
+          };
           if (!groupedComments[comment.submission_id]) {
             groupedComments[comment.submission_id] = [];
           }
-          groupedComments[comment.submission_id].push(comment);
+          groupedComments[comment.submission_id].push(commentWithEmail);
         });
         setComments(groupedComments);
       }
@@ -323,21 +359,31 @@ export default function Admin() {
 
   const handleAddComment = async (submissionId: string, text?: string) => {
     const commentText = (text ?? newComments[submissionId] ?? "").trim();
-    if (!commentText) return;
+    if (!commentText || !currentUserId) return;
 
     setSubmittingComment(submissionId);
     try {
       const { data, error } = await supabase
         .from("submission_comments")
-        .insert({ submission_id: submissionId, comment: commentText })
+        .insert({ 
+          submission_id: submissionId, 
+          comment: commentText,
+          user_id: currentUserId
+        })
         .select()
         .single();
 
       if (error) throw error;
 
+      const profile = profiles.find(p => p.user_id === currentUserId);
+      const commentWithEmail: Comment = {
+        ...data,
+        user_email: profile?.email || "Nežinomas"
+      };
+
       setComments((prev) => ({
         ...prev,
-        [submissionId]: [...(prev[submissionId] || []), data],
+        [submissionId]: [...(prev[submissionId] || []), commentWithEmail],
       }));
       setNewComments((prev) => ({ ...prev, [submissionId]: "" }));
 
@@ -673,7 +719,7 @@ export default function Admin() {
                 </DialogContent>
               </Dialog>
               
-              <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-3" onClick={fetchSubmissions} disabled={loading}>
+              <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-3" onClick={() => fetchSubmissions()} disabled={loading}>
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
               
@@ -688,10 +734,14 @@ export default function Admin() {
       {/* Main Content with Tabs */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs defaultValue="kanban" className="space-y-4">
-          <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex">
+          <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden xs:inline">Paraiškos</span>
+            </TabsTrigger>
+            <TabsTrigger value="hours" className="flex items-center justify-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="hidden xs:inline">Valandos</span>
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center justify-center gap-2">
               <Users className="h-4 w-4" />
@@ -847,6 +897,10 @@ export default function Admin() {
         )}
           </TabsContent>
           
+          <TabsContent value="hours">
+            <WorkHours />
+          </TabsContent>
+          
           <TabsContent value="users">
             <UserManagement />
           </TabsContent>
@@ -988,7 +1042,17 @@ export default function Admin() {
                     {comments[selectedSubmission.id]?.map((comment) => (
                       <div key={comment.id} className="bg-muted/50 rounded-lg p-3 group">
                         <div className="flex justify-between items-start gap-2">
-                          <p className="text-sm">{comment.comment}</p>
+                          <div className="flex-1">
+                            <p className="text-sm">{comment.comment}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs font-medium text-primary">
+                                {comment.user_email || "Nežinomas"}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                • {formatDate(comment.created_at)}
+                              </span>
+                            </div>
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -998,9 +1062,6 @@ export default function Admin() {
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatDate(comment.created_at)}
-                        </p>
                       </div>
                     ))}
                   </div>
