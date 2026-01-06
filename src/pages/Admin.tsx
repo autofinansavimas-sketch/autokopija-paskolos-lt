@@ -457,7 +457,8 @@ export default function Admin() {
       const profile = profiles.find(p => p.user_id === currentUserId);
       const commentWithEmail: Comment = {
         ...data,
-        user_email: profile?.email || "Nežinomas"
+        user_email: profile?.email || "Nežinomas",
+        user_display_name: profile?.display_name || undefined
       };
 
       setComments((prev) => ({
