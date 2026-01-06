@@ -16,11 +16,13 @@ interface WorkHourEntry {
   notes: string | null;
   created_at: string;
   user_email?: string;
+  user_display_name?: string;
 }
 
 interface Profile {
   user_id: string;
   email: string;
+  display_name?: string | null;
 }
 
 export default function WorkHours() {
@@ -67,18 +69,20 @@ export default function WorkHours() {
       
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select("user_id, email")
+        .select("user_id, email, display_name")
         .eq("approved", true);
 
       if (profilesError) throw profilesError;
 
-      setProfiles(profilesData || []);
+      const typedProfiles = (profilesData as Profile[] | null) || [];
+      setProfiles(typedProfiles);
       
       const entriesWithEmails = (entriesData || []).map(entry => {
-        const profile = profilesData?.find(p => p.user_id === entry.user_id);
+        const profile = typedProfiles.find(p => p.user_id === entry.user_id);
         return {
           ...entry,
-          user_email: profile?.email || "Nežinomas"
+          user_email: profile?.email || "Nežinomas",
+          user_display_name: profile?.display_name || undefined
         };
       });
       
@@ -123,7 +127,11 @@ export default function WorkHours() {
       if (error) throw error;
 
       const profile = profiles.find(p => p.user_id === currentUserId);
-      const entryWithEmail = { ...data, user_email: profile?.email || "Nežinomas" };
+      const entryWithEmail = { 
+        ...data, 
+        user_email: profile?.email || "Nežinomas",
+        user_display_name: profile?.display_name || undefined
+      };
 
       setEntries(prev => {
         const existing = prev.findIndex(e => e.user_id === currentUserId && e.date === selectedDate);
@@ -279,7 +287,7 @@ export default function WorkHours() {
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">{profile.email}</p>
+                        <p className="text-sm text-muted-foreground">{profile.display_name || profile.email}</p>
                         <p className="text-2xl font-bold">{getTotalHoursForMonth(profile.user_id).toFixed(1)} val.</p>
                       </div>
                       <Clock className="h-8 w-8 text-muted-foreground" />
@@ -329,8 +337,8 @@ export default function WorkHours() {
                         </div>
                         <div>
                           <p className="font-medium">{Number(entry.hours).toFixed(1)} val.</p>
-                          {isAdmin && (
-                            <p className="text-xs text-muted-foreground">{entry.user_email}</p>
+                        {isAdmin && (
+                            <p className="text-xs text-muted-foreground">{entry.user_display_name || entry.user_email}</p>
                           )}
                           {entry.notes && (
                             <p className="text-xs text-muted-foreground">{entry.notes}</p>
