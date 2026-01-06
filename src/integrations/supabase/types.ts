@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           amount: string | null
           created_at: string
+          deleted_at: string | null
           email: string
           id: string
           loan_period: string | null
@@ -31,6 +32,7 @@ export type Database = {
         Insert: {
           amount?: string | null
           created_at?: string
+          deleted_at?: string | null
           email: string
           id?: string
           loan_period?: string | null
@@ -44,6 +46,7 @@ export type Database = {
         Update: {
           amount?: string | null
           created_at?: string
+          deleted_at?: string | null
           email?: string
           id?: string
           loan_period?: string | null
@@ -60,6 +63,7 @@ export type Database = {
         Row: {
           approved: boolean
           created_at: string
+          display_name: string | null
           email: string
           id: string
           updated_at: string
@@ -68,6 +72,7 @@ export type Database = {
         Insert: {
           approved?: boolean
           created_at?: string
+          display_name?: string | null
           email: string
           id?: string
           updated_at?: string
@@ -76,6 +81,7 @@ export type Database = {
         Update: {
           approved?: boolean
           created_at?: string
+          display_name?: string | null
           email?: string
           id?: string
           updated_at?: string
