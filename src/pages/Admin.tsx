@@ -70,6 +70,7 @@ import {
 } from "@/components/ui/tabs";
 import UserManagement from "@/components/UserManagement";
 import WorkHours from "@/components/WorkHours";
+import CallCalendar from "@/components/CallCalendar";
 
 interface Submission {
   id: string;
@@ -814,10 +815,14 @@ export default function Admin() {
       {/* Main Content with Tabs */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <Tabs defaultValue="kanban" className="space-y-4">
-          <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex">
+          <TabsList className="w-full sm:w-auto grid grid-cols-5 sm:flex">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden xs:inline">Paraiškos</span>
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="flex items-center justify-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden xs:inline">Kalendorius</span>
             </TabsTrigger>
             <TabsTrigger value="trash" className="flex items-center justify-center gap-2">
               <Archive className="h-4 w-4" />
@@ -1070,6 +1075,18 @@ export default function Admin() {
                 </div>
               )}
             </div>
+          </TabsContent>
+          
+          <TabsContent value="calendar">
+            <CallCalendar 
+              submissions={submissions.map(s => ({ 
+                id: s.id, 
+                name: s.name, 
+                email: s.email, 
+                phone: s.phone 
+              }))} 
+              currentUserId={currentUserId} 
+            />
           </TabsContent>
           
           <TabsContent value="hours">
