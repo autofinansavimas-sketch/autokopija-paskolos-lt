@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      call_reminders: {
+        Row: {
+          call_date: string
+          call_time: string
+          completed: boolean | null
+          created_at: string
+          id: string
+          notes: string | null
+          submission_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          call_date: string
+          call_time: string
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          submission_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          call_date?: string
+          call_time?: string
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          submission_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_reminders_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_submissions: {
         Row: {
           amount: string | null
