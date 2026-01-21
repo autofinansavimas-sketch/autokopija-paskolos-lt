@@ -577,67 +577,143 @@ export default function CallCalendar({ submissions, currentUserId }: CallCalenda
         </CardContent>
       </Card>
 
-      {/* Add Reminder Dialog */}
+      {/* Day Details Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md pointer-events-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-md pointer-events-auto max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Pridėti priminimą - {selectedDate && format(selectedDate, "yyyy-MM-dd")}
+              {selectedDate && format(selectedDate, "yyyy MMMM d", { locale: lt })} d.
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4 pt-4">
-            <div>
-              <label className="text-sm font-medium">Klientas (neprivaloma)</label>
-              <Select
-                value={newReminder.submission_id}
-                onValueChange={(value) => setNewReminder(prev => ({ ...prev, submission_id: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pasirinkite klientą..." />
-                </SelectTrigger>
-                <SelectContent className="pointer-events-auto">
-                  <SelectItem value="none">-- Bendras priminimas --</SelectItem>
-                  {submissions.map(s => (
-                    <SelectItem key={s.id} value={s.id}>
+          <div className="space-y-4 pt-2">
+            {/* Existing reminders for this day */}
+            {selectedDate && getRemindersForDate(selectedDate).length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-muted-foreground">Šios dienos priminimai:</h4>
+                {getRemindersForDate(selectedDate).map(reminder => (
+                  <div
+                    key={reminder.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      reminder.completed ? "bg-muted/50 opacity-60" : "bg-card"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={reminder.completed}
+                      onCheckedChange={() => handleToggleCompleted(reminder)}
+                    />
+                    
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span>{s.name || s.phone}</span>
-                        {s.name && <span className="text-muted-foreground text-xs">({s.phone})</span>}
+                        <Badge variant="outline" className="text-xs">
+                          {reminder.call_time}
+                        </Badge>
+                        {reminder.submission ? (
+                          <span className={`font-medium truncate ${reminder.completed ? "line-through" : ""}`}>
+                            {reminder.submission.name || reminder.submission.phone}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">Bendras priminimas</span>
+                        )}
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      
+                      {reminder.submission?.phone && (
+                        <a
+                          href={`tel:${reminder.submission.phone}`}
+                          className="text-sm text-primary hover:underline flex items-center gap-1 mt-1"
+                        >
+                          <Phone className="h-3 w-3" />
+                          {reminder.submission.phone}
+                        </a>
+                      )}
+                      
+                      {reminder.notes && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {reminder.notes}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={() => {
+                        setReminderToDelete(reminder.id);
+                        setDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedDate && getRemindersForDate(selectedDate).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-2">
+                Šiai dienai priminimų nėra
+              </p>
+            )}
+
+            {/* Divider */}
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium mb-3">Pridėti naują priminimą:</h4>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium">Klientas (neprivaloma)</label>
+                  <Select
+                    value={newReminder.submission_id}
+                    onValueChange={(value) => setNewReminder(prev => ({ ...prev, submission_id: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pasirinkite klientą..." />
+                    </SelectTrigger>
+                    <SelectContent className="pointer-events-auto">
+                      <SelectItem value="none">-- Bendras priminimas --</SelectItem>
+                      {submissions.map(s => (
+                        <SelectItem key={s.id} value={s.id}>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span>{s.name || s.phone}</span>
+                            {s.name && <span className="text-muted-foreground text-xs">({s.phone})</span>}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium">Laikas</label>
+                  <Input
+                    type="time"
+                    value={newReminder.call_time}
+                    onChange={(e) => setNewReminder(prev => ({ ...prev, call_time: e.target.value }))}
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium">Pastabos</label>
+                  <Textarea
+                    value={newReminder.notes}
+                    onChange={(e) => setNewReminder(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="Pvz.: Paklauti apie dokumentus..."
+                    rows={2}
+                  />
+                </div>
+                
+                <Button onClick={handleAddReminder} className="w-full" disabled={saving}>
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  Pridėti priminimą
+                </Button>
+              </div>
             </div>
-            
-            <div>
-              <label className="text-sm font-medium">Laikas</label>
-              <Input
-                type="time"
-                value={newReminder.call_time}
-                onChange={(e) => setNewReminder(prev => ({ ...prev, call_time: e.target.value }))}
-              />
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">Pastabos</label>
-              <Textarea
-                value={newReminder.notes}
-                onChange={(e) => setNewReminder(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Pvz.: Paklauti apie dokumentus..."
-                rows={3}
-              />
-            </div>
-            
-            <Button onClick={handleAddReminder} className="w-full" disabled={saving}>
-              {saving ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              Pridėti priminimą
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
