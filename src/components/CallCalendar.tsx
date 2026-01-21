@@ -234,7 +234,7 @@ export default function CallCalendar({ submissions, currentUserId }: CallCalenda
       const { data, error } = await supabase
         .from("call_reminders")
         .insert({
-          submission_id: newReminder.submission_id || null,
+          submission_id: newReminder.submission_id === "none" ? null : (newReminder.submission_id || null),
           user_id: currentUserId,
           call_date: format(selectedDate, "yyyy-MM-dd"),
           call_time: newReminder.call_time,
@@ -579,7 +579,7 @@ export default function CallCalendar({ submissions, currentUserId }: CallCalenda
 
       {/* Add Reminder Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
+        <DialogContent className="max-w-[95vw] sm:max-w-md pointer-events-auto">
           <DialogHeader>
             <DialogTitle>
               Pridėti priminimą - {selectedDate && format(selectedDate, "yyyy-MM-dd")}
@@ -596,8 +596,8 @@ export default function CallCalendar({ submissions, currentUserId }: CallCalenda
                 <SelectTrigger>
                   <SelectValue placeholder="Pasirinkite klientą..." />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">-- Bendras priminimas --</SelectItem>
+                <SelectContent className="pointer-events-auto">
+                  <SelectItem value="none">-- Bendras priminimas --</SelectItem>
                   {submissions.map(s => (
                     <SelectItem key={s.id} value={s.id}>
                       <div className="flex items-center gap-2">
