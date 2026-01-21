@@ -71,6 +71,8 @@ import {
 import UserManagement from "@/components/UserManagement";
 import WorkHours from "@/components/WorkHours";
 import CallCalendar from "@/components/CallCalendar";
+import AddReminderDialog from "@/components/AddReminderDialog";
+import { Bell } from "lucide-react";
 
 interface Submission {
   id: string;
@@ -147,6 +149,7 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("");
   const [profiles, setProfiles] = useState<{ user_id: string; email: string; display_name?: string | null }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -1223,6 +1226,18 @@ export default function Admin() {
                   </div>
                 </div>
 
+                {/* Schedule Call Button */}
+                <div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={() => setReminderDialogOpen(true)}
+                  >
+                    <Bell className="h-4 w-4 mr-2" />
+                    Suplanuoti skambutį
+                  </Button>
+                </div>
+
                 {/* Comments */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
@@ -1313,6 +1328,17 @@ export default function Admin() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Add Reminder Dialog for selected submission */}
+      {selectedSubmission && (
+        <AddReminderDialog
+          open={reminderDialogOpen}
+          onOpenChange={setReminderDialogOpen}
+          submissionId={selectedSubmission.id}
+          submissionName={selectedSubmission.name}
+          currentUserId={currentUserId}
+        />
+      )}
     </div>
   );
 }
