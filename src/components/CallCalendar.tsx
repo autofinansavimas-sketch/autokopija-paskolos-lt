@@ -389,57 +389,38 @@ export default function CallCalendar({ submissions, currentUserId }: CallCalenda
         </Card>
       )}
 
-      {/* Calendar Header with Quick Navigation */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={goToNextMonth}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={goToToday}>
-              Šiandien
-            </Button>
-          </div>
-          
-          <h2 className="text-xl font-bold capitalize">
-            {format(currentMonth, "LLLL yyyy", { locale: lt })}
-          </h2>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSound}
-            title={soundEnabled ? "Išjungti garsą" : "Įjungti garsą"}
+      {/* Calendar Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={goToPreviousMonth}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="min-w-[140px] font-semibold capitalize"
+            onClick={goToToday}
           >
-            {soundEnabled ? (
-              <Volume2 className="h-5 w-5" />
-            ) : (
-              <VolumeX className="h-5 w-5 text-muted-foreground" />
-            )}
+            {format(currentMonth, "LLLL yyyy", { locale: lt })}
+          </Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={goToNextMonth}>
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
         
-        {/* Quick Month Navigation */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-thin">
-          {[-3, -2, -1, 0, 1, 2, 3].map(offset => {
-            const monthDate = addMonths(new Date(), offset);
-            const isSelected = format(monthDate, "yyyy-MM") === format(currentMonth, "yyyy-MM");
-            return (
-              <Button
-                key={offset}
-                variant={isSelected ? "default" : "ghost"}
-                size="sm"
-                className={`shrink-0 ${isSelected ? "" : "text-muted-foreground"}`}
-                onClick={() => setCurrentMonth(monthDate)}
-              >
-                {format(monthDate, "LLL", { locale: lt })}
-              </Button>
-            );
-          })}
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={toggleSound}
+          title={soundEnabled ? "Išjungti garsą" : "Įjungti garsą"}
+        >
+          {soundEnabled ? (
+            <Volume2 className="h-4 w-4" />
+          ) : (
+            <VolumeX className="h-4 w-4 text-muted-foreground" />
+          )}
+        </Button>
       </div>
 
       {/* Calendar Grid */}
