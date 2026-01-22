@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,7 +29,8 @@ import {
   Search,
   Clock,
   RotateCcw,
-  Archive
+  Archive,
+  MessageCircle
 } from "lucide-react";
 import {
   Select,
@@ -99,6 +100,25 @@ interface Comment {
   user_display_name?: string;
 }
 
+interface CallReminder {
+  id: string;
+  submission_id: string | null;
+  call_date: string;
+  call_time: string;
+  notes: string | null;
+  completed: boolean;
+}
+
+const FOLLOW_UP_MESSAGE = `Sveiki,
+
+Gavome jūsų užklausą ir nekantraujame jums padėti.
+
+Bandėme su jumis susisiekti, tačiau nesėkmingai.
+
+Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
+
+"AUTOPASKOLOS.LT" komanda`;
+
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
   { value: "contacted", label: "Susisiekta", color: "bg-yellow-500", borderColor: "border-yellow-500" },
@@ -132,6 +152,7 @@ export default function Admin() {
   const [deletedSubmissions, setDeletedSubmissions] = useState<Submission[]>([]);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [newComments, setNewComments] = useState<Record<string, string>>({});
+  const [reminders, setReminders] = useState<CallReminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingComment, setSubmittingComment] = useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -197,6 +218,7 @@ export default function Admin() {
     setProfiles(typedProfiles);
     
     fetchSubmissions(typedProfiles);
+    fetchReminders();
   };
 
   const fetchSubmissions = async (profilesList?: { user_id: string; email: string; display_name?: string | null }[]) => {
@@ -259,6 +281,50 @@ export default function Admin() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fetch reminders for all submissions
+  const fetchReminders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("call_reminders")
+        .select("*")
+        .eq("completed", false)
+        .order("call_date", { ascending: true });
+
+      if (error) throw error;
+      setReminders(data || []);
+    } catch (error) {
+      console.error("Error fetching reminders:", error);
+    }
+  };
+
+  // Get reminders for a specific submission
+  const getRemindersForSubmission = useMemo(() => {
+    return (submissionId: string) => {
+      return reminders.filter(r => r.submission_id === submissionId);
+    };
+  }, [reminders]);
+
+  // Generate SMS link with follow-up message
+  const getSmsLink = (phone: string) => {
+    const encodedMessage = encodeURIComponent(FOLLOW_UP_MESSAGE);
+    // Remove any non-digit characters except +
+    const cleanPhone = phone.replace(/[^\d+]/g, '');
+    return `sms:${cleanPhone}?body=${encodedMessage}`;
+  };
+
+  // Generate mailto link with follow-up message
+  const getMailtoLink = (email: string) => {
+    const subject = encodeURIComponent("Jūsų užklausa - AUTOPASKOLOS.LT");
+    const body = encodeURIComponent(FOLLOW_UP_MESSAGE);
+    return `mailto:${email}?subject=${subject}&body=${body}`;
+  };
+
+  // Refresh all data including reminders
+  const refreshAllData = async () => {
+    await fetchSubmissions();
+    await fetchReminders();
   };
 
   const handleLogout = async () => {
@@ -803,7 +869,7 @@ export default function Admin() {
                 </DialogContent>
               </Dialog>
               
-              <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-3" onClick={() => fetchSubmissions()} disabled={loading}>
+              <Button variant="outline" size="sm" className="h-8 sm:h-9 px-2 sm:px-3" onClick={refreshAllData} disabled={loading}>
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
               
@@ -971,16 +1037,32 @@ export default function Admin() {
                               </div>
                             )}
 
+                            {/* Show upcoming reminders */}
+                            {getRemindersForSubmission(submission.id).length > 0 && (
+                              <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 dark:bg-orange-950/30 rounded px-1.5 py-0.5">
+                                <Bell className="h-3 w-3" />
+                                {getRemindersForSubmission(submission.id)[0].call_date} {getRemindersForSubmission(submission.id)[0].call_time}
+                              </div>
+                            )}
+
                             <div className="flex items-center justify-between pt-1 border-t">
                               <span className="text-xs text-muted-foreground">
                                 {formatShortDate(submission.created_at)}
                               </span>
-                              {(comments[submission.id]?.length || 0) > 0 && (
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                  <MessageSquare className="h-3 w-3" />
-                                  {comments[submission.id]?.length}
-                                </div>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {getRemindersForSubmission(submission.id).length > 1 && (
+                                  <div className="flex items-center gap-1 text-xs text-orange-500">
+                                    <Bell className="h-3 w-3" />
+                                    {getRemindersForSubmission(submission.id).length}
+                                  </div>
+                                )}
+                                {(comments[submission.id]?.length || 0) > 0 && (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <MessageSquare className="h-3 w-3" />
+                                    {comments[submission.id]?.length}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -1191,6 +1273,36 @@ export default function Admin() {
                   </div>
                 </div>
 
+                {/* Quick Message Buttons */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    Greitas pranešimas
+                  </h4>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => window.location.href = getSmsLink(selectedSubmission.phone)}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      SMS
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => window.location.href = getMailtoLink(selectedSubmission.email)}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      El. paštas
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Atidaro programą su paruoštu tekstu apie nesėkmingą susisiekimą
+                  </p>
+                </div>
+
                 {/* Loan Info */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
@@ -1225,6 +1337,31 @@ export default function Admin() {
                     Sukurta: {formatDate(selectedSubmission.created_at)}
                   </div>
                 </div>
+
+                {/* Reminders for this submission */}
+                {getRemindersForSubmission(selectedSubmission.id).length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                      <Bell className="h-4 w-4" />
+                      Priminimai ({getRemindersForSubmission(selectedSubmission.id).length})
+                    </h4>
+                    <div className="space-y-2">
+                      {getRemindersForSubmission(selectedSubmission.id).map(reminder => (
+                        <div key={reminder.id} className="flex items-center gap-2 p-2 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900">
+                          <Clock className="h-4 w-4 text-orange-600" />
+                          <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
+                            {reminder.call_date} {reminder.call_time}
+                          </span>
+                          {reminder.notes && (
+                            <span className="text-xs text-muted-foreground truncate flex-1">
+                              - {reminder.notes}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Schedule Call Button */}
                 <div>
