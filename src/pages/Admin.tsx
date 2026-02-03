@@ -74,6 +74,7 @@ import WorkHours from "@/components/WorkHours";
 import CallCalendar from "@/components/CallCalendar";
 import AddReminderDialog from "@/components/AddReminderDialog";
 import TodayReminders from "@/components/TodayReminders";
+import AdminStats from "@/components/AdminStats";
 import { Bell } from "lucide-react";
 
 interface Submission {
@@ -917,6 +918,9 @@ export default function Admin() {
           </TabsList>
           
           <TabsContent value="kanban">
+            {/* Stats Overview */}
+            <AdminStats submissions={submissions} reminders={reminders} />
+            
             {/* Search Bar */}
             <div className="mb-4 relative max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -981,96 +985,122 @@ export default function Admin() {
                         {isDropTarget ? 'Paleiskite čia' : 'Nėra paraiškų'}
                       </div>
                     ) : (
-                      statusSubmissions.map(submission => (
-                        <Card 
-                          key={submission.id} 
-                          className={`cursor-grab hover:shadow-md transition-all bg-card ${
-                            draggedSubmission === submission.id 
-                              ? 'opacity-50 scale-95 rotate-2' 
-                              : ''
-                          }`}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, submission.id)}
-                          onDragEnd={handleDragEnd}
-                          onClick={() => setSelectedSubmission(submission)}
-                        >
-                          <CardContent className="p-3 space-y-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <GripVertical className="h-4 w-4 text-muted-foreground/50" />
-                                <span className="font-medium text-sm truncate">
-                                  {submission.name || "Nežinomas"}
+                      statusSubmissions.map(submission => {
+                        const submissionReminders = getRemindersForSubmission(submission.id);
+                        const hasReminder = submissionReminders.length > 0;
+                        const commentCount = comments[submission.id]?.length || 0;
+                        
+                        return (
+                          <Card 
+                            key={submission.id} 
+                            className={`cursor-grab hover:shadow-lg transition-all duration-200 bg-card group ${
+                              draggedSubmission === submission.id 
+                                ? 'opacity-50 scale-95 rotate-1' 
+                                : 'hover:-translate-y-0.5'
+                            } ${hasReminder ? 'ring-1 ring-amber-400/50' : ''}`}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, submission.id)}
+                            onDragEnd={handleDragEnd}
+                            onClick={() => setSelectedSubmission(submission)}
+                          >
+                            <CardContent className="p-3 space-y-2.5">
+                              {/* Header with name and source */}
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <GripVertical className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors shrink-0" />
+                                  <span className="font-semibold text-sm truncate">
+                                    {submission.name || "Nežinomas"}
+                                  </span>
+                                </div>
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-[10px] shrink-0 ${
+                                    submission.source === "autokopers" 
+                                      ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800" 
+                                      : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800"
+                                  }`}
+                                >
+                                  {submission.source === "autokopers" ? "AK" : "AP"}
+                                </Badge>
+                              </div>
+                              
+                              {/* Phone with quick actions */}
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs font-medium text-primary hover:bg-primary/10 -ml-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.location.href = `tel:${submission.phone}`;
+                                  }}
+                                >
+                                  <Phone className="h-3.5 w-3.5 mr-1.5" />
+                                  {submission.phone}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(submission.phone);
+                                    toast({ title: "Nukopijuota!", description: submission.phone });
+                                  }}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+
+                              {/* Amount badge */}
+                              {submission.amount && (
+                                <div className="flex items-center gap-1.5">
+                                  <Badge variant="secondary" className="text-xs font-medium">
+                                    <Euro className="h-3 w-3 mr-1" />
+                                    {submission.amount}€
+                                  </Badge>
+                                  {submission.loan_type && (
+                                    <span className="text-[10px] text-muted-foreground truncate">
+                                      {submission.loan_type}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Reminder indicator */}
+                              {hasReminder && (
+                                <div className="flex items-center gap-1.5 text-xs bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 rounded-md px-2 py-1.5 border border-amber-200 dark:border-amber-800">
+                                  <Bell className="h-3.5 w-3.5" />
+                                  <span className="font-medium">
+                                    {submissionReminders[0].call_date} {submissionReminders[0].call_time}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Footer with date and indicators */}
+                              <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                                <span className="text-[10px] text-muted-foreground">
+                                  {formatShortDate(submission.created_at)}
                                 </span>
+                                <div className="flex items-center gap-2">
+                                  {submissionReminders.length > 1 && (
+                                    <div className="flex items-center gap-0.5 text-[10px] text-amber-600">
+                                      <Bell className="h-3 w-3" />
+                                      <span className="font-medium">{submissionReminders.length}</span>
+                                    </div>
+                                  )}
+                                  {commentCount > 0 && (
+                                    <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                                      <MessageSquare className="h-3 w-3" />
+                                      <span className="font-medium">{commentCount}</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <Badge variant="outline" className="text-xs shrink-0">
-                                {submission.source === "autokopers" ? "AK" : "AP"}
-                              </Badge>
-                            </div>
-                            
-                            <div className="flex items-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 px-1.5 text-xs text-primary hover:bg-primary/10"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  window.location.href = `tel:${submission.phone}`;
-                                }}
-                              >
-                                <Phone className="h-3 w-3 mr-1" />
-                                {submission.phone}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigator.clipboard.writeText(submission.phone);
-                                  toast({ title: "Nukopijuota!", description: submission.phone });
-                                }}
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                            </div>
-
-                            {submission.amount && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Euro className="h-3 w-3" />
-                                {submission.amount}€
-                              </div>
-                            )}
-
-                            {/* Show upcoming reminders */}
-                            {getRemindersForSubmission(submission.id).length > 0 && (
-                              <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 dark:bg-orange-950/30 rounded px-1.5 py-0.5">
-                                <Bell className="h-3 w-3" />
-                                {getRemindersForSubmission(submission.id)[0].call_date} {getRemindersForSubmission(submission.id)[0].call_time}
-                              </div>
-                            )}
-
-                            <div className="flex items-center justify-between pt-1 border-t">
-                              <span className="text-xs text-muted-foreground">
-                                {formatShortDate(submission.created_at)}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {getRemindersForSubmission(submission.id).length > 1 && (
-                                  <div className="flex items-center gap-1 text-xs text-orange-500">
-                                    <Bell className="h-3 w-3" />
-                                    {getRemindersForSubmission(submission.id).length}
-                                  </div>
-                                )}
-                                {(comments[submission.id]?.length || 0) > 0 && (
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                    <MessageSquare className="h-3 w-3" />
-                                    {comments[submission.id]?.length}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
+                            </CardContent>
+                          </Card>
+                        );
+                      })
                     )}
                   </div>
                 </div>
@@ -1193,10 +1223,17 @@ export default function Admin() {
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           {selectedSubmission && (
             <>
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  {selectedSubmission.name || "Nežinomas klientas"}
+              <SheetHeader className="pb-4 border-b">
+                <SheetTitle className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <span className="block">{selectedSubmission.name || "Nežinomas klientas"}</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {selectedSubmission.source === "autokopers" ? "Autokopers" : "Autopaskolos"}
+                    </span>
+                  </div>
                 </SheetTitle>
               </SheetHeader>
 
