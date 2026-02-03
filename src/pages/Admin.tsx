@@ -73,6 +73,7 @@ import UserManagement from "@/components/UserManagement";
 import WorkHours from "@/components/WorkHours";
 import CallCalendar from "@/components/CallCalendar";
 import AddReminderDialog from "@/components/AddReminderDialog";
+import TodayReminders from "@/components/TodayReminders";
 import { Bell } from "lucide-react";
 
 interface Submission {
@@ -883,6 +884,9 @@ export default function Admin() {
 
       {/* Main Content with Tabs */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        {/* Today's Reminders Banner */}
+        <TodayReminders />
+        
         <Tabs defaultValue="kanban" className="space-y-4">
           <TabsList className="w-full sm:w-auto grid grid-cols-5 sm:flex">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-2">
