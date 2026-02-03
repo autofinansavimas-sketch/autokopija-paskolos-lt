@@ -24,12 +24,14 @@ export const Hero = () => {
                 <span className="text-xs md:text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
               </div>
               
-              <h1 id="hero-heading" className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight uppercase animate-slide-up">
+              <h1 id="hero-heading" className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight uppercase animate-slide-up tracking-tight">
                 AUTOPASKOLOS.LT - <span className="gradient-text">PASKOLOS NE TIK AUTOMOBILIUI</span>
               </h1>
               
-              <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="gradient-text">VOS PER 30 MINUČIŲ</span>
+              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-foreground uppercase animate-slide-up relative overflow-hidden" style={{ animationDelay: '0.1s' }}>
+                <span className="inline-block animate-pulse-slow">
+                  GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="gradient-text animate-shimmer bg-[length:200%_100%]">VOS PER 30 MINUČIŲ</span>
+                </span>
               </h2>
               
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl animate-slide-up" style={{ animationDelay: '0.2s' }}>
