@@ -48,11 +48,11 @@ export const LoanCalculator = () => {
           <div className="max-w-5xl mx-auto">
             {/* Header */}
             <div className="text-center mb-10 md:mb-14">
-              <h1 className="text-xl md:text-3xl font-bold mb-6 uppercase animate-fade-in tracking-wide">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-6 uppercase animate-fade-in tracking-tight">
                 AUTOPASKOLOS.LT - <span className="gradient-text">PASKOLOS NE TIK AUTOMOBILIUI</span>
               </h1>
-              <h2 id="calculator-heading" className="text-2xl md:text-5xl font-bold mb-4 md:mb-5 uppercase animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="gradient-text">VOS PER 30 MINUČIŲ</span>
+              <h2 id="calculator-heading" className="text-lg md:text-2xl lg:text-3xl font-bold mb-4 md:mb-5 uppercase animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                GAUK GERIAUSIĄ PASKOLOS PASIŪLYMĄ <span className="gradient-text animate-pulse">VOS PER 30 MINUČIŲ</span>
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 Pasirink paskolos tipą ir sužinok preliminarią mėnesio įmoką
