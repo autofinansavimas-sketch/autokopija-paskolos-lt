@@ -102,34 +102,35 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl md:text-3xl font-bold">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="pb-2 sm:pb-4">
+          <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold">
             Gaukite <span className="text-primary">geriausią pasiūlymą</span>
           </DialogTitle>
-          <DialogDescription className="text-base">
-            Užpildykite formą ir gaukite personalizuotus pasiūlymus per 1 valandą
+          <DialogDescription className="text-sm sm:text-base">
+            Užpildykite formą ir gaukite pasiūlymus per 1 val.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
+            {/* Mobile: Stack all fields, Desktop: Grid */}
+            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-semibold">
+                    <FormLabel className="text-sm sm:text-base font-semibold">
                       Vardas Pavardė
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                         <Input
                           {...field}
-                          className="pl-10 h-12"
-                          placeholder="Jūsų vardas ir pavardė"
+                          className="pl-9 sm:pl-10 h-11 sm:h-12 text-base"
+                          placeholder="Jūsų vardas"
                         />
                       </div>
                     </FormControl>
@@ -143,16 +144,16 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-semibold">
+                    <FormLabel className="text-sm sm:text-base font-semibold">
                       Telefonas *
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                         <Input
                           {...field}
                           type="tel"
-                          className="pl-10 h-12"
+                          className="pl-9 sm:pl-10 h-11 sm:h-12 text-base"
                           placeholder="+37062851439"
                         />
                       </div>
@@ -163,22 +164,22 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-semibold">
+                    <FormLabel className="text-sm sm:text-base font-semibold">
                       El. paštas *
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                         <Input
                           {...field}
                           type="email"
-                          className="pl-10 h-12"
+                          className="pl-9 sm:pl-10 h-11 sm:h-12 text-base"
                           placeholder="jusu@email.lt"
                         />
                       </div>
@@ -193,16 +194,16 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-semibold">
+                    <FormLabel className="text-sm sm:text-base font-semibold">
                       Paskolos suma
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Euro className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                         <Input
                           {...field}
                           type="number"
-                          className="pl-10 h-12"
+                          className="pl-9 sm:pl-10 h-11 sm:h-12 text-base"
                           placeholder="10000"
                         />
                       </div>
@@ -213,7 +214,7 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
               />
             </div>
 
-            <Button type="submit" size="lg" className="w-full h-14 text-base font-semibold" disabled={isSubmitting}>
+            <Button type="submit" size="lg" className="w-full h-12 sm:h-14 text-base font-semibold" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -224,8 +225,8 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
               )}
             </Button>
 
-            <p className="text-sm text-muted-foreground text-center">
-              * Privalomi laukai. Jūsų duomenys yra saugomi ir naudojami tik pasiūlymams pateikti.
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">
+              * Privalomi laukai. Jūsų duomenys yra saugūs.
             </p>
           </form>
         </Form>
