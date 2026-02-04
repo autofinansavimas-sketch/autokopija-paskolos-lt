@@ -75,7 +75,9 @@ import CallCalendar from "@/components/CallCalendar";
 import AddReminderDialog from "@/components/AddReminderDialog";
 import TodayReminders from "@/components/TodayReminders";
 import AdminStats from "@/components/AdminStats";
-import { Bell } from "lucide-react";
+import AdminCharts from "@/components/AdminCharts";
+import QuickFilters from "@/components/QuickFilters";
+import { Bell, BarChart3 } from "lucide-react";
 
 interface Submission {
   id: string;
@@ -173,6 +175,8 @@ export default function Admin() {
   const [profiles, setProfiles] = useState<{ user_id: string; email: string; display_name?: string | null }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
+  const [showCharts, setShowCharts] = useState(false);
+  const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -619,10 +623,78 @@ export default function Admin() {
     });
   };
 
+  // Calculate quick filter counts
+  const quickFilterCounts = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+    
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    
+    const todayCount = submissions.filter(s => {
+      const created = new Date(s.created_at);
+      created.setHours(0, 0, 0, 0);
+      return created.getTime() === today.getTime();
+    }).length;
+    
+    const weekCount = submissions.filter(s => {
+      const created = new Date(s.created_at);
+      return created >= weekAgo;
+    }).length;
+    
+    const withRemindersCount = submissions.filter(s => 
+      reminders.some(r => r.submission_id === s.id && !r.completed)
+    ).length;
+    
+    const noContactCount = submissions.filter(s => {
+      if (s.status !== 'new') return false;
+      const created = new Date(s.created_at);
+      return created < threeDaysAgo;
+    }).length;
+    
+    return {
+      today: todayCount,
+      week: weekCount,
+      withReminders: withRemindersCount,
+      noContact: noContactCount,
+    };
+  }, [submissions, reminders]);
+
   const getSubmissionsByStatus = (status: string) => {
     const query = searchQuery.toLowerCase().trim();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    
     return submissions.filter(s => {
       if (s.status !== status) return false;
+      
+      // Apply quick filter
+      if (quickFilter) {
+        const created = new Date(s.created_at);
+        
+        if (quickFilter === 'today') {
+          created.setHours(0, 0, 0, 0);
+          if (created.getTime() !== today.getTime()) return false;
+        } else if (quickFilter === 'week') {
+          if (created < weekAgo) return false;
+        } else if (quickFilter === 'withReminders') {
+          if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
+        } else if (quickFilter === 'noContact') {
+          if (s.status !== 'new' || created >= threeDaysAgo) return false;
+        }
+      }
+      
+      // Apply search query
       if (!query) return true;
       return (
         (s.name?.toLowerCase().includes(query)) ||
@@ -632,6 +704,7 @@ export default function Admin() {
       );
     });
   };
+
 
   const handleDragStart = (e: React.DragEvent, submissionId: string) => {
     setDraggedSubmission(submissionId);
@@ -921,16 +994,41 @@ export default function Admin() {
             {/* Stats Overview */}
             <AdminStats submissions={submissions} reminders={reminders} />
             
-            {/* Search Bar */}
-            <div className="mb-4 relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Ieškoti pagal vardą, el. paštą, telefoną..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+            {/* Charts Toggle & Quick Filters */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={showCharts ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setShowCharts(!showCharts)}
+                >
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  <span>Grafikai</span>
+                </Button>
+                <QuickFilters 
+                  activeFilter={quickFilter}
+                  onFilterChange={setQuickFilter}
+                  counts={quickFilterCounts}
+                />
+              </div>
+              
+              {/* Search Bar */}
+              <div className="relative w-full sm:w-64 md:w-80">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Ieškoti pagal vardą, el. paštą..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8"
+                />
+              </div>
             </div>
+            
+            {/* Charts */}
+            {showCharts && (
+              <AdminCharts submissions={submissions} />
+            )}
             
             {loading ? (
               <div className="flex items-center justify-center py-20">
