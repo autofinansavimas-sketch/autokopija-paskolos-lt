@@ -114,25 +114,25 @@ export default function AdminStats({ submissions, reminders }: AdminStatsProps) 
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
       {statCards.map((stat, index) => (
         <Card 
           key={stat.label} 
-          className="overflow-hidden animate-fade-in border-0 shadow-sm hover:shadow-md transition-shadow"
+          className="overflow-hidden animate-fade-in border-0 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 bg-card/80 backdrop-blur-sm"
           style={{ animationDelay: `${index * 50}ms` }}
         >
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-lg ${stat.bgColor} flex items-center justify-center shrink-0`}>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate">
                   {stat.label}
                 </p>
-                <p className={`text-2xl font-bold mt-1 ${stat.color}`}>
+                <p className={`text-xl font-bold ${stat.color}`}>
                   {stat.value}
                 </p>
-              </div>
-              <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
               </div>
             </div>
           </CardContent>
