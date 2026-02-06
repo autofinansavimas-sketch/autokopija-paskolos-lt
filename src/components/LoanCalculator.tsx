@@ -95,7 +95,7 @@ export const LoanCalculator = () => {
                             <Icon className="h-5 w-5 text-white" />
                           </div>
                           {isCarLoan && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[8px] font-bold text-white uppercase animate-pulse shadow-sm">🔥 Akcija</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[8px] font-bold text-primary-foreground uppercase tracking-wide shadow-sm">Akcija</span>
                           )}
                         </div>
                         <div className="font-semibold text-xs leading-tight mb-1">{type.name}</div>
@@ -139,7 +139,7 @@ export const LoanCalculator = () => {
                         <div className="text-sm text-muted-foreground relative z-10 flex items-center gap-2">
                           Nuo <span className="font-semibold text-primary">{type.displayRate}%</span> metinių palūkanų
                           {type.id === "car" && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500 to-orange-500 text-[10px] font-bold text-white uppercase animate-pulse">🔥 Akcija</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground uppercase tracking-wide">Akcija</span>
                           )}
                         </div>
                         
