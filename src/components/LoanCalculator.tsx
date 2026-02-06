@@ -70,10 +70,11 @@ export const LoanCalculator = () => {
                   Pasirink paskolos tipą
                 </legend>
                 
-                {/* Mobile: Horizontal scrollable */}
-                <div className="md:hidden flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide" role="radiogroup">
+                {/* Mobile: Horizontal scrollable - larger touch targets */}
+                <div className="md:hidden grid grid-cols-2 gap-2" role="radiogroup">
                   {loanTypes.map((type) => {
                     const Icon = type.icon;
+                    const isCarLoan = type.id === "car";
                     return (
                       <button
                         key={type.id}
@@ -83,24 +84,26 @@ export const LoanCalculator = () => {
                           setSelectedType(type.id);
                           analytics.calculatorUsed(type.name, amount[0]);
                         }}
-                        className={`flex-shrink-0 w-[140px] snap-start group relative p-3 rounded-xl border-2 transition-all duration-200 text-left ${
+                        className={`group relative p-3 rounded-xl border-2 transition-all duration-200 text-left ${
                           selectedType === type.id
-                            ? "border-primary bg-primary/10 shadow-lg"
+                            ? "border-primary bg-primary/10 shadow-lg scale-[1.02]"
                             : "border-border/50 bg-card/50"
                         }`}
                       >
-                        <div className="flex items-start gap-2 mb-1.5">
-                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow flex-shrink-0`}>
-                            <Icon className="h-4 w-4 text-white" />
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow flex-shrink-0`}>
+                            <Icon className="h-5 w-5 text-white" />
                           </div>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[8px] font-bold text-white uppercase animate-pulse shadow-sm">🔥 Akcija</span>
+                          {isCarLoan && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[8px] font-bold text-white uppercase animate-pulse shadow-sm">🔥 Akcija</span>
+                          )}
                         </div>
-                        <div className="font-semibold text-xs leading-tight mb-0.5">{type.name}</div>
+                        <div className="font-semibold text-xs leading-tight mb-1">{type.name}</div>
                         <div className="text-[10px] text-muted-foreground">
                           Nuo <span className="font-bold text-primary">{type.displayRate}%</span>
                         </div>
                         {selectedType === type.id && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                          <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary animate-pulse" />
                         )}
                       </button>
                     );
@@ -135,7 +138,9 @@ export const LoanCalculator = () => {
                         <div className="font-bold text-base mb-1 relative z-10">{type.name}</div>
                         <div className="text-sm text-muted-foreground relative z-10 flex items-center gap-2">
                           Nuo <span className="font-semibold text-primary">{type.displayRate}%</span> metinių palūkanų
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500 to-orange-500 text-[10px] font-bold text-white uppercase animate-pulse">🔥 Akcija</span>
+                          {type.id === "car" && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500 to-orange-500 text-[10px] font-bold text-white uppercase animate-pulse">🔥 Akcija</span>
+                          )}
                         </div>
                         
                         {selectedType === type.id && (
