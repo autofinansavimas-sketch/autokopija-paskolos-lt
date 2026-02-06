@@ -89,13 +89,15 @@ export const LoanCalculator = () => {
                             : "border-border/50 bg-card/50"
                         }`}
                       >
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.gradient} flex items-center justify-center mb-2 shadow`}>
-                          <Icon className="h-4 w-4 text-white" />
+                        <div className="flex items-start gap-2 mb-1.5">
+                          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow flex-shrink-0`}>
+                            <Icon className="h-4 w-4 text-white" />
+                          </div>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-[8px] font-bold text-white uppercase animate-pulse shadow-sm">🔥 Akcija</span>
                         </div>
-                        <div className="font-semibold text-xs leading-tight">{type.name}</div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                          Nuo <span className="font-semibold text-primary">{type.displayRate}%</span>
-                          <span className="inline-flex items-center px-1 py-0.5 rounded bg-gradient-to-r from-amber-500 to-orange-500 text-[8px] font-bold text-white uppercase animate-pulse">🔥</span>
+                        <div className="font-semibold text-xs leading-tight mb-0.5">{type.name}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          Nuo <span className="font-bold text-primary">{type.displayRate}%</span>
                         </div>
                         {selectedType === type.id && (
                           <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
