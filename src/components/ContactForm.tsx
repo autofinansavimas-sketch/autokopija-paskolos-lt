@@ -67,19 +67,19 @@ export const ContactForm = () => {
   };
 
   return (
-    <section id="contact-form" className="py-24 bg-muted/30">
-      <div className="container mx-auto px-4">
+    <section id="contact-form" className="py-10 md:py-24 bg-muted/30">
+      <div className="container mx-auto px-3 md:px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+          <div className="text-center mb-6 md:mb-12">
+            <h2 className="text-2xl md:text-5xl font-bold mb-2 md:mb-4">
               Gaukite <span className="text-primary">geriausią pasiūlymą</span>
             </h2>
-            <p className="text-base md:text-lg text-muted-foreground">
+            <p className="text-sm md:text-lg text-muted-foreground">
               Užpildykite formą ir gaukite personalizuotus pasiūlymus per 1 valandą
             </p>
           </div>
 
-          <Card className="p-6 md:p-12">
+          <Card className="p-4 md:p-12">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">

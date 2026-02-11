@@ -42,33 +42,33 @@ export const FAQ = () => {
   };
 
   return (
-    <section className="py-20 md:py-28 relative overflow-hidden">
+    <section className="py-10 md:py-28 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-secondary/30 via-background to-secondary/20" />
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+      <div className="hidden md:block absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
       
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
-            <span className="text-sm font-medium">DUK</span>
+      <div className="container mx-auto px-3 md:px-4 relative z-10">
+        <div className="text-center mb-6 md:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 md:mb-6 animate-fade-in">
+            <span className="text-xs md:text-sm font-medium">DUK</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 animate-slide-up">
+          <h2 className="text-2xl md:text-5xl font-bold mb-3 md:mb-4 animate-slide-up">
             5 dažniausi <span className="gradient-text">klausimai</span>
           </h2>
         </div>
         
         <div className="max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4" onValueChange={handleAccordionChange}>
+          <Accordion type="single" collapsible className="space-y-2 md:space-y-4" onValueChange={handleAccordionChange}>
             {faqs.map((faq, index) => (
               <AnimatedSection key={index} delay={index * 100}>
                 <AccordionItem 
                   value={`item-${index}`}
-                  className="bg-card border-2 border-border/50 hover:border-primary/30 rounded-xl px-6 transition-all duration-300 overflow-hidden"
+                  className="bg-card border-2 border-border/50 hover:border-primary/30 rounded-xl px-4 md:px-6 transition-all duration-300 overflow-hidden"
                 >
-                  <AccordionTrigger className="text-left hover:no-underline py-6 group">
-                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{faq.question}</h3>
+                  <AccordionTrigger className="text-left hover:no-underline py-4 md:py-6 group">
+                    <h3 className="font-bold text-sm md:text-lg group-hover:text-primary transition-colors pr-2">{faq.question}</h3>
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-6 text-base leading-relaxed">
+                  <AccordionContent className="text-muted-foreground pb-4 md:pb-6 text-sm md:text-base leading-relaxed">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>

@@ -12,14 +12,14 @@ export const Footer = () => {
       <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
       <div className="absolute bottom-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" aria-hidden="true" />
       
-      <div className="container mx-auto px-4 py-16 relative">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <div className="container mx-auto px-3 md:px-4 py-8 md:py-16 relative">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8 md:mb-12">
           <div>
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+            <h3 className="font-semibold text-base md:text-lg mb-3 md:mb-4 flex items-center gap-2">
               <Heart className="h-4 w-4 text-primary" />
               Apie mus
             </h3>
-            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            <p className="text-xs md:text-sm text-muted-foreground mb-3 md:mb-4 leading-relaxed">
               AUTOPASKOLOS.LT padeda klientams rasti geriausias paskolų sąlygas Lietuvoje.
             </p>
             <div className="flex items-center gap-4 mt-4">

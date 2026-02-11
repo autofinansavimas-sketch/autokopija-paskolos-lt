@@ -40,25 +40,25 @@ export const HowItWorks = () => {
   return (
     <>
       <ContactFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-      <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-background via-muted/20 to-background">
+      <section className="py-10 md:py-28 relative overflow-hidden bg-gradient-to-b from-background via-muted/20 to-background">
         {/* Background decorations */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
+        <div className="hidden md:block absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
         
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 animate-fade-in">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Paprastas procesas</span>
+        <div className="container mx-auto px-3 md:px-4 relative z-10">
+          <div className="text-center mb-8 md:mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 md:mb-6 animate-fade-in">
+              <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" />
+              <span className="text-xs md:text-sm font-medium">Paprastas procesas</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-5 uppercase animate-slide-up">
+            <h2 className="text-2xl md:text-5xl font-bold mb-3 md:mb-5 uppercase animate-slide-up">
               KAIP TAI <span className="gradient-text">VEIKIA</span>?
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <p className="text-sm md:text-xl text-muted-foreground max-w-2xl mx-auto animate-slide-up hidden sm:block" style={{ animationDelay: '0.1s' }}>
               Paprastas ir greitas procesas nuo paraiškos iki pinigų gavimo
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 max-w-7xl mx-auto">
             {steps.map((step, index) => (
               <AnimatedSection key={index} delay={index * 150}>
                 <div className="relative h-full">
@@ -68,28 +68,28 @@ export const HowItWorks = () => {
                   )}
                   
                   <div 
-                    className={`group relative bg-card p-8 rounded-2xl border-2 border-border/50 hover:border-primary/50 transition-all duration-500 hover:shadow-xl h-full overflow-hidden ${index === 0 ? 'cursor-pointer' : ''}`}
+                    className={`group relative bg-card p-4 md:p-8 rounded-xl md:rounded-2xl border-2 border-border/50 hover:border-primary/50 transition-all duration-500 hover:shadow-xl h-full overflow-hidden ${index === 0 ? 'cursor-pointer' : ''}`}
                     onClick={index === 0 ? () => setDialogOpen(true) : undefined}
                   >
                     {/* Gradient overlay on hover */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${step.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
                     
                     {/* Step number - large background */}
-                    <div className={`absolute -top-4 -right-4 text-8xl font-black bg-gradient-to-br ${step.gradient} bg-clip-text text-transparent opacity-10 group-hover:opacity-20 transition-opacity`}>
+                    <div className={`absolute -top-2 -right-2 md:-top-4 md:-right-4 text-5xl md:text-8xl font-black bg-gradient-to-br ${step.gradient} bg-clip-text text-transparent opacity-10 group-hover:opacity-20 transition-opacity`}>
                       {step.number}
                     </div>
                     
-                    <div className={`h-16 w-16 rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center mb-6 shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-                      <step.icon className="h-8 w-8 text-white" />
+                    <div className={`h-10 w-10 md:h-16 md:w-16 rounded-xl md:rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center mb-3 md:mb-6 shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                      <step.icon className="h-5 w-5 md:h-8 md:w-8 text-white" />
                     </div>
                     
-                    <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">{step.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">
+                    <h3 className="text-xs md:text-xl font-bold mb-1 md:mb-3 group-hover:text-primary transition-colors leading-tight">{step.title}</h3>
+                    <p className="text-[11px] md:text-base text-muted-foreground leading-snug md:leading-relaxed">
                       {step.description}
                     </p>
                     
                     {index === 0 && (
-                      <div className="mt-4 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="mt-2 md:mt-4 text-xs md:text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
                         Spustelėkite pradėti →
                       </div>
                     )}
