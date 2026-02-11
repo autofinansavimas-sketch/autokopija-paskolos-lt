@@ -24,13 +24,13 @@ export const Header = () => {
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border/50 backdrop-blur-xl bg-background/80 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex h-20 items-center justify-between">
+          <div className="flex h-14 md:h-20 items-center justify-between">
             <div className="flex items-center gap-12">
               <a href="/" className="flex items-center group" aria-label="Grįžti į pagrindinį puslapį">
                 <img 
                   src={logo} 
                   alt="AUTOPASKOLOS.LT" 
-                  className="h-24 md:h-28 transition-transform duration-300 group-hover:scale-105"
+                  className="h-16 md:h-28 transition-transform duration-300 group-hover:scale-105"
                   width="112"
                   height="112"
                 />
