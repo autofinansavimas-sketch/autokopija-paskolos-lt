@@ -175,33 +175,66 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: brand.fromEmail,
         to: [email],
-        subject: "Gavome jūsų užklausą!",
+        subject: "Gavome jūsų užklausą! ✅",
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: ${brand.primaryColor};">Sveiki, ${vocativeName}!</h1>
-            <p style="font-size: 16px; line-height: 1.5;">
-              Gavome jūsų paskolos užklausą ir nekantraujame jums padėti.
-            </p>
-            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="margin-top: 0; color: #1f2937;">Jūsų užklausos detalės:</h2>
-              <p><strong>Vardas:</strong> ${name}</p>
-              <p><strong>El. paštas:</strong> ${email}</p>
-              <p><strong>Telefonas:</strong> ${phone}</p>
-              <p><strong>Paskolos tipas:</strong> ${loanType || 'Nenurodyta'}</p>
-              <p><strong>Paskolos suma:</strong> ${amount}€</p>
-              <p><strong>Laikotarpis:</strong> ${loanPeriod || 'Nenurodyta'}</p>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+            <!-- Header with logo -->
+            <div style="background: linear-gradient(135deg, ${brand.primaryColor}, ${brand.primaryColor}cc); padding: 30px 40px; border-radius: 12px 12px 0 0; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 1px;">${brand.name.toUpperCase()}</h1>
+              <p style="color: rgba(255,255,255,0.85); margin: 6px 0 0; font-size: 13px; letter-spacing: 0.5px;">Geriausios paskolos sąlygos Lietuvoje</p>
             </div>
-            <p style="font-size: 16px; line-height: 1.5;">
-              Mūsų specialistai peržiūrės jūsų užklausą ir susisieks su jumis per <strong>30 minučių</strong>.
-            </p>
-            <p style="font-size: 16px; line-height: 1.5;">
-              Geriausios sėkmės,<br>
-              <strong>${brand.name} komanda</strong>
-            </p>
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-            <p style="font-size: 12px; color: #6b7280;">
-              Šis laiškas buvo išsiųstas, nes užpildėte paskolos užklausos formą adresu ${brand.website}
-            </p>
+
+            <!-- Main content -->
+            <div style="padding: 35px 40px;">
+              <h2 style="color: #1f2937; margin: 0 0 8px; font-size: 22px;">Sveiki, ${vocativeName}! 👋</h2>
+              <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin: 0 0 24px;">
+                Dėkojame už jūsų užklausą! Gavome ją sėkmingai ir mūsų specialistai jau pradėjo ieškoti geriausio pasiūlymo būtent jums.
+              </p>
+
+              <!-- Details card -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 24px; border-radius: 10px; margin: 0 0 24px;">
+                <h3 style="margin: 0 0 16px; color: #1e293b; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">📋 Jūsų užklausos detalės</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px 0; color: #64748b; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Paskolos tipas</td>
+                    <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${loanType || 'Nenurodyta'}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; color: #64748b; font-size: 14px; border-bottom: 1px solid #f1f5f9;">Suma</td>
+                    <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 600; text-align: right; border-bottom: 1px solid #f1f5f9;">${amount}€</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; color: #64748b; font-size: 14px;">Laikotarpis</td>
+                    <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 600; text-align: right;">${loanPeriod || 'Nenurodyta'}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- What happens next -->
+              <div style="background: linear-gradient(135deg, ${brand.primaryColor}0a, ${brand.primaryColor}15); border-left: 4px solid ${brand.primaryColor}; padding: 20px 24px; border-radius: 0 10px 10px 0; margin: 0 0 24px;">
+                <h3 style="margin: 0 0 12px; color: #1e293b; font-size: 15px; font-weight: 700;">⏱️ Kas toliau?</h3>
+                <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #4b5563;">
+                  Mūsų specialistas susisieks su jumis per <strong style="color: ${brand.primaryColor};">30 minučių</strong> darbo metu ir pateiks geriausius pasiūlymus iš 20+ kreditorių.
+                </p>
+              </div>
+
+              <!-- Contact info -->
+              <div style="text-align: center; padding: 20px; background-color: #f8fafc; border-radius: 10px; margin: 0 0 24px;">
+                <p style="margin: 0 0 8px; font-size: 14px; color: #64748b;">Turite klausimų? Skambinkite mums:</p>
+                <a href="tel:+37062851439" style="display: inline-block; font-size: 20px; font-weight: 700; color: ${brand.primaryColor}; text-decoration: none; letter-spacing: 0.5px;">📞 +370 628 51439</a>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #f8fafc; padding: 24px 40px; border-radius: 0 0 12px 12px; border-top: 1px solid #e2e8f0; text-align: center;">
+              <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #1e293b;">${brand.name} komanda</p>
+              <p style="margin: 0 0 12px; font-size: 12px; color: #94a3b8;">
+                <a href="https://${brand.website}" style="color: ${brand.primaryColor}; text-decoration: none;">${brand.website}</a> · <a href="tel:+37062851439" style="color: ${brand.primaryColor}; text-decoration: none;">+370 628 51439</a>
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #cbd5e1;">
+                Šis laiškas išsiųstas, nes užpildėte užklausos formą adresu ${brand.website}
+              </p>
+            </div>
           </div>
         `,
       }),
