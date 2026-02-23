@@ -30,7 +30,7 @@ export const Header = () => {
                 <img 
                   src={logo} 
                   alt="AUTOPASKOLOS.LT" 
-                  className="h-16 md:h-28 transition-transform duration-300 group-hover:scale-105"
+                  className="h-20 md:h-28 transition-transform duration-300 group-hover:scale-105"
                   width="112"
                   height="112"
                 />
@@ -51,7 +51,7 @@ export const Header = () => {
 
             <div className="flex items-center gap-4">
               <Button 
-                className="hidden sm:flex text-sm md:text-base hover-lift"
+                className="text-xs sm:text-sm md:text-base hover-lift h-9 px-3 sm:h-10 sm:px-4"
                 onClick={() => {
                   analytics.ctaClicked('Header CTA');
                   setDialogOpen(true);
