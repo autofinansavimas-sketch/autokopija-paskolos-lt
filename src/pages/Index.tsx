@@ -10,6 +10,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { FAQ } from "@/components/FAQ";
 import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
+import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 
 const Index = () => {
   return (
@@ -28,6 +29,7 @@ const Index = () => {
         <CTA />
       </main>
       <Footer />
+      <StickyMobileCTA />
     </div>
   );
 };
