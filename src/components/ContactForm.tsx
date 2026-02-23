@@ -81,14 +81,14 @@ export const ContactForm = () => {
 
           <Card className="p-4 md:p-12">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6">
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base font-semibold">
+                        <FormLabel className="text-sm sm:text-base font-semibold">
                           Vardas Pavardė
                         </FormLabel>
                         <FormControl>
@@ -96,7 +96,7 @@ export const ContactForm = () => {
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input
                               {...field}
-                              className="pl-10 h-12"
+                              className="pl-10 h-12 text-base"
                               placeholder="Jūsų vardas ir pavardė"
                             />
                           </div>
@@ -111,7 +111,7 @@ export const ContactForm = () => {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base font-semibold">
+                        <FormLabel className="text-sm sm:text-base font-semibold">
                           Telefonas *
                         </FormLabel>
                         <FormControl>
@@ -120,7 +120,7 @@ export const ContactForm = () => {
                             <Input
                               {...field}
                               type="tel"
-                              className="pl-10 h-12"
+                              className="pl-10 h-12 text-base"
                               placeholder="+37062851439"
                             />
                           </div>
@@ -131,7 +131,7 @@ export const ContactForm = () => {
                   />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6">
                   <FormField
                     control={form.control}
                     name="email"
