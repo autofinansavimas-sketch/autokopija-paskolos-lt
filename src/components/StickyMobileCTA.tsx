@@ -15,7 +15,7 @@ export const StickyMobileCTA = () => {
     
     const handleScroll = () => {
       // Show after scrolling past the first screen
-      setVisible(window.scrollY > 400);
+      setVisible(window.scrollY > 200);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
