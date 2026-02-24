@@ -30,7 +30,7 @@ export const Header = () => {
                 <img 
                   src={logo} 
                   alt="AUTOPASKOLOS.LT" 
-                  className="h-14 md:h-24 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="h-20 md:h-28 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </a>
               
