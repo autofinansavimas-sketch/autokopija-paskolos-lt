@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/form";
 
 const formSchema = z.object({
-  name: z.string().optional(),
-  phone: z.string().min(1, "Telefono numeris privalomas"),
-  email: z.string().email("Neteisingas el. pašto formatas"),
-  amount: z.string().optional(),
+  name: z.string().max(100).optional(),
+  phone: z.string().min(1, "Telefono numeris privalomas").max(20),
+  email: z.string().email("Neteisingas el. pašto formatas").max(255),
+  amount: z.string().max(20).optional(),
+  website: z.string().optional(), // honeypot
 });
 
 export const ContactForm = () => {
@@ -33,10 +34,13 @@ export const ContactForm = () => {
       phone: "",
       email: "",
       amount: "",
+      website: "",
     },
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    // Honeypot check
+    if (values.website) return;
     try {
       const { data, error } = await supabase.functions.invoke('send-contact-email', {
         body: {
@@ -184,6 +188,11 @@ export const ContactForm = () => {
                 <Button type="submit" size="lg" className="w-full h-16 md:h-14 text-base md:text-lg font-semibold">
                   Gauti pasiūlymus
                 </Button>
+
+                {/* Honeypot - hidden from users */}
+                <div className="absolute opacity-0 -z-10" aria-hidden="true" tabIndex={-1}>
+                  <Input {...form.register("website")} tabIndex={-1} autoComplete="off" />
+                </div>
 
                 <p className="text-sm text-muted-foreground text-center">
                   * Privalomi laukai. Jūsų duomenys yra saugomi ir naudojami tik pasiūlymams pateikti.

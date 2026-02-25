@@ -25,10 +25,11 @@ import {
 } from "@/components/ui/dialog";
 
 const formSchema = z.object({
-  name: z.string().optional(),
-  phone: z.string().min(1, "Telefono numeris privalomas"),
-  email: z.string().email("Neteisingas el. pašto formatas"),
-  amount: z.string().optional(),
+  name: z.string().max(100).optional(),
+  phone: z.string().min(1, "Telefono numeris privalomas").max(20),
+  email: z.string().email("Neteisingas el. pašto formatas").max(255),
+  amount: z.string().max(20).optional(),
+  website: z.string().optional(), // honeypot
 });
 
 interface ContactFormDialogProps {
@@ -49,6 +50,7 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
       phone: "",
       email: "",
       amount: "",
+      website: "",
     },
   });
 
@@ -62,6 +64,8 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
   }, [open]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    // Honeypot check
+    if (values.website) return;
     setIsSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-contact-email', {
@@ -224,6 +228,11 @@ export const ContactFormDialog = ({ open, onOpenChange, loanType, loanAmount, lo
                 "Gauti pasiūlymus"
               )}
             </Button>
+
+            {/* Honeypot - hidden from users */}
+            <div className="absolute opacity-0 -z-10" aria-hidden="true" tabIndex={-1}>
+              <Input {...form.register("website")} tabIndex={-1} autoComplete="off" />
+            </div>
 
             <p className="text-xs sm:text-sm text-muted-foreground text-center">
               * Privalomi laukai. Jūsų duomenys yra saugūs.

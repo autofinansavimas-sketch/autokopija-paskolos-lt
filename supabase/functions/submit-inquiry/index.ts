@@ -19,6 +19,7 @@ interface InquiryRequest {
   loanType?: string;
   loanPeriod?: string;
   source: string;
+  website?: string; // honeypot
 }
 
 // Brand configurations
@@ -86,7 +87,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, phone, amount, loanType, loanPeriod, source }: InquiryRequest = await req.json();
+    const { name, email, phone, amount, loanType, loanPeriod, source, website }: InquiryRequest = await req.json();
+
+    // Honeypot check - bots fill hidden fields
+    if (website && website.trim() !== '') {
+      console.log('Bot detected via honeypot');
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
+    }
 
     // Validate required fields
     if (!email || !phone) {
@@ -109,11 +118,46 @@ const handler = async (req: Request): Promise<Response> => {
 
     const brand = brandConfig[normalizedSource as keyof typeof brandConfig];
 
+    // Input validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email) || email.length > 255) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Neteisingas el. pašto formatas" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    if (phone.length > 20) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Neteisingas telefono numeris" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    if (name && name.length > 100) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Per ilgas vardas" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Rate limiting - max 3 submissions per email in 5 minutes
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: recentSubs } = await supabase
+      .from("contact_submissions")
+      .select("id")
+      .eq("email", email)
+      .gte("created_at", fiveMinAgo);
+
+    if (recentSubs && recentSubs.length >= 3) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Per daug užklausų. Bandykite vėliau." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     console.log("Processing inquiry from:", normalizedSource);
-    console.log("Email:", email);
 
     // Save submission to database
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     
     const { data: submissionData, error: dbError } = await supabase
       .from("contact_submissions")
