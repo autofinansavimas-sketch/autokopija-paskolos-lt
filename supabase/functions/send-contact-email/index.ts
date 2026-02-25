@@ -19,6 +19,7 @@ interface ContactEmailRequest {
   loanType?: string;
   loanPeriod?: string;
   source?: string;
+  website?: string; // honeypot
 }
 
 // Brand configurations
@@ -91,18 +92,51 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, phone, amount, loanType, loanPeriod, source = "autopaskolos" }: ContactEmailRequest = await req.json();
+    const { name, email, phone, amount, loanType, loanPeriod, source = "autopaskolos", website }: ContactEmailRequest = await req.json();
+
+    // Honeypot check
+    if (website && website.trim() !== '') {
+      console.log('Bot detected via honeypot');
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
+    }
+
+    // Input validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email) || email.length > 255) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Neteisingas el. pašto formatas" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    if (!phone || phone.length > 20) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Neteisingas telefono numeris" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Get brand configuration
     const brand = brandConfig[source as keyof typeof brandConfig] || brandConfig.autopaskolos;
 
-    console.log("Processing contact submission");
-    console.log("Email:", email);
-    console.log("Source:", source);
-    console.log("Brand:", brand.name);
-
-    // Save submission to database
+    // Rate limiting - max 3 submissions per email in 5 minutes
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: recentSubs } = await supabase
+      .from("contact_submissions")
+      .select("id")
+      .eq("email", email)
+      .gte("created_at", fiveMinAgo);
+
+    if (recentSubs && recentSubs.length >= 3) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Per daug užklausų. Bandykite vėliau." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Processing contact submission from:", source);
     
     const { data: submissionData, error: dbError } = await supabase
       .from("contact_submissions")
