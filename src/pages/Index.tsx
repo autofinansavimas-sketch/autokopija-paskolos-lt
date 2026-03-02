@@ -10,11 +10,13 @@ import { Testimonials } from "@/components/Testimonials";
 import { FAQ } from "@/components/FAQ";
 import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 
 
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <AnnouncementBanner />
       <Header />
       <main id="main-content">
         <LoanCalculator />
