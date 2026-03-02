@@ -140,9 +140,16 @@ export const Footer = () => {
                     <span>info@autopaskolos.lt</span>
                   </a>
                 </li>
-                <li className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" aria-hidden="true" />
-                  <span>Varduvos g. 2, Kaunas</span>
+                <li>
+                  <a 
+                    href="https://maps.app.goo.gl/3HSKiXHLQmBC99eK8" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <MapPin className="h-4 w-4" aria-hidden="true" />
+                    <span>Palemono g. 173, Kaunas</span>
+                  </a>
                 </li>
               </ul>
             </address>

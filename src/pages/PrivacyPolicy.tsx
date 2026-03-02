@@ -28,7 +28,7 @@ const PrivacyPolicy = () => {
             <ul className="list-none space-y-2 mt-4">
               <li><strong>Įmonės pavadinimas:</strong> Autodealeriai, MB</li>
               <li><strong>Įmonės kodas:</strong> 305825810</li>
-              <li><strong>Adresas:</strong> Varduvos g. 2, LT-48199 Kaunas</li>
+              <li><strong>Adresas:</strong> Palemono g. 173, Kaunas</li>
               <li><strong>Telefonas:</strong> +370 628 51439</li>
               <li><strong>El. paštas:</strong> info@autopaskolos.lt</li>
               <li><strong>Svetainė:</strong> autopaskolos.lt</li>
@@ -111,7 +111,7 @@ const PrivacyPolicy = () => {
             <ul className="list-none space-y-2 mt-4">
               <li><strong>Autodealeriai, MB</strong></li>
               <li><strong>Įmonės kodas:</strong> 305825810</li>
-              <li><strong>Adresas:</strong> Varduvos g. 2, LT-48199 Kaunas</li>
+              <li><strong>Adresas:</strong> Palemono g. 173, Kaunas</li>
               <li><strong>El. paštas:</strong> info@autopaskolos.lt</li>
               <li><strong>Telefonas:</strong> +370 628 51439</li>
             </ul>
