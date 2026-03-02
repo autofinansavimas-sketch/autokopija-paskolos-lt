@@ -14,7 +14,7 @@ export const AnnouncementBanner = () => {
   if (dismissed) return null;
 
   return (
-    <div className="bg-primary text-primary-foreground text-xs sm:text-sm py-2 px-4 relative z-[60]">
+    <div className="bg-primary text-primary-foreground text-[11px] sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4 relative z-[60]">
       <div className="container mx-auto flex items-center justify-center gap-2 pr-8">
         <MapPin className="h-3.5 w-3.5 shrink-0" />
         <span>
