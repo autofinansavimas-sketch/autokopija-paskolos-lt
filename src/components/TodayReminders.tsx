@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { lt } from "date-fns/locale";
-import { Bell, Phone, Mail, X, Clock, User, MessageCircle } from "lucide-react";
+import { Bell, Phone, Mail, X, Clock, User, MessageCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -91,6 +91,19 @@ export default function TodayReminders() {
       setReminders((prev) => prev.filter((r) => r.id !== reminderId));
     } catch (error) {
       console.error("Error marking reminder complete:", error);
+    }
+  };
+
+  const handleDelete = async (reminderId: string) => {
+    try {
+      await supabase
+        .from("call_reminders")
+        .delete()
+        .eq("id", reminderId);
+
+      setReminders((prev) => prev.filter((r) => r.id !== reminderId));
+    } catch (error) {
+      console.error("Error deleting reminder:", error);
     }
   };
 
@@ -189,6 +202,15 @@ export default function TodayReminders() {
                     </Button>
                   </a>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                  onClick={() => handleDelete(reminder.id)}
+                  title="Ištrinti priminimą"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
