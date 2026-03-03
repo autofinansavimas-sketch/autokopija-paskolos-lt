@@ -64,6 +64,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           email: string
+          fb_lead_id: string | null
           id: string
           loan_period: string | null
           loan_type: string | null
@@ -78,6 +79,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email: string
+          fb_lead_id?: string | null
           id?: string
           loan_period?: string | null
           loan_type?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email?: string
+          fb_lead_id?: string | null
           id?: string
           loan_period?: string | null
           loan_type?: string | null
