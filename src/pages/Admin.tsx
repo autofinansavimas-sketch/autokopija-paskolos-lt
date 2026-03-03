@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { syncToMeta } from "@/lib/syncToMeta";
 import { 
   LogOut, 
   RefreshCw, 
@@ -355,9 +356,10 @@ export default function Admin() {
         setSelectedSubmission(prev => prev ? { ...prev, status: newStatus } : null);
       }
 
-      toast({
-        title: "Statusas atnaujintas",
-      });
+      toast({ title: "Statusas atnaujintas" });
+
+      // Sync status change to Meta (fire-and-forget)
+      syncToMeta({ type: "status_change", submission_id: submissionId, new_status: newStatus });
     } catch (error) {
       toast({
         title: "Klaida",
@@ -543,9 +545,10 @@ export default function Admin() {
       }));
       setNewComments((prev) => ({ ...prev, [submissionId]: "" }));
 
-      toast({
-        title: "Komentaras pridėtas",
-      });
+      toast({ title: "Komentaras pridėtas" });
+
+      // Sync comment to Meta (fire-and-forget)
+      syncToMeta({ type: "comment", submission_id: submissionId, comment: commentText });
     } catch (error) {
       toast({
         title: "Klaida",

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { lt } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { syncToMeta } from "@/lib/syncToMeta";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +69,13 @@ export default function AddReminderDialog({
       if (error) throw error;
 
       toast({ title: "Priminimas sukurtas" });
+
+      // Sync to Meta
+      syncToMeta({
+        type: "reminder_created",
+        submission_id: submissionId,
+        reminder_info: `${format(selectedDate, "yyyy-MM-dd")} ${callTime}${notes ? ` - ${notes}` : ""}`,
+      });
       
       // Reset form
       setSelectedDate(undefined);

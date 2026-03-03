@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { syncToMeta } from "@/lib/syncToMeta";
 
 interface TodayReminder {
   id: string;
@@ -89,6 +90,16 @@ export default function TodayReminders() {
         .eq("id", reminderId);
 
       setReminders((prev) => prev.filter((r) => r.id !== reminderId));
+
+      // Find the reminder to get submission_id
+      const reminder = reminders.find((r) => r.id === reminderId);
+      if (reminder?.submission_id) {
+        syncToMeta({
+          type: "reminder_completed",
+          submission_id: reminder.submission_id,
+          reminder_info: `${reminder.call_date} ${reminder.call_time}`,
+        });
+      }
     } catch (error) {
       console.error("Error marking reminder complete:", error);
     }
