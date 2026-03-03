@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.submit-inquiry]
 verify_jwt = false
+
+[functions.meta-leads-webhook]
+verify_jwt = false
+
+[functions.sync-to-meta]
+verify_jwt = false
