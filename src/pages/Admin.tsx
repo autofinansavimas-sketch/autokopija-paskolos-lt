@@ -78,7 +78,9 @@ import TodayReminders from "@/components/TodayReminders";
 import AdminStats from "@/components/AdminStats";
 import AdminCharts from "@/components/AdminCharts";
 import QuickFilters from "@/components/QuickFilters";
-import { Bell, BarChart3 } from "lucide-react";
+import AdminAIChat from "@/components/AdminAIChat";
+import AdminAutomations from "@/components/AdminAutomations";
+import { Bell, BarChart3, Zap } from "lucide-react";
 
 interface Submission {
   id: string;
