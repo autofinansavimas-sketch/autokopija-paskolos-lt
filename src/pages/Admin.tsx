@@ -1647,6 +1647,9 @@ export default function Admin() {
         </SheetContent>
       </Sheet>
 
+      {/* AI Chat */}
+      <AdminAIChat context={`Iš viso užklausų: ${submissions.length}, Naujų: ${submissions.filter(s => s.status === 'new').length}, Susisiekta: ${submissions.filter(s => s.status === 'contacted').length}, Užbaigta: ${submissions.filter(s => s.status === 'completed').length}, Priminimų: ${reminders.length}`} />
+
       {/* Add Reminder Dialog for selected submission */}
       {selectedSubmission && (
         <AddReminderDialog

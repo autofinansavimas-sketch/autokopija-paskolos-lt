@@ -219,7 +219,7 @@ export default function AdminAutomations({ submissions, reminders, currentUserId
       icon: Clock,
       iconColor: "text-purple-500",
       bgColor: "bg-purple-500/10",
-      title: "Ilgai „Susisiekta" būsenoje",
+      title: 'Ilgai "Susisiekta" b\u016Bsenoje',
       description: `${longContactedSubmissions.length} užklausa(-os) jau 7+ dienos`,
       count: longContactedSubmissions.length,
       action: longContactedSubmissions.length > 0 ? (
