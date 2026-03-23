@@ -1327,6 +1327,15 @@ export default function Admin() {
             </div>
           </TabsContent>
           
+          <TabsContent value="automations">
+            <AdminAutomations
+              submissions={submissions}
+              reminders={reminders}
+              currentUserId={currentUserId}
+              onRefresh={refreshAllData}
+            />
+          </TabsContent>
+          
           <TabsContent value="calendar">
             <CallCalendar 
               submissions={submissions.map(s => ({ 
