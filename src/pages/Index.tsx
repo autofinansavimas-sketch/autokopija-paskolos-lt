@@ -11,11 +11,13 @@ import { FAQ } from "@/components/FAQ";
 import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+import { SEOHead } from "@/components/SEOHead";
 
 
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <SEOHead canonical="https://autopaskolos.lt/" />
       <AnnouncementBanner />
       <Header />
       <main id="main-content">
