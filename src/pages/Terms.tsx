@@ -2,10 +2,16 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SEOHead } from "@/components/SEOHead";
 
 const Terms = () => {
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="Naudojimosi sąlygos | AUTOPASKOLOS.LT"
+        description="AUTOPASKOLOS.LT naudojimosi sąlygos ir taisyklės."
+        canonical="https://autopaskolos.lt/salygos"
+      />
       <Header />
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         <Link to="/" className="inline-flex items-center gap-2 text-primary hover:underline mb-8">
