@@ -20,7 +20,8 @@ export const Hero = () => {
           <div className="grid lg:grid-cols-[60%_40%] gap-8 md:gap-12 items-center max-w-7xl mx-auto">
             {/* Left Content */}
             <div className="space-y-4 md:space-y-8 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-5 md:py-2 rounded-full bg-primary/10 border border-primary/20 animate-fade-in">
+              <AnimatedSection>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-5 md:py-2 rounded-full bg-primary/10 border border-primary/20">
                 <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-primary" aria-hidden="true" />
                 <span className="text-xs md:text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
               </div>
