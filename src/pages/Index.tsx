@@ -12,6 +12,7 @@ import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { SEOHead } from "@/components/SEOHead";
+import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 
 
 const Index = () => {
