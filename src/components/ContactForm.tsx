@@ -86,6 +86,7 @@ export const ContactForm = () => {
           </div>
           </AnimatedSection>
 
+          <AnimatedSection delay={150}>
           <Card className="p-4 md:p-12">
             <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
