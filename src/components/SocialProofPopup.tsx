@@ -17,8 +17,8 @@ const loanTypes = [
 ];
 
 const cities = [
-  "Vilnius", "Kaunas", "Klaipėda", "Šiauliai", "Panevėžys",
-  "Alytus", "Marijampolė", "Utena", "Tauragė", "Telšiai",
+  "Vilniaus", "Kauno", "Klaipėdos", "Šiaulių", "Panevėžio",
+  "Alytaus", "Marijampolės", "Utenos", "Tauragės", "Telšių",
 ];
 
 const timeAgo = [
