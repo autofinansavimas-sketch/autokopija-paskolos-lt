@@ -26,17 +26,25 @@ export const Hero = () => {
                 <span className="text-xs md:text-sm font-medium uppercase">LAIMINGI 1000+ KLIENTŲ</span>
               </div>
               
-              <h1 id="hero-heading" className="text-2xl sm:text-3xl md:text-6xl lg:text-7xl font-black leading-tight uppercase animate-slide-up tracking-tight">
+              </AnimatedSection>
+
+              <AnimatedSection delay={100}>
+              <h1 id="hero-heading" className="text-2xl sm:text-3xl md:text-6xl lg:text-7xl font-black leading-tight uppercase tracking-tight">
                 KODĖL RINKTIS <span className="gradient-text">MUS</span>?
               </h1>
+              </AnimatedSection>
               
-              <h2 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-foreground uppercase animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              <AnimatedSection delay={200}>
+              <h2 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold text-foreground uppercase">
                 PALYGINAME 20+ KREDITORIŲ IR RANDAME <span className="gradient-text">GERIAUSIĄ PASIŪLYMĄ</span>
               </h2>
+              </AnimatedSection>
               
-              <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 animate-slide-up hidden sm:block" style={{ animationDelay: '0.2s' }}>
+              <AnimatedSection delay={300}>
+              <p className="text-sm md:text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 hidden sm:block">
                 Užpildykite paraišką per 3 minutes ir sutaupykite tūkstančius eurų.
               </p>
+              </AnimatedSection>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
                 <Button 
