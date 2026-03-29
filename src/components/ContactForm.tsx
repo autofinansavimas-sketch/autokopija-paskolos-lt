@@ -15,6 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 const formSchema = z.object({
   name: z.string().max(100).optional(),
