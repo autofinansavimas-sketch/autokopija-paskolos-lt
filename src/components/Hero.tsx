@@ -57,9 +57,11 @@ export const Hero = () => {
                   <ArrowRight className="h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                 </Button>
               </div>
+              </AnimatedSection>
 
-              {/* Stats - Compact on mobile */}
-              <div className="grid grid-cols-3 gap-2 md:gap-6 pt-4 md:pt-8 border-t border-border/50 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+              {/* Stats */}
+              <AnimatedSection delay={500}>
+              <div className="grid grid-cols-3 gap-2 md:gap-6 pt-4 md:pt-8 border-t border-border/50">
                 <div className="text-center group p-2 md:p-4 rounded-xl hover:bg-primary/5 transition-all duration-300 cursor-default">
                   <div className="text-2xl sm:text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">3.9%</div>
                   <div className="text-[10px] sm:text-xs md:text-base text-muted-foreground mt-1 uppercase font-medium">PALŪKANOS NUO</div>
