@@ -204,6 +204,7 @@ export const ContactForm = () => {
               </form>
             </Form>
           </Card>
+          </AnimatedSection>
         </div>
       </div>
     </section>

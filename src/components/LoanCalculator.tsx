@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Calculator, Car, Home, RefreshCw, Wallet, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import { Car, Home, RefreshCw, Wallet, TrendingUp, ArrowRight } from "lucide-react";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 import { analytics } from "@/lib/analytics";
+import { useAnimatedCounter } from "@/hooks/use-animated-counter";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 type LoanType = "consumer" | "car" | "home" | "refinance";
 
@@ -29,6 +31,13 @@ export const LoanCalculator = () => {
   const totalInterest = totalPayment - amount[0];
   const interestPercentage = (totalInterest / totalPayment) * 100;
 
+  // Animated counters
+  const animatedMonthly = useAnimatedCounter(monthlyPayment, 400, 2);
+  const animatedTotal = useAnimatedCounter(totalPayment, 400, 0);
+  const animatedSavings = useAnimatedCounter(totalInterest * 0.75, 400, 0);
+  const animatedAmount = useAnimatedCounter(amount[0], 300, 0);
+  const animatedPeriod = useAnimatedCounter(period[0], 300, 0);
+
   return (
     <>
       <ContactFormDialog 
@@ -46,262 +55,264 @@ export const LoanCalculator = () => {
         
         <div className="container mx-auto px-3 md:px-4 relative z-10">
           <div className="max-w-5xl mx-auto">
-            {/* Header - Compact on mobile */}
-            <div className="text-center mb-6 md:mb-14">
-              <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-6 uppercase animate-fade-in tracking-tight leading-tight">
-                AUTOPASKOLOS.LT - <span className="gradient-text block sm:inline">PASKOLOS NE TIK AUTOMOBILIUI</span>
-              </h1>
-              <h2 id="calculator-heading" className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold mb-2 md:mb-5 uppercase animate-fade-in leading-snug" style={{ animationDelay: '0.1s' }}>
-                GAUK GERIAUSIĄ PASIŪLYMĄ <span className="gradient-text animate-pulse block sm:inline">VOS PER 30 MIN</span>
-              </h2>
-              <p className="text-sm md:text-xl text-muted-foreground animate-fade-in hidden md:block" style={{ animationDelay: '0.2s' }}>
-                Pasirink paskolos tipą ir sužinok preliminarią mėnesio įmoką
-              </p>
-            </div>
-
-            <Card className="p-4 md:p-10 border-0 shadow-xl md:shadow-2xl bg-card/80 backdrop-blur-xl relative overflow-hidden">
-              {/* Decorative gradient border */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/20 via-transparent to-accent/20 pointer-events-none" />
-              
-              {/* Loan Type Selection - Horizontal scroll on mobile */}
-              <fieldset className="mb-6 md:mb-12 relative">
-                <legend className="text-sm md:text-lg font-bold mb-3 md:mb-5 block flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                  Pasirink paskolos tipą
-                </legend>
-                
-                {/* Mobile: Horizontal scrollable - larger touch targets */}
-                <div className="md:hidden grid grid-cols-2 gap-2" role="radiogroup">
-                  {loanTypes.map((type) => {
-                    const Icon = type.icon;
-                    const isCarLoan = type.id === "car";
-                    return (
-                      <button
-                        key={type.id}
-                        role="radio"
-                        aria-checked={selectedType === type.id}
-                        onClick={() => {
-                          setSelectedType(type.id);
-                          analytics.calculatorUsed(type.name, amount[0]);
-                        }}
-                        className={`group relative p-3 rounded-xl border-2 transition-all duration-200 text-left ${
-                          selectedType === type.id
-                            ? "border-primary bg-primary/10 shadow-lg scale-[1.02]"
-                            : "border-border/50 bg-card/50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow flex-shrink-0`}>
-                            <Icon className="h-5 w-5 text-white" />
-                          </div>
-                          {isCarLoan && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[8px] font-bold text-primary-foreground uppercase tracking-wide shadow-sm">Akcija</span>
-                          )}
-                        </div>
-                        <div className="font-semibold text-xs leading-tight mb-1">{type.name}</div>
-                        <div className="text-[10px] text-muted-foreground">
-                          Nuo <span className="font-bold text-primary">{type.displayRate}%</span>
-                        </div>
-                        {selectedType === type.id && (
-                          <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary animate-pulse" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                {/* Desktop: Grid */}
-                <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4" role="radiogroup">
-                  {loanTypes.map((type, index) => {
-                    const Icon = type.icon;
-                    return (
-                      <button
-                        key={type.id}
-                        role="radio"
-                        aria-checked={selectedType === type.id}
-                        onClick={() => {
-                          setSelectedType(type.id);
-                          analytics.calculatorUsed(type.name, amount[0]);
-                        }}
-                        className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden animate-fade-in ${
-                          selectedType === type.id
-                            ? "border-primary bg-primary/5 shadow-xl scale-[1.02]"
-                            : "border-border/50 hover:border-primary/50 bg-card/50 hover:bg-card"
-                        }`}
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${type.gradient} opacity-0 transition-opacity duration-300 ${selectedType === type.id ? 'opacity-10' : 'group-hover:opacity-5'}`} />
-                        
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.gradient} flex items-center justify-center mb-4 shadow-lg transition-transform duration-300 ${selectedType === type.id ? 'scale-110' : 'group-hover:scale-105'}`}>
-                          <Icon className="h-6 w-6 text-white" />
-                        </div>
-                        <div className="font-bold text-base mb-1 relative z-10">{type.name}</div>
-                        <div className="text-sm text-muted-foreground relative z-10 flex items-center gap-2">
-                          Nuo <span className="font-semibold text-primary">{type.displayRate}%</span> metinių palūkanų
-                          {type.id === "car" && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground uppercase tracking-wide">Akcija</span>
-                          )}
-                        </div>
-                        
-                        {selectedType === type.id && (
-                          <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-primary animate-pulse" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </fieldset>
-
-              {/* Sliders - Stacked on mobile */}
-              <div className="grid md:grid-cols-2 gap-6 md:gap-12 mb-6 md:mb-12">
-                {/* Amount Slider */}
-                <div className="space-y-2 md:space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="amount-slider" className="text-sm md:text-base font-bold flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                      Paskolos suma
-                    </Label>
-                    <span className="text-xl md:hidden font-bold text-primary">{amount[0].toLocaleString('lt-LT')} €</span>
-                  </div>
-                  <div className="hidden md:block text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent" aria-live="polite">
-                    {amount[0].toLocaleString('lt-LT')} €
-                  </div>
-                  <div className="pt-1 md:pt-2">
-                    <Slider
-                      id="amount-slider"
-                      value={amount}
-                      onValueChange={setAmount}
-                      onValueCommit={() => analytics.calculatorSliderChanged('amount')}
-                      min={1000}
-                      max={30000}
-                      step={500}
-                      className="py-3 md:py-4"
-                      aria-label="Paskolos suma"
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span className="font-medium">1,000 €</span>
-                    <span className="font-medium">30,000 €</span>
-                  </div>
-                </div>
-
-                {/* Period Slider */}
-                <div className="space-y-2 md:space-y-4">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="period-slider" className="text-sm md:text-base font-bold flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-accent" />
-                      Laikotarpis
-                    </Label>
-                    <span className="text-xl md:hidden font-bold text-primary">{period[0]} mėn.</span>
-                  </div>
-                  <div className="hidden md:block text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent" aria-live="polite">
-                    {period[0]} mėn.
-                  </div>
-                  <div className="pt-1 md:pt-2">
-                    <Slider
-                      id="period-slider"
-                      value={period}
-                      onValueChange={setPeriod}
-                      onValueCommit={() => analytics.calculatorSliderChanged('period')}
-                      min={6}
-                      max={144}
-                      step={6}
-                      className="py-3 md:py-4"
-                      aria-label="Paskolos laikotarpis"
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span className="font-medium">6 mėn.</span>
-                    <span className="font-medium">144 mėn.</span>
-                  </div>
-                </div>
+            {/* Header */}
+            <AnimatedSection>
+              <div className="text-center mb-6 md:mb-14">
+                <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-6 uppercase tracking-tight leading-tight">
+                  AUTOPASKOLOS.LT - <span className="gradient-text block sm:inline">PASKOLOS NE TIK AUTOMOBILIUI</span>
+                </h1>
+                <h2 id="calculator-heading" className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold mb-2 md:mb-5 uppercase leading-snug">
+                  GAUK GERIAUSIĄ PASIŪLYMĄ <span className="gradient-text animate-pulse block sm:inline">VOS PER 30 MIN</span>
+                </h2>
+                <p className="text-sm md:text-xl text-muted-foreground hidden md:block">
+                  Pasirink paskolos tipą ir sužinok preliminarią mėnesio įmoką
+                </p>
               </div>
+            </AnimatedSection>
 
-              {/* Results - Compact on mobile */}
-              <div className="relative rounded-xl md:rounded-3xl overflow-hidden mb-5 md:mb-8" role="region" aria-label="Skaičiavimo rezultatai">
-                <div className={`absolute inset-0 bg-gradient-to-br ${currentLoan.gradient} opacity-10`} />
-                <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-background/60 backdrop-blur-sm" />
+            <AnimatedSection delay={100}>
+              <Card className="p-4 md:p-10 border-0 shadow-xl md:shadow-2xl bg-card/80 backdrop-blur-xl relative overflow-hidden">
+                {/* Decorative gradient border */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/20 via-transparent to-accent/20 pointer-events-none" />
                 
-                <div className="relative p-4 md:p-10">
-                  {/* Mobile: Centered main result */}
-                  <div className="md:hidden text-center mb-4">
-                    <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-medium">Mėnesinis mokestis</div>
-                    <div className="text-4xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent" aria-live="polite">
-                      {monthlyPayment.toFixed(2)} €
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {currentLoan.displayRate}% metinių palūkanų
-                    </div>
+                {/* Loan Type Selection */}
+                <fieldset className="mb-6 md:mb-12 relative">
+                  <legend className="text-sm md:text-lg font-bold mb-3 md:mb-5 block flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                    Pasirink paskolos tipą
+                  </legend>
+                  
+                  {/* Mobile: 2x2 grid */}
+                  <div className="md:hidden grid grid-cols-2 gap-2" role="radiogroup">
+                    {loanTypes.map((type) => {
+                      const Icon = type.icon;
+                      const isCarLoan = type.id === "car";
+                      return (
+                        <button
+                          key={type.id}
+                          role="radio"
+                          aria-checked={selectedType === type.id}
+                          onClick={() => {
+                            setSelectedType(type.id);
+                            analytics.calculatorUsed(type.name, amount[0]);
+                          }}
+                          className={`group relative p-3 rounded-xl border-2 transition-all duration-200 text-left ${
+                            selectedType === type.id
+                              ? "border-primary bg-primary/10 shadow-lg scale-[1.02]"
+                              : "border-border/50 bg-card/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow flex-shrink-0`}>
+                              <Icon className="h-5 w-5 text-white" />
+                            </div>
+                            {isCarLoan && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[8px] font-bold text-primary-foreground uppercase tracking-wide shadow-sm">Akcija</span>
+                            )}
+                          </div>
+                          <div className="font-semibold text-xs leading-tight mb-1">{type.name}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            Nuo <span className="font-bold text-primary">{type.displayRate}%</span>
+                          </div>
+                          {selectedType === type.id && (
+                            <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary animate-pulse" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                   
-                  {/* Mobile: Compact stats row */}
-                  <div className="md:hidden grid grid-cols-2 gap-3">
-                    <div className="bg-card/50 rounded-lg p-3 border border-border/50 text-center">
-                      <div className="text-xs text-muted-foreground mb-1">Bendra suma</div>
-                      <div className="text-lg font-bold">{totalPayment.toFixed(0)} €</div>
+                  {/* Desktop: Grid */}
+                  <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4" role="radiogroup">
+                    {loanTypes.map((type, index) => {
+                      const Icon = type.icon;
+                      return (
+                        <button
+                          key={type.id}
+                          role="radio"
+                          aria-checked={selectedType === type.id}
+                          onClick={() => {
+                            setSelectedType(type.id);
+                            analytics.calculatorUsed(type.name, amount[0]);
+                          }}
+                          className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                            selectedType === type.id
+                              ? "border-primary bg-primary/5 shadow-xl scale-[1.02]"
+                              : "border-border/50 hover:border-primary/50 bg-card/50 hover:bg-card"
+                          }`}
+                        >
+                          <div className={`absolute inset-0 bg-gradient-to-br ${type.gradient} opacity-0 transition-opacity duration-300 ${selectedType === type.id ? 'opacity-10' : 'group-hover:opacity-5'}`} />
+                          
+                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${type.gradient} flex items-center justify-center mb-4 shadow-lg transition-transform duration-300 ${selectedType === type.id ? 'scale-110' : 'group-hover:scale-105'}`}>
+                            <Icon className="h-6 w-6 text-white" />
+                          </div>
+                          <div className="font-bold text-base mb-1 relative z-10">{type.name}</div>
+                          <div className="text-sm text-muted-foreground relative z-10 flex items-center gap-2">
+                            Nuo <span className="font-semibold text-primary">{type.displayRate}%</span> metinių palūkanų
+                            {type.id === "car" && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground uppercase tracking-wide">Akcija</span>
+                            )}
+                          </div>
+                          
+                          {selectedType === type.id && (
+                            <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-primary animate-pulse" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+
+                {/* Sliders with animated values */}
+                <div className="grid md:grid-cols-2 gap-6 md:gap-12 mb-6 md:mb-12">
+                  {/* Amount Slider */}
+                  <div className="space-y-2 md:space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="amount-slider" className="text-sm md:text-base font-bold flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        Paskolos suma
+                      </Label>
+                      <span className="text-xl md:hidden font-bold text-primary tabular-nums">{animatedAmount.toLocaleString('lt-LT')} €</span>
                     </div>
-                    <div className="bg-card/50 rounded-lg p-3 border border-border/50 text-center">
-                      <div className="text-xs text-muted-foreground mb-1">Sutaupysite*</div>
-                      <div className="text-lg font-bold text-emerald-500">iki {(totalInterest * 0.75).toFixed(0)} €</div>
+                    <div className="hidden md:block text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tabular-nums" aria-live="polite">
+                      {animatedAmount.toLocaleString('lt-LT')} €
+                    </div>
+                    <div className="pt-1 md:pt-2">
+                      <Slider
+                        id="amount-slider"
+                        value={amount}
+                        onValueChange={setAmount}
+                        onValueCommit={() => analytics.calculatorSliderChanged('amount')}
+                        min={1000}
+                        max={30000}
+                        step={500}
+                        className="py-3 md:py-4"
+                        aria-label="Paskolos suma"
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span className="font-medium">1,000 €</span>
+                      <span className="font-medium">30,000 €</span>
                     </div>
                   </div>
+
+                  {/* Period Slider */}
+                  <div className="space-y-2 md:space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="period-slider" className="text-sm md:text-base font-bold flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-accent" />
+                        Laikotarpis
+                      </Label>
+                      <span className="text-xl md:hidden font-bold text-primary tabular-nums">{animatedPeriod} mėn.</span>
+                    </div>
+                    <div className="hidden md:block text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tabular-nums" aria-live="polite">
+                      {animatedPeriod} mėn.
+                    </div>
+                    <div className="pt-1 md:pt-2">
+                      <Slider
+                        id="period-slider"
+                        value={period}
+                        onValueChange={setPeriod}
+                        onValueCommit={() => analytics.calculatorSliderChanged('period')}
+                        min={6}
+                        max={144}
+                        step={6}
+                        className="py-3 md:py-4"
+                        aria-label="Paskolos laikotarpis"
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span className="font-medium">6 mėn.</span>
+                      <span className="font-medium">144 mėn.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Results with animated numbers */}
+                <div className="relative rounded-xl md:rounded-3xl overflow-hidden mb-5 md:mb-8" role="region" aria-label="Skaičiavimo rezultatai">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${currentLoan.gradient} opacity-10`} />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-background/60 backdrop-blur-sm" />
                   
-                  {/* Desktop: Full layout */}
-                  <div className="hidden md:grid grid-cols-3 gap-8">
-                    <div className="col-span-1 text-left">
-                      <div className="text-sm text-muted-foreground mb-2 uppercase tracking-wider font-medium">Mėnesinis mokestis</div>
-                      <div className="text-5xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent" aria-live="polite">
-                        {monthlyPayment.toFixed(2)} €
+                  <div className="relative p-4 md:p-10">
+                    {/* Mobile results */}
+                    <div className="md:hidden text-center mb-4">
+                      <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-medium">Mėnesinis mokestis</div>
+                      <div className="text-4xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tabular-nums" aria-live="polite">
+                        {animatedMonthly.toFixed(2)} €
                       </div>
-                      <div className="text-sm text-muted-foreground mt-2">
+                      <div className="text-xs text-muted-foreground mt-1">
                         {currentLoan.displayRate}% metinių palūkanų
                       </div>
                     </div>
                     
-                    <div className="col-span-2 grid grid-cols-2 gap-6">
-                      <div className="bg-card/50 rounded-xl p-6 border border-border/50">
-                        <div className="text-sm text-muted-foreground mb-2">Bendra suma</div>
-                        <div className="text-3xl font-bold" aria-live="polite">{totalPayment.toFixed(2)} €</div>
-                        <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
-                            style={{ width: `${100 - interestPercentage}%` }}
-                          />
+                    <div className="md:hidden grid grid-cols-2 gap-3">
+                      <div className="bg-card/50 rounded-lg p-3 border border-border/50 text-center">
+                        <div className="text-xs text-muted-foreground mb-1">Bendra suma</div>
+                        <div className="text-lg font-bold tabular-nums">{animatedTotal.toLocaleString('lt-LT')} €</div>
+                      </div>
+                      <div className="bg-card/50 rounded-lg p-3 border border-border/50 text-center">
+                        <div className="text-xs text-muted-foreground mb-1">Sutaupysite*</div>
+                        <div className="text-lg font-bold text-emerald-500 tabular-nums">iki {animatedSavings.toLocaleString('lt-LT')} €</div>
+                      </div>
+                    </div>
+                    
+                    {/* Desktop results */}
+                    <div className="hidden md:grid grid-cols-3 gap-8">
+                      <div className="col-span-1 text-left">
+                        <div className="text-sm text-muted-foreground mb-2 uppercase tracking-wider font-medium">Mėnesinis mokestis</div>
+                        <div className="text-5xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tabular-nums" aria-live="polite">
+                          {animatedMonthly.toFixed(2)} €
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">Pagrindinė suma</div>
+                        <div className="text-sm text-muted-foreground mt-2">
+                          {currentLoan.displayRate}% metinių palūkanų
+                        </div>
                       </div>
                       
-                      <div className="bg-card/50 rounded-xl p-6 border border-border/50">
-                        <div className="text-sm text-muted-foreground mb-2">Jūs sutaupote*</div>
-                        <div className="text-3xl font-bold text-emerald-500" aria-live="polite">iki {(totalInterest * 0.75).toFixed(0)} €</div>
-                        <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500"
-                            style={{ width: '70%' }}
-                          />
+                      <div className="col-span-2 grid grid-cols-2 gap-6">
+                        <div className="bg-card/50 rounded-xl p-6 border border-border/50">
+                          <div className="text-sm text-muted-foreground mb-2">Bendra suma</div>
+                          <div className="text-3xl font-bold tabular-nums" aria-live="polite">{animatedTotal.toLocaleString('lt-LT')} €</div>
+                          <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
+                              style={{ width: `${100 - interestPercentage}%` }}
+                            />
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">Pagrindinė suma</div>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">lyginant su kitais pasiūlymais</div>
+                        
+                        <div className="bg-card/50 rounded-xl p-6 border border-border/50">
+                          <div className="text-sm text-muted-foreground mb-2">Jūs sutaupote*</div>
+                          <div className="text-3xl font-bold text-emerald-500 tabular-nums" aria-live="polite">iki {animatedSavings.toLocaleString('lt-LT')} €</div>
+                          <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500"
+                              style={{ width: '70%' }}
+                            />
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">lyginant su kitais pasiūlymais</div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* CTA Button - Full width on mobile */}
-              <div className="flex justify-center">
-                <Button 
-                  size="lg" 
-                  className="group w-full md:w-auto text-base md:text-xl h-14 md:h-16 px-6 md:px-14 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover-lift bg-primary hover:bg-primary/90 text-primary-foreground"
-                  onClick={() => {
-                    analytics.ctaClicked('Calculator CTA');
-                    setDialogOpen(true);
-                  }}
-                >
-                  Gauti geriausius pasiūlymus
-                  <ArrowRight className="ml-2 md:ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                </Button>
-              </div>
-            </Card>
+                {/* CTA Button */}
+                <div className="flex justify-center">
+                  <Button 
+                    size="lg" 
+                    className="group w-full md:w-auto text-base md:text-xl h-14 md:h-16 px-6 md:px-14 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover-lift bg-primary hover:bg-primary/90 text-primary-foreground"
+                    onClick={() => {
+                      analytics.ctaClicked('Calculator CTA');
+                      setDialogOpen(true);
+                    }}
+                  >
+                    Gauti geriausius pasiūlymus
+                    <ArrowRight className="ml-2 md:ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Button>
+                </div>
+              </Card>
+            </AnimatedSection>
           </div>
         </div>
       </section>

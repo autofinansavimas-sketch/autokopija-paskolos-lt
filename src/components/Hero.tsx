@@ -79,6 +79,7 @@ export const Hero = () => {
                   <div className="text-[10px] sm:text-xs md:text-base text-muted-foreground mt-1 uppercase font-medium">MOKESTIS</div>
                 </div>
               </div>
+              </AnimatedSection>
             </div>
 
             {/* Right Image - Hidden on mobile */}

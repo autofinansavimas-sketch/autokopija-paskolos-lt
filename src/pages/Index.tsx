@@ -34,7 +34,7 @@ const Index = () => {
         <CTA />
       </main>
       <Footer />
-      
+      <StickyMobileCTA />
     </div>
   );
 };
