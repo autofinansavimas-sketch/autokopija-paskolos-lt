@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import heroImage from "@/assets/hero-person.jpg";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 export const Hero = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
