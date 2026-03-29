@@ -1,19 +1,23 @@
+import { lazy, Suspense } from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { LoanCalculator } from "@/components/LoanCalculator";
-import { Partners } from "@/components/Partners";
 import { ContactForm } from "@/components/ContactForm";
-import { ExpertSection } from "@/components/ExpertSection";
-import { HowItWorks } from "@/components/HowItWorks";
-import { Benefits } from "@/components/Benefits";
-import { Testimonials } from "@/components/Testimonials";
-import { FAQ } from "@/components/FAQ";
-import { CTA } from "@/components/CTA";
-import { Footer } from "@/components/Footer";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { SEOHead } from "@/components/SEOHead";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
+import { SocialProofPopup } from "@/components/SocialProofPopup";
 
+// Lazy load below-the-fold sections
+const ExpertSection = lazy(() => import("@/components/ExpertSection").then(m => ({ default: m.ExpertSection })));
+const HowItWorks = lazy(() => import("@/components/HowItWorks").then(m => ({ default: m.HowItWorks })));
+const Benefits = lazy(() => import("@/components/Benefits").then(m => ({ default: m.Benefits })));
+const Testimonials = lazy(() => import("@/components/Testimonials").then(m => ({ default: m.Testimonials })));
+const FAQ = lazy(() => import("@/components/FAQ").then(m => ({ default: m.FAQ })));
+const CTA = lazy(() => import("@/components/CTA").then(m => ({ default: m.CTA })));
+const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
+
+const SectionFallback = () => <div className="py-16" />;
 
 const Index = () => {
   return (
@@ -23,18 +27,22 @@ const Index = () => {
       <Header />
       <main id="main-content">
         <LoanCalculator />
-        {/* <Partners /> */}{/* TODO: grąžinti vėliau */}
         <Hero />
         <ContactForm />
-        <ExpertSection />
-        <HowItWorks />
-        <Benefits />
-        <Testimonials />
-        <FAQ />
-        <CTA />
+        <Suspense fallback={<SectionFallback />}>
+          <ExpertSection />
+          <HowItWorks />
+          <Benefits />
+          <Testimonials />
+          <FAQ />
+          <CTA />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
       <StickyMobileCTA />
+      <SocialProofPopup />
     </div>
   );
 };
