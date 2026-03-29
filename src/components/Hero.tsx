@@ -46,7 +46,8 @@ export const Hero = () => {
               </p>
               </AnimatedSection>
 
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+              <AnimatedSection delay={400}>
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-6">
                 <Button 
                   size="lg" 
                   className="text-base md:text-lg h-12 md:h-14 px-6 md:px-8 gap-2 group shadow-lg hover:shadow-glow transition-all duration-300 hover-lift w-full sm:w-auto"
