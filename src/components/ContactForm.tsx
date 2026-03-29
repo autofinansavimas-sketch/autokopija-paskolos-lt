@@ -75,6 +75,7 @@ export const ContactForm = () => {
     <section id="contact-form" className="py-10 md:py-24 bg-muted/30">
       <div className="container mx-auto px-3 md:px-4">
         <div className="max-w-3xl mx-auto">
+          <AnimatedSection>
           <div className="text-center mb-6 md:mb-12">
             <h2 className="text-2xl md:text-5xl font-bold mb-2 md:mb-4">
               Gaukite <span className="text-primary">geriausią pasiūlymą</span>
@@ -83,6 +84,7 @@ export const ContactForm = () => {
               Užpildykite formą ir gaukite personalizuotus pasiūlymus per 1 valandą
             </p>
           </div>
+          </AnimatedSection>
 
           <Card className="p-4 md:p-12">
             <Form {...form}>
