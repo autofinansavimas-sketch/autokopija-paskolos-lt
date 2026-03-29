@@ -15,6 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { AnimatedSection } from "@/components/AnimatedSection";
 
 const formSchema = z.object({
   name: z.string().max(100).optional(),
@@ -74,6 +75,7 @@ export const ContactForm = () => {
     <section id="contact-form" className="py-10 md:py-24 bg-muted/30">
       <div className="container mx-auto px-3 md:px-4">
         <div className="max-w-3xl mx-auto">
+          <AnimatedSection>
           <div className="text-center mb-6 md:mb-12">
             <h2 className="text-2xl md:text-5xl font-bold mb-2 md:mb-4">
               Gaukite <span className="text-primary">geriausią pasiūlymą</span>
@@ -82,7 +84,9 @@ export const ContactForm = () => {
               Užpildykite formą ir gaukite personalizuotus pasiūlymus per 1 valandą
             </p>
           </div>
+          </AnimatedSection>
 
+          <AnimatedSection delay={150}>
           <Card className="p-4 md:p-12">
             <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -200,6 +204,7 @@ export const ContactForm = () => {
               </form>
             </Form>
           </Card>
+          </AnimatedSection>
         </div>
       </div>
     </section>
