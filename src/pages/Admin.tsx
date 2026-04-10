@@ -131,6 +131,7 @@ const DEFAULT_STATUS_CONFIG = [
   { value: "contacted", label: "Susisiekta", color: "bg-yellow-500", borderColor: "border-yellow-500" },
   { value: "completed", label: "Užbaigti", color: "bg-green-500", borderColor: "border-green-500" },
   { value: "not_financed", label: "Nefinansuojami", color: "bg-orange-500", borderColor: "border-orange-500" },
+  { value: "ateityje", label: "Ateityje", color: "bg-purple-500", borderColor: "border-purple-500" },
   { value: "cancelled", label: "Atšaukti", color: "bg-red-500", borderColor: "border-red-500" },
 ];
 
