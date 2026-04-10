@@ -170,7 +170,20 @@ export default function Admin() {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(() => {
     const saved = localStorage.getItem("admin_status_config");
-    return saved ? JSON.parse(saved) : DEFAULT_STATUS_CONFIG;
+    if (saved) {
+      const parsed: StatusConfig[] = JSON.parse(saved);
+      // Ensure all default statuses exist (e.g. "ateityje" may have been added later)
+      const missingDefaults = DEFAULT_STATUS_CONFIG.filter(
+        d => !parsed.some(p => p.value === d.value)
+      );
+      if (missingDefaults.length > 0) {
+        const merged = [...parsed.slice(0, -1), ...missingDefaults, ...parsed.slice(-1)];
+        localStorage.setItem("admin_status_config", JSON.stringify(merged));
+        return merged;
+      }
+      return parsed;
+    }
+    return DEFAULT_STATUS_CONFIG;
   });
   const [addColumnDialogOpen, setAddColumnDialogOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
