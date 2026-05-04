@@ -396,7 +396,7 @@ export default function Admin() {
     try {
       const { error } = await supabase
         .from("contact_submissions")
-        .update({ deleted_at: new Date().toISOString() } as any)
+        .update({ deleted_at: new Date().toISOString() })
         .eq("id", submissionId);
 
       if (error) throw error;
@@ -426,7 +426,7 @@ export default function Admin() {
     try {
       const { error } = await supabase
         .from("contact_submissions")
-        .update({ deleted_at: null } as any)
+        .update({ deleted_at: null })
         .eq("id", submissionId);
 
       if (error) throw error;
