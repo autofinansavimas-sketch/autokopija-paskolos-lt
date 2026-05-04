@@ -148,6 +148,12 @@ const AVAILABLE_COLORS = [
   { color: "bg-cyan-500", borderColor: "border-cyan-500" },
 ];
 
+const normalizeSearchText = (value: string | null | undefined) =>
+  (value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
 interface StatusConfig {
   value: string;
   label: string;
@@ -684,7 +690,7 @@ export default function Admin() {
   }, [submissions, reminders]);
 
   const getSubmissionsByStatus = (status: string) => {
-    const query = searchQuery.toLowerCase().trim();
+    const query = normalizeSearchText(searchQuery.trim());
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -697,8 +703,8 @@ export default function Admin() {
     return submissions.filter(s => {
       if (s.status !== status) return false;
       
-      // Apply quick filter
-      if (quickFilter) {
+      // Apply quick filter only when search is empty, so client search always scans all active clients
+      if (quickFilter && !query) {
         const created = new Date(s.created_at);
         
         if (quickFilter === 'today') {
@@ -716,10 +722,10 @@ export default function Admin() {
       // Apply search query
       if (!query) return true;
       return (
-        (s.name?.toLowerCase().includes(query)) ||
-        (s.email?.toLowerCase().includes(query)) ||
-        (s.phone?.toLowerCase().includes(query)) ||
-        (s.loan_type?.toLowerCase().includes(query))
+        normalizeSearchText(s.name).includes(query) ||
+        normalizeSearchText(s.email).includes(query) ||
+        normalizeSearchText(s.phone).includes(query) ||
+        normalizeSearchText(s.loan_type).includes(query)
       );
     });
   };
