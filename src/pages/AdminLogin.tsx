@@ -323,6 +323,7 @@ export default function AdminLogin() {
   if (mode === "signup") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
+        <AdminLoginSEO />
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Registracija</CardTitle>
