@@ -71,6 +71,9 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEOHead canonical="https://autopaskolos.lt/" />
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
+      </Helmet>
       <AnnouncementBanner />
       <Header />
       <main id="main-content">
