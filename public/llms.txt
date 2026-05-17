@@ -1,0 +1,9 @@
+# AUTOPASKOLOS.LT
+
+> Lietuvoje veikianti paskolų palyginimo platforma. Per 30 minučių atrenkame 3 geriausius vartojimo paskolų, automobilio lizingo ir refinansavimo pasiūlymus iš 20+ bankų ir kreditorių. Paslauga klientui nemokama. Powered by AUTOKOPERS.
+
+## Pages
+
+- [Pradžia](/): Paskolų skaičiuoklė, kontaktinė forma ir paslaugos apžvalga.
+- [Privatumo politika](/privatumo-politika): Kaip renkame, saugome ir naudojame asmens duomenis.
+- [Naudojimosi sąlygos](/salygos): Platformos naudojimo taisyklės, atsakomybės ribojimas ir kontaktai.
