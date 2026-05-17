@@ -9,7 +9,7 @@ const Terms = () => {
     <div className="min-h-screen">
       <SEOHead
         title="Naudojimosi sąlygos | AUTOPASKOLOS.LT"
-        description="AUTOPASKOLOS.LT naudojimosi sąlygos ir taisyklės."
+        description="Susipažinkite su AUTOPASKOLOS.LT naudojimosi sąlygomis ir taisyklėmis: paslaugų aprašymas, naudotojo įsipareigojimai, kainos, atsakomybės ribojimas ir kontaktai."
         canonical="https://autopaskolos.lt/salygos"
       />
       <Header />
