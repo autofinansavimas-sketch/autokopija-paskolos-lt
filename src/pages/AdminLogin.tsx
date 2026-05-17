@@ -7,6 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, Mail, Loader2, ArrowLeft, UserPlus } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
+
+const AdminLoginSEO = () => (
+  <SEOHead
+    title="Admin prisijungimas | AUTOPASKOLOS.LT"
+    description="Prisijungimo puslapis AUTOPASKOLOS.LT administratoriams."
+    canonical="https://autopaskolos.lt/admin-login"
+    noindex
+  />
+);
 
 type Mode = "login" | "signup" | "reset";
 
@@ -237,6 +247,7 @@ export default function AdminLogin() {
   if (mode === "reset") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
+        <AdminLoginSEO />
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Slaptažodžio atstatymas</CardTitle>
@@ -312,6 +323,7 @@ export default function AdminLogin() {
   if (mode === "signup") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
+        <AdminLoginSEO />
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Registracija</CardTitle>
@@ -403,6 +415,7 @@ export default function AdminLogin() {
   // Login mode (default)
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
+      <AdminLoginSEO />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Admin Prisijungimas</CardTitle>

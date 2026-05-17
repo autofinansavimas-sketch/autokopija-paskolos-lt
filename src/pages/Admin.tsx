@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { syncToMeta } from "@/lib/syncToMeta";
+import { SEOHead } from "@/components/SEOHead";
 import { 
   LogOut, 
   RefreshCw, 
@@ -829,6 +830,12 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <SEOHead
+        title="Admin panelė | AUTOPASKOLOS.LT"
+        description="Vidinė AUTOPASKOLOS.LT administravimo panelė klientų užklausoms valdyti."
+        canonical="https://autopaskolos.lt/admin"
+        noindex
+      />
       {/* Header */}
       <header className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-3 sm:px-4 py-3">
