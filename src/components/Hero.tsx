@@ -92,6 +92,8 @@ export const Hero = () => {
                   alt="Profesionali paskolų konsultantė"
                   className="w-full h-full object-cover"
                   loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   width="400"
                   height="500"
                 />
