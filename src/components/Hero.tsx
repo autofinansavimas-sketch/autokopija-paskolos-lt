@@ -11,11 +11,10 @@ export const Hero = () => {
   return (
     <>
       <ContactFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-      <section className="relative min-h-[70vh] md:min-h-[90vh] flex items-center overflow-hidden bg-hero" aria-labelledby="hero-heading">
-        {/* Decorative mesh + glows */}
-        <div className="absolute inset-0 bg-mesh opacity-60" aria-hidden="true" />
-        <div className="hidden md:block absolute top-20 right-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float" aria-hidden="true" />
-        <div className="hidden md:block absolute bottom-20 left-10 w-96 h-96 bg-primary-glow/10 rounded-full blur-3xl" aria-hidden="true" style={{ animationDelay: '2s' }} />
+      <section className="relative min-h-[70vh] md:min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background" aria-labelledby="hero-heading">
+        {/* Decorative background elements - Hidden on mobile for performance */}
+        <div className="hidden md:block absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float" aria-hidden="true" />
+        <div className="hidden md:block absolute bottom-20 left-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl" aria-hidden="true" style={{ animationDelay: '2s' }} />
         
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="grid lg:grid-cols-[60%_40%] gap-8 md:gap-12 items-center max-w-7xl mx-auto">
@@ -92,8 +91,6 @@ export const Hero = () => {
                   alt="Profesionali paskolų konsultantė"
                   className="w-full h-full object-cover"
                   loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
                   width="400"
                   height="500"
                 />
