@@ -1380,6 +1380,7 @@ export default function Admin() {
           </TabsContent>
           
           <TabsContent value="users">
+            <ClientTools />
             <UserManagement />
           </TabsContent>
         </Tabs>
