@@ -72,6 +72,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import UserManagement from "@/components/UserManagement";
+import ClientTools from "@/components/ClientTools";
 import WorkHours from "@/components/WorkHours";
 import CallCalendar from "@/components/CallCalendar";
 import AddReminderDialog from "@/components/AddReminderDialog";
@@ -1380,6 +1381,7 @@ export default function Admin() {
           </TabsContent>
           
           <TabsContent value="users">
+            <ClientTools />
             <UserManagement />
           </TabsContent>
         </Tabs>
