@@ -71,13 +71,58 @@ export default function ClientTools({ statusConfig }: Props) {
 
   // Report state
   const [submissions, setSubmissions] = useState<SubmissionLite[]>([]);
-  const [reportMode, setReportMode] = useState<"client" | "category" | "day">("client");
+  const [reportMode, setReportMode] = useState<"client" | "category" | "day" | "comments">("client");
   const [selectedId, setSelectedId] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>(defaultStatus);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [commentsDate, setCommentsDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [commentRows, setCommentRows] = useState<Array<{ submission: SubmissionLite; comments: { comment: string; created_at: string }[] }>>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => { void loadSubmissions(); }, []);
+
+  useEffect(() => {
+    if (reportMode !== "comments") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingComments(true);
+      const start = `${commentsDate}T00:00:00`;
+      const end = `${commentsDate}T23:59:59.999`;
+      const { data } = await supabase
+        .from("submission_comments")
+        .select("submission_id,comment,created_at")
+        .gte("created_at", start).lte("created_at", end)
+        .order("created_at", { ascending: true });
+      if (cancelled) return;
+      const grouped = new Map<string, { comment: string; created_at: string }[]>();
+      (data || []).forEach((c) => {
+        const arr = grouped.get(c.submission_id) || [];
+        arr.push({ comment: c.comment, created_at: c.created_at });
+        grouped.set(c.submission_id, arr);
+      });
+      const ids = Array.from(grouped.keys());
+      let subs: SubmissionLite[] = [];
+      if (ids.length > 0) {
+        const { data: subData } = await supabase
+          .from("contact_submissions")
+          .select("id,name,email,phone,amount,loan_type,loan_period,status,source,created_at")
+          .in("id", ids);
+        subs = (subData || []) as SubmissionLite[];
+      }
+      const rows = ids.map((id) => {
+        const submission = subs.find((s) => s.id === id) || {
+          id, name: "(ištrintas)", email: "-", phone: "-", amount: null,
+          loan_type: null, loan_period: null, status: "new", source: null,
+          created_at: new Date().toISOString(),
+        } as SubmissionLite;
+        return { submission, comments: grouped.get(id)! };
+      });
+      setCommentRows(rows);
+      setLoadingComments(false);
+    })();
+    return () => { cancelled = true; };
+  }, [reportMode, commentsDate]);
 
   const loadSubmissions = async () => {
     const { data } = await supabase
@@ -310,8 +355,35 @@ export default function ClientTools({ statusConfig }: Props) {
         doc.save(`klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.pdf`);
       } else if (reportMode === "category") {
         buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`);
-      } else {
+      } else if (reportMode === "day") {
         buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`);
+      } else if (reportMode === "comments") {
+        const doc = new jsPDF();
+        doc.setFontSize(16); doc.text(`Pridėtos pastabos ${commentsDate}`, 14, 18);
+        doc.setFontSize(10); doc.setTextColor(120);
+        doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Klientų: ${commentRows.length}`, 14, 25);
+        doc.setTextColor(0);
+        const body: string[][] = [];
+        commentRows.forEach(({ submission: s, comments }) => {
+          comments.forEach((c, idx) => {
+            body.push([
+              idx === 0 ? (s.name || s.email) : "",
+              idx === 0 ? s.phone : "",
+              idx === 0 ? statusLabel(s.status) : "",
+              new Date(c.created_at).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" }),
+              c.comment,
+            ]);
+          });
+        });
+        autoTable(doc, {
+          startY: 32,
+          head: [["Klientas", "Telefonas", "Kortelė", "Laikas", "Pastaba"]],
+          body,
+          styles: { fontSize: 9, cellPadding: 2 },
+          headStyles: { fillColor: [34, 139, 34] },
+          columnStyles: { 4: { cellWidth: "auto" } },
+        });
+        doc.save(`pastabos-${commentsDate}.pdf`);
       }
       toast({ title: "PDF atsisiųsta" });
     } finally { setExporting(false); }
@@ -345,8 +417,23 @@ export default function ClientTools({ statusConfig }: Props) {
         XLSX.writeFile(wb, `klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.xlsx`);
       } else if (reportMode === "category") {
         buildListExcel(statusLabel(selectedCategory), reportRows, `kategorija-${selectedCategory}.xlsx`);
-      } else {
+      } else if (reportMode === "day") {
         buildListExcel(selectedDate, reportRows, `diena-${selectedDate}.xlsx`);
+      } else if (reportMode === "comments") {
+        const wb = XLSX.utils.book_new();
+        const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Laikas", "Pastaba"]];
+        commentRows.forEach(({ submission: s, comments }) => {
+          comments.forEach((c) => {
+            rows.push([
+              s.name || "-", s.phone, s.email, statusLabel(s.status),
+              new Date(c.created_at).toLocaleString("lt-LT"), c.comment,
+            ]);
+          });
+        });
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 18 }, { wch: 60 }];
+        XLSX.utils.book_append_sheet(wb, ws, `Pastabos ${commentsDate}`.slice(0, 31));
+        XLSX.writeFile(wb, `pastabos-${commentsDate}.xlsx`);
       }
       toast({ title: "Excel atsisiųsta" });
     } finally { setExporting(false); }
@@ -539,10 +626,11 @@ export default function ClientTools({ statusConfig }: Props) {
         </CardHeader>
         <CardContent className="space-y-3">
           <Tabs value={reportMode} onValueChange={(v) => setReportMode(v as typeof reportMode)}>
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="client"><Users className="h-4 w-4 mr-1.5" />Klientas</TabsTrigger>
-              <TabsTrigger value="category"><LayoutGrid className="h-4 w-4 mr-1.5" />Kortelė</TabsTrigger>
-              <TabsTrigger value="day"><Calendar className="h-4 w-4 mr-1.5" />Diena</TabsTrigger>
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="client"><Users className="h-3.5 w-3.5 mr-1" />Klientas</TabsTrigger>
+              <TabsTrigger value="category"><LayoutGrid className="h-3.5 w-3.5 mr-1" />Kortelė</TabsTrigger>
+              <TabsTrigger value="day"><Calendar className="h-3.5 w-3.5 mr-1" />Diena</TabsTrigger>
+              <TabsTrigger value="comments"><FileText className="h-3.5 w-3.5 mr-1" />Pastabos</TabsTrigger>
             </TabsList>
 
             <TabsContent value="client" className="mt-3">
@@ -573,18 +661,27 @@ export default function ClientTools({ statusConfig }: Props) {
               <Input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
               <div className="text-xs text-muted-foreground">Bus eksportuota {reportRows.length} klientas(-ų) iš {selectedDate}</div>
             </TabsContent>
+
+            <TabsContent value="comments" className="mt-3 space-y-2">
+              <Input type="date" value={commentsDate} onChange={(e) => setCommentsDate(e.target.value)} />
+              <div className="text-xs text-muted-foreground">
+                {loadingComments
+                  ? "Įkeliama..."
+                  : `Tą dieną pastaba pridėta ${commentRows.length} klientui(-ams) (iš viso ${commentRows.reduce((n, r) => n + r.comments.length, 0)} pastabų)`}
+              </div>
+            </TabsContent>
           </Tabs>
 
           <div className="grid grid-cols-2 gap-2 pt-1">
             <Button
               onClick={exportPDF}
-              disabled={exporting || (reportMode === "client" ? !selectedId : reportRows.length === 0)}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? commentRows.length === 0 : reportRows.length === 0)}
             >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />} PDF
             </Button>
             <Button
               onClick={exportExcel}
-              disabled={exporting || (reportMode === "client" ? !selectedId : reportRows.length === 0)}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? commentRows.length === 0 : reportRows.length === 0)}
               variant="outline"
             >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />} Excel
