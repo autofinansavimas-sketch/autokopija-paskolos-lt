@@ -315,6 +315,33 @@ export default function ClientTools({ statusConfig }: Props) {
         buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`);
       } else {
         buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`);
+      } else if (reportMode === "comments") {
+        const doc = new jsPDF();
+        doc.setFontSize(16); doc.text(`Pridėtos pastabos ${commentsDate}`, 14, 18);
+        doc.setFontSize(10); doc.setTextColor(120);
+        doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Klientų: ${commentRows.length}`, 14, 25);
+        doc.setTextColor(0);
+        const body: string[][] = [];
+        commentRows.forEach(({ submission: s, comments }) => {
+          comments.forEach((c, idx) => {
+            body.push([
+              idx === 0 ? (s.name || s.email) : "",
+              idx === 0 ? s.phone : "",
+              idx === 0 ? statusLabel(s.status) : "",
+              new Date(c.created_at).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" }),
+              c.comment,
+            ]);
+          });
+        });
+        autoTable(doc, {
+          startY: 32,
+          head: [["Klientas", "Telefonas", "Kortelė", "Laikas", "Pastaba"]],
+          body,
+          styles: { fontSize: 9, cellPadding: 2 },
+          headStyles: { fillColor: [34, 139, 34] },
+          columnStyles: { 4: { cellWidth: "auto" } },
+        });
+        doc.save(`pastabos-${commentsDate}.pdf`);
       }
       toast({ title: "PDF atsisiųsta" });
     } finally { setExporting(false); }
