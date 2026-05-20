@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   ScanLine, Upload, Loader2, FileText, FileSpreadsheet, X, Users,
-  Sparkles, Facebook, Plus, CheckCircle2,
+  Sparkles, Facebook, Plus, CheckCircle2, LayoutGrid, Calendar,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -40,13 +40,21 @@ interface ExtractedClient {
   amount?: string;
   loan_type?: string;
   loan_period?: string;
+  status?: string;
   notes?: string;
 }
 
-export default function ClientTools() {
-  const { toast } = useToast();
+interface StatusOpt { value: string; label: string }
 
-  // Extract state (shared between image + text)
+interface Props {
+  statusConfig: StatusOpt[];
+}
+
+export default function ClientTools({ statusConfig }: Props) {
+  const { toast } = useToast();
+  const defaultStatus = statusConfig[0]?.value || "new";
+
+  // Extract state
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [freeText, setFreeText] = useState("");
@@ -54,6 +62,7 @@ export default function ClientTools() {
   const [extracted, setExtracted] = useState<ExtractedClient[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [importing, setImporting] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState<string>(defaultStatus);
 
   // Meta sync state
   const [metaSyncing, setMetaSyncing] = useState(false);
@@ -62,7 +71,10 @@ export default function ClientTools() {
 
   // Report state
   const [submissions, setSubmissions] = useState<SubmissionLite[]>([]);
+  const [reportMode, setReportMode] = useState<"client" | "category" | "day">("client");
   const [selectedId, setSelectedId] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>(defaultStatus);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => { void loadSubmissions(); }, []);
@@ -73,7 +85,7 @@ export default function ClientTools() {
       .select("id,name,email,phone,amount,loan_type,loan_period,status,source,created_at")
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(2000);
     if (data) setSubmissions(data as SubmissionLite[]);
   };
 
@@ -97,10 +109,13 @@ export default function ClientTools() {
   };
 
   const clearImage = () => {
-    setFile(null);
-    setPreview(null);
-    setExtracted([]);
-    setSelected(new Set());
+    setFile(null); setPreview(null); setExtracted([]); setSelected(new Set());
+  };
+
+  const ingestExtracted = (clients: ExtractedClient[]) => {
+    const withStatus = clients.map((c) => ({ ...c, status: c.status || bulkStatus }));
+    setExtracted(withStatus);
+    setSelected(new Set(withStatus.map((_, i) => i)));
   };
 
   const scanImage = async (mode: "single" | "bulk") => {
@@ -113,14 +128,11 @@ export default function ClientTools() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       const clients: ExtractedClient[] = data?.clients || [];
-      setExtracted(clients);
-      setSelected(new Set(clients.map((_, i) => i)));
+      ingestExtracted(clients);
       toast({ title: "Nuskaityta", description: `Rasta ${clients.length} klientas(-ų)` });
     } catch (e) {
       toast({ title: "Klaida", description: e instanceof Error ? e.message : "Nepavyko", variant: "destructive" });
-    } finally {
-      setScanning(false);
-    }
+    } finally { setScanning(false); }
   };
 
   const scanText = async () => {
@@ -133,14 +145,11 @@ export default function ClientTools() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       const clients: ExtractedClient[] = data?.clients || [];
-      setExtracted(clients);
-      setSelected(new Set(clients.map((_, i) => i)));
+      ingestExtracted(clients);
       toast({ title: "Atpažinta", description: `Rasta ${clients.length} klientas(-ų)` });
     } catch (e) {
       toast({ title: "Klaida", description: e instanceof Error ? e.message : "Nepavyko", variant: "destructive" });
-    } finally {
-      setScanning(false);
-    }
+    } finally { setScanning(false); }
   };
 
   const toggleRow = (i: number) => {
@@ -149,10 +158,21 @@ export default function ClientTools() {
     setSelected(s);
   };
 
+  const toggleAll = () => {
+    if (selected.size === extracted.length) setSelected(new Set());
+    else setSelected(new Set(extracted.map((_, i) => i)));
+  };
+
   const updateField = (i: number, field: keyof ExtractedClient, value: string) => {
     const next = [...extracted];
     next[i] = { ...next[i], [field]: value };
     setExtracted(next);
+  };
+
+  const applyBulkStatus = () => {
+    const next = extracted.map((c, i) => selected.has(i) ? { ...c, status: bulkStatus } : c);
+    setExtracted(next);
+    toast({ title: "Priskirta", description: `${selected.size} klientas(-ų) priskirta kortelei „${statusConfig.find(s => s.value === bulkStatus)?.label}"` });
   };
 
   const importSelected = async () => {
@@ -166,10 +186,9 @@ export default function ClientTools() {
         amount: c.amount || null,
         loan_type: c.loan_type || null,
         loan_period: c.loan_period || null,
-        status: "new",
+        status: c.status || bulkStatus,
         source: "import",
       }));
-
     if (toInsert.length === 0) {
       toast({ title: "Nieko nepasirinkta", variant: "destructive" });
       return;
@@ -179,20 +198,16 @@ export default function ClientTools() {
       const { error } = await supabase.from("contact_submissions").insert(toInsert);
       if (error) throw error;
       toast({ title: "Pridėta", description: `Sukurta ${toInsert.length} klientas(-ų) sistemoje` });
-      setExtracted([]);
-      setSelected(new Set());
+      setExtracted([]); setSelected(new Set());
       setFile(null); setPreview(null); setFreeText("");
       void loadSubmissions();
     } catch (e) {
       toast({ title: "Klaida", description: e instanceof Error ? e.message : "Nepavyko išsaugoti", variant: "destructive" });
-    } finally {
-      setImporting(false);
-    }
+    } finally { setImporting(false); }
   };
 
   const syncMeta = async () => {
-    setMetaSyncing(true);
-    setMetaResult(null);
+    setMetaSyncing(true); setMetaResult(null);
     try {
       const { data, error } = await supabase.functions.invoke("meta-leads-sync", {
         body: { hours: Number(metaHours) },
@@ -200,89 +215,139 @@ export default function ClientTools() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setMetaResult({ inserted: data.inserted, skipped: data.skipped, forms: data.forms });
-      toast({
-        title: "Sinchronizuota",
-        description: `Pridėta ${data.inserted}, praleista (jau yra) ${data.skipped}`,
-      });
+      toast({ title: "Sinchronizuota", description: `Pridėta ${data.inserted}, praleista ${data.skipped}` });
       void loadSubmissions();
     } catch (e) {
       toast({ title: "Meta klaida", description: e instanceof Error ? e.message : "Nepavyko", variant: "destructive" });
-    } finally {
-      setMetaSyncing(false);
+    } finally { setMetaSyncing(false); }
+  };
+
+  // ============ REPORTS ============
+
+  const reportRows = useMemo(() => {
+    if (reportMode === "category") {
+      return submissions.filter((s) => s.status === selectedCategory);
     }
+    if (reportMode === "day") {
+      return submissions.filter((s) => s.created_at.slice(0, 10) === selectedDate);
+    }
+    return [];
+  }, [submissions, reportMode, selectedCategory, selectedDate]);
+
+  const statusLabel = (v: string) => statusConfig.find((s) => s.value === v)?.label || v;
+
+  const buildListPDF = (title: string, rows: SubmissionLite[], filename: string) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16); doc.text(title, 14, 18);
+    doc.setFontSize(10); doc.setTextColor(120);
+    doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Viso: ${rows.length}`, 14, 25);
+    doc.setTextColor(0);
+    autoTable(doc, {
+      startY: 32,
+      head: [["Vardas", "Telefonas", "El. paštas", "Suma", "Tipas", "Statusas", "Data"]],
+      body: rows.map((s) => [
+        s.name || "-", s.phone, s.email, s.amount || "-",
+        s.loan_type || "-", statusLabel(s.status),
+        new Date(s.created_at).toLocaleDateString("lt-LT"),
+      ]),
+      styles: { fontSize: 8 }, headStyles: { fillColor: [34, 139, 34] },
+    });
+    doc.save(filename);
+  };
+
+  const buildListExcel = (sheetName: string, rows: SubmissionLite[], filename: string) => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["Vardas", "Telefonas", "El. paštas", "Suma", "Paskolos tipas", "Terminas", "Statusas", "Šaltinis", "Sukurta"],
+      ...rows.map((s) => [
+        s.name || "-", s.phone, s.email, s.amount || "-",
+        s.loan_type || "-", s.loan_period || "-",
+        statusLabel(s.status), s.source || "-",
+        new Date(s.created_at).toLocaleString("lt-LT"),
+      ]),
+    ]);
+    ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+    XLSX.writeFile(wb, filename);
   };
 
   const exportPDF = async () => {
-    if (!selectedId) { toast({ title: "Pasirinkite klientą", variant: "destructive" }); return; }
     setExporting(true);
     try {
-      const s = submissions.find((x) => x.id === selectedId)!;
-      const { data: comments } = await supabase
-        .from("submission_comments").select("comment,created_at")
-        .eq("submission_id", selectedId).order("created_at", { ascending: true });
-
-      const doc = new jsPDF();
-      doc.setFontSize(18); doc.text("Kliento ataskaita", 14, 20);
-      doc.setFontSize(10); doc.setTextColor(120);
-      doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}`, 14, 27);
-      doc.setTextColor(0);
-      autoTable(doc, {
-        startY: 35,
-        head: [["Laukas", "Reikšmė"]],
-        body: [
-          ["Vardas", s.name || "-"],
-          ["El. paštas", s.email],
-          ["Telefonas", s.phone],
-          ["Suma", s.amount || "-"],
-          ["Paskolos tipas", s.loan_type || "-"],
-          ["Terminas", s.loan_period || "-"],
-          ["Statusas", s.status],
-          ["Saltinis", s.source || "-"],
-          ["Sukurta", new Date(s.created_at).toLocaleString("lt-LT")],
-        ],
-        styles: { fontSize: 10 }, headStyles: { fillColor: [34, 139, 34] },
-      });
-      if (comments && comments.length > 0) {
-        const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-        doc.setFontSize(14); doc.text("Komentarai", 14, finalY + 12);
+      if (reportMode === "client") {
+        if (!selectedId) { toast({ title: "Pasirinkite klientą", variant: "destructive" }); return; }
+        const s = submissions.find((x) => x.id === selectedId)!;
+        const { data: comments } = await supabase
+          .from("submission_comments").select("comment,created_at")
+          .eq("submission_id", selectedId).order("created_at", { ascending: true });
+        const doc = new jsPDF();
+        doc.setFontSize(18); doc.text("Kliento ataskaita", 14, 20);
+        doc.setFontSize(10); doc.setTextColor(120);
+        doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}`, 14, 27);
+        doc.setTextColor(0);
         autoTable(doc, {
-          startY: finalY + 16,
-          head: [["Data", "Komentaras"]],
-          body: comments.map((c) => [new Date(c.created_at).toLocaleString("lt-LT"), c.comment]),
-          styles: { fontSize: 9 }, headStyles: { fillColor: [34, 139, 34] },
-          columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: "auto" } },
+          startY: 35,
+          head: [["Laukas", "Reikšmė"]],
+          body: [
+            ["Vardas", s.name || "-"], ["El. paštas", s.email], ["Telefonas", s.phone],
+            ["Suma", s.amount || "-"], ["Paskolos tipas", s.loan_type || "-"],
+            ["Terminas", s.loan_period || "-"], ["Statusas", statusLabel(s.status)],
+            ["Šaltinis", s.source || "-"],
+            ["Sukurta", new Date(s.created_at).toLocaleString("lt-LT")],
+          ],
+          styles: { fontSize: 10 }, headStyles: { fillColor: [34, 139, 34] },
         });
+        if (comments && comments.length > 0) {
+          const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+          doc.setFontSize(14); doc.text("Komentarai", 14, finalY + 12);
+          autoTable(doc, {
+            startY: finalY + 16,
+            head: [["Data", "Komentaras"]],
+            body: comments.map((c) => [new Date(c.created_at).toLocaleString("lt-LT"), c.comment]),
+            styles: { fontSize: 9 }, headStyles: { fillColor: [34, 139, 34] },
+          });
+        }
+        doc.save(`klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.pdf`);
+      } else if (reportMode === "category") {
+        buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`);
+      } else {
+        buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`);
       }
-      doc.save(`klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.pdf`);
       toast({ title: "PDF atsisiųsta" });
     } finally { setExporting(false); }
   };
 
   const exportExcel = async () => {
-    if (!selectedId) { toast({ title: "Pasirinkite klientą", variant: "destructive" }); return; }
     setExporting(true);
     try {
-      const s = submissions.find((x) => x.id === selectedId)!;
-      const { data: comments } = await supabase
-        .from("submission_comments").select("comment,created_at")
-        .eq("submission_id", selectedId).order("created_at", { ascending: true });
-      const wb = XLSX.utils.book_new();
-      const ws1 = XLSX.utils.aoa_to_sheet([
-        ["Laukas", "Reikšmė"],
-        ["Vardas", s.name || "-"], ["El. paštas", s.email], ["Telefonas", s.phone],
-        ["Suma", s.amount || "-"], ["Paskolos tipas", s.loan_type || "-"],
-        ["Terminas", s.loan_period || "-"], ["Statusas", s.status],
-        ["Šaltinis", s.source || "-"], ["Sukurta", new Date(s.created_at).toLocaleString("lt-LT")],
-      ]);
-      ws1["!cols"] = [{ wch: 20 }, { wch: 50 }];
-      XLSX.utils.book_append_sheet(wb, ws1, "Klientas");
-      if (comments && comments.length > 0) {
-        const ws2 = XLSX.utils.aoa_to_sheet([["Data", "Komentaras"],
-          ...comments.map((c) => [new Date(c.created_at).toLocaleString("lt-LT"), c.comment])]);
-        ws2["!cols"] = [{ wch: 22 }, { wch: 80 }];
-        XLSX.utils.book_append_sheet(wb, ws2, "Komentarai");
+      if (reportMode === "client") {
+        if (!selectedId) { toast({ title: "Pasirinkite klientą", variant: "destructive" }); return; }
+        const s = submissions.find((x) => x.id === selectedId)!;
+        const { data: comments } = await supabase
+          .from("submission_comments").select("comment,created_at")
+          .eq("submission_id", selectedId).order("created_at", { ascending: true });
+        const wb = XLSX.utils.book_new();
+        const ws1 = XLSX.utils.aoa_to_sheet([
+          ["Laukas", "Reikšmė"],
+          ["Vardas", s.name || "-"], ["El. paštas", s.email], ["Telefonas", s.phone],
+          ["Suma", s.amount || "-"], ["Paskolos tipas", s.loan_type || "-"],
+          ["Terminas", s.loan_period || "-"], ["Statusas", statusLabel(s.status)],
+          ["Šaltinis", s.source || "-"], ["Sukurta", new Date(s.created_at).toLocaleString("lt-LT")],
+        ]);
+        ws1["!cols"] = [{ wch: 20 }, { wch: 50 }];
+        XLSX.utils.book_append_sheet(wb, ws1, "Klientas");
+        if (comments && comments.length > 0) {
+          const ws2 = XLSX.utils.aoa_to_sheet([["Data", "Komentaras"],
+            ...comments.map((c) => [new Date(c.created_at).toLocaleString("lt-LT"), c.comment])]);
+          ws2["!cols"] = [{ wch: 22 }, { wch: 80 }];
+          XLSX.utils.book_append_sheet(wb, ws2, "Komentarai");
+        }
+        XLSX.writeFile(wb, `klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.xlsx`);
+      } else if (reportMode === "category") {
+        buildListExcel(statusLabel(selectedCategory), reportRows, `kategorija-${selectedCategory}.xlsx`);
+      } else {
+        buildListExcel(selectedDate, reportRows, `diena-${selectedDate}.xlsx`);
       }
-      XLSX.writeFile(wb, `klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.xlsx`);
       toast({ title: "Excel atsisiųsta" });
     } finally { setExporting(false); }
   };
@@ -293,11 +358,10 @@ export default function ClientTools() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Pridėti klientus į sistemą
+            <Sparkles className="h-5 w-5 text-primary" /> Pridėti klientus į sistemą
           </CardTitle>
           <CardDescription>
-            Iš nuotraukos, laisvo teksto arba tiesiogiai iš Meta (Facebook) skelbimų
+            Iš nuotraukos, laisvo teksto arba iš Meta — pasirinkite kuriai kortelei priskirti
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -308,14 +372,13 @@ export default function ClientTools() {
               <TabsTrigger value="meta"><Facebook className="h-4 w-4 mr-1.5" />Meta leads</TabsTrigger>
             </TabsList>
 
-            {/* Image tab */}
             <TabsContent value="image" className="space-y-3 mt-4">
               {!preview ? (
                 <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-lg p-8 cursor-pointer hover:bg-muted/30 transition">
                   <Upload className="h-8 w-8 text-muted-foreground" />
                   <span className="text-sm font-medium">Spauskite ir įkelkite nuotrauką</span>
                   <span className="text-xs text-muted-foreground">
-                    Ekrano nuotrauka su klientų sąrašu, dokumentas ar bet kokia kita nuotrauka su tekstu (iki 10MB)
+                    Klientų sąrašas, dokumentas, ar bet kokia kita nuotrauka su tekstu (iki 10MB)
                   </span>
                   <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                 </label>
@@ -330,7 +393,7 @@ export default function ClientTools() {
                   <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => scanImage("bulk")} disabled={scanning}>
                       {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Users className="h-4 w-4 mr-2" />}
-                      Lentelė / sąrašas
+                      Lentelė / keli
                     </Button>
                     <Button onClick={() => scanImage("single")} disabled={scanning} variant="outline">
                       {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ScanLine className="h-4 w-4 mr-2" />}
@@ -341,10 +404,9 @@ export default function ClientTools() {
               )}
             </TabsContent>
 
-            {/* Text tab */}
             <TabsContent value="text" className="space-y-3 mt-4">
               <Textarea
-                placeholder="Padrikai parašykite viską apie klientą - vardas, telefonas, el. paštas, ko nori, kiek nori... AI sutvarkys ir sukurs kortelę."
+                placeholder="Įklijuokite kelių klientų sąrašą arba padrikai parašykite apie kiekvieną — vardas, telefonas, suma, ko nori..."
                 value={freeText}
                 onChange={(e) => setFreeText(e.target.value)}
                 rows={6}
@@ -356,10 +418,9 @@ export default function ClientTools() {
               </Button>
             </TabsContent>
 
-            {/* Meta tab */}
             <TabsContent value="meta" className="space-y-3 mt-4">
               <div className="p-3 rounded-lg bg-muted/40 border border-border/50 text-sm text-muted-foreground">
-                Paspaudus „Sinchronizuoti" sistema parsisiųs naujausius lead'us iš visų jūsų Facebook lead'ų formų ir įkels į CRM. Pasikartojantys lead'ai (pagal Meta ID) bus praleisti.
+                Paspaudus „Sinchronizuoti" sistema parsisiųs naujausius lead'us iš Facebook formų. Pasikartojantys praleidžiami.
               </div>
               <div className="flex items-end gap-2">
                 <div className="flex-1 space-y-1">
@@ -392,28 +453,49 @@ export default function ClientTools() {
           {extracted.length > 0 && (
             <div className="mt-5 pt-5 border-t space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary">{extracted.length} klientas(-ų)</Badge>
-                  <span className="text-xs text-muted-foreground">
-                    Pažymėta {selected.size}. Patikrinkite ir, jei reikia, pataisykite.
-                  </span>
+                  <span className="text-xs text-muted-foreground">Pažymėta {selected.size}</span>
                 </div>
+              </div>
+
+              <div className="flex flex-wrap items-end gap-2 p-3 rounded-lg bg-muted/40 border">
+                <div className="flex-1 min-w-[180px] space-y-1">
+                  <Label className="text-xs flex items-center gap-1"><LayoutGrid className="h-3 w-3" /> Priskirti kortelei</Label>
+                  <Select value={bulkStatus} onValueChange={setBulkStatus}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {statusConfig.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button variant="outline" size="sm" onClick={applyBulkStatus} disabled={selected.size === 0}>
+                  Priskirti pažymėtiems ({selected.size})
+                </Button>
                 <Button onClick={importSelected} disabled={importing || selected.size === 0} size="sm">
                   {importing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
                   Pridėti į sistemą ({selected.size})
                 </Button>
               </div>
 
-              <div className="overflow-x-auto border rounded-lg max-h-[420px] overflow-y-auto">
+              <div className="overflow-x-auto border rounded-lg max-h-[460px] overflow-y-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 sticky top-0">
                     <tr>
-                      <th className="p-2 w-8"></th>
+                      <th className="p-2 w-8">
+                        <Checkbox
+                          checked={selected.size === extracted.length && extracted.length > 0}
+                          onCheckedChange={toggleAll}
+                        />
+                      </th>
                       <th className="p-2 text-left font-medium">Vardas</th>
                       <th className="p-2 text-left font-medium">Telefonas</th>
                       <th className="p-2 text-left font-medium">El. paštas</th>
                       <th className="p-2 text-left font-medium">Suma</th>
                       <th className="p-2 text-left font-medium">Tipas</th>
+                      <th className="p-2 text-left font-medium">Kortelė</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -422,20 +504,20 @@ export default function ClientTools() {
                         <td className="p-2">
                           <Checkbox checked={selected.has(i)} onCheckedChange={() => toggleRow(i)} />
                         </td>
+                        <td className="p-1"><Input value={c.name || ""} onChange={(e) => updateField(i, "name", e.target.value)} className="h-8 text-sm" /></td>
+                        <td className="p-1"><Input value={c.phone || ""} onChange={(e) => updateField(i, "phone", e.target.value)} className="h-8 text-sm" /></td>
+                        <td className="p-1"><Input value={c.email || ""} onChange={(e) => updateField(i, "email", e.target.value)} className="h-8 text-sm" /></td>
+                        <td className="p-1"><Input value={c.amount || ""} onChange={(e) => updateField(i, "amount", e.target.value)} className="h-8 text-sm w-24" /></td>
+                        <td className="p-1"><Input value={c.loan_type || ""} onChange={(e) => updateField(i, "loan_type", e.target.value)} className="h-8 text-sm" /></td>
                         <td className="p-1">
-                          <Input value={c.name || ""} onChange={(e) => updateField(i, "name", e.target.value)} className="h-8 text-sm" />
-                        </td>
-                        <td className="p-1">
-                          <Input value={c.phone || ""} onChange={(e) => updateField(i, "phone", e.target.value)} className="h-8 text-sm" />
-                        </td>
-                        <td className="p-1">
-                          <Input value={c.email || ""} onChange={(e) => updateField(i, "email", e.target.value)} className="h-8 text-sm" />
-                        </td>
-                        <td className="p-1">
-                          <Input value={c.amount || ""} onChange={(e) => updateField(i, "amount", e.target.value)} className="h-8 text-sm w-24" />
-                        </td>
-                        <td className="p-1">
-                          <Input value={c.loan_type || ""} onChange={(e) => updateField(i, "loan_type", e.target.value)} className="h-8 text-sm" />
+                          <Select value={c.status || bulkStatus} onValueChange={(v) => updateField(i, "status", v)}>
+                            <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {statusConfig.map((s) => (
+                                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </td>
                       </tr>
                     ))}
@@ -451,27 +533,60 @@ export default function ClientTools() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            Kliento ataskaita
+            <FileText className="h-5 w-5 text-primary" /> Ataskaitos
           </CardTitle>
-          <CardDescription>Pasirinkite klientą ir atsisiųskite PDF arba Excel ataskaitą</CardDescription>
+          <CardDescription>PDF arba Excel — pagal klientą, kortelę/kategoriją arba dieną</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Select value={selectedId} onValueChange={setSelectedId}>
-            <SelectTrigger><SelectValue placeholder="Pasirinkite klientą..." /></SelectTrigger>
-            <SelectContent>
-              {submissions.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {(s.name || s.email)} — {s.phone}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="grid grid-cols-2 gap-2">
-            <Button onClick={exportPDF} disabled={exporting || !selectedId}>
+          <Tabs value={reportMode} onValueChange={(v) => setReportMode(v as typeof reportMode)}>
+            <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="client"><Users className="h-4 w-4 mr-1.5" />Klientas</TabsTrigger>
+              <TabsTrigger value="category"><LayoutGrid className="h-4 w-4 mr-1.5" />Kortelė</TabsTrigger>
+              <TabsTrigger value="day"><Calendar className="h-4 w-4 mr-1.5" />Diena</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="client" className="mt-3">
+              <Select value={selectedId} onValueChange={setSelectedId}>
+                <SelectTrigger><SelectValue placeholder="Pasirinkite klientą..." /></SelectTrigger>
+                <SelectContent>
+                  {submissions.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{(s.name || s.email)} — {s.phone}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </TabsContent>
+
+            <TabsContent value="category" className="mt-3 space-y-2">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {statusConfig.map((s) => {
+                    const count = submissions.filter((x) => x.status === s.value).length;
+                    return <SelectItem key={s.value} value={s.value}>{s.label} ({count})</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
+              <div className="text-xs text-muted-foreground">Bus eksportuota {reportRows.length} klientas(-ų)</div>
+            </TabsContent>
+
+            <TabsContent value="day" className="mt-3 space-y-2">
+              <Input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+              <div className="text-xs text-muted-foreground">Bus eksportuota {reportRows.length} klientas(-ų) iš {selectedDate}</div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Button
+              onClick={exportPDF}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportRows.length === 0)}
+            >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />} PDF
             </Button>
-            <Button onClick={exportExcel} disabled={exporting || !selectedId} variant="outline">
+            <Button
+              onClick={exportExcel}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportRows.length === 0)}
+              variant="outline"
+            >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />} Excel
             </Button>
           </div>
