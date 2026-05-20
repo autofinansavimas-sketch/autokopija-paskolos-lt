@@ -375,8 +375,23 @@ export default function ClientTools({ statusConfig }: Props) {
         XLSX.writeFile(wb, `klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.xlsx`);
       } else if (reportMode === "category") {
         buildListExcel(statusLabel(selectedCategory), reportRows, `kategorija-${selectedCategory}.xlsx`);
-      } else {
+      } else if (reportMode === "day") {
         buildListExcel(selectedDate, reportRows, `diena-${selectedDate}.xlsx`);
+      } else if (reportMode === "comments") {
+        const wb = XLSX.utils.book_new();
+        const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Laikas", "Pastaba"]];
+        commentRows.forEach(({ submission: s, comments }) => {
+          comments.forEach((c) => {
+            rows.push([
+              s.name || "-", s.phone, s.email, statusLabel(s.status),
+              new Date(c.created_at).toLocaleString("lt-LT"), c.comment,
+            ]);
+          });
+        });
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 18 }, { wch: 60 }];
+        XLSX.utils.book_append_sheet(wb, ws, `Pastabos ${commentsDate}`.slice(0, 31));
+        XLSX.writeFile(wb, `pastabos-${commentsDate}.xlsx`);
       }
       toast({ title: "Excel atsisiųsta" });
     } finally { setExporting(false); }
