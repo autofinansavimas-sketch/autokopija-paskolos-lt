@@ -1381,7 +1381,7 @@ export default function Admin() {
           </TabsContent>
           
           <TabsContent value="users">
-            <ClientTools />
+            <ClientTools statusConfig={statusConfig} />
             <UserManagement />
           </TabsContent>
         </Tabs>
