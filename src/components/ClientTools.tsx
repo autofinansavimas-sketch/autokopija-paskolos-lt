@@ -313,7 +313,7 @@ export default function ClientTools({ statusConfig }: Props) {
         doc.save(`klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.pdf`);
       } else if (reportMode === "category") {
         buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`);
-      } else {
+      } else if (reportMode === "day") {
         buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`);
       } else if (reportMode === "comments") {
         const doc = new jsPDF();
