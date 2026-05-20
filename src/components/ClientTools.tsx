@@ -71,10 +71,13 @@ export default function ClientTools({ statusConfig }: Props) {
 
   // Report state
   const [submissions, setSubmissions] = useState<SubmissionLite[]>([]);
-  const [reportMode, setReportMode] = useState<"client" | "category" | "day">("client");
+  const [reportMode, setReportMode] = useState<"client" | "category" | "day" | "comments">("client");
   const [selectedId, setSelectedId] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>(defaultStatus);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [commentsDate, setCommentsDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [commentRows, setCommentRows] = useState<Array<{ submission: SubmissionLite; comments: { comment: string; created_at: string }[] }>>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => { void loadSubmissions(); }, []);
