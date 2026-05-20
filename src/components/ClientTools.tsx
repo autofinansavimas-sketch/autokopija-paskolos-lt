@@ -584,10 +584,11 @@ export default function ClientTools({ statusConfig }: Props) {
         </CardHeader>
         <CardContent className="space-y-3">
           <Tabs value={reportMode} onValueChange={(v) => setReportMode(v as typeof reportMode)}>
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="client"><Users className="h-4 w-4 mr-1.5" />Klientas</TabsTrigger>
-              <TabsTrigger value="category"><LayoutGrid className="h-4 w-4 mr-1.5" />Kortelė</TabsTrigger>
-              <TabsTrigger value="day"><Calendar className="h-4 w-4 mr-1.5" />Diena</TabsTrigger>
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="client"><Users className="h-3.5 w-3.5 mr-1" />Klientas</TabsTrigger>
+              <TabsTrigger value="category"><LayoutGrid className="h-3.5 w-3.5 mr-1" />Kortelė</TabsTrigger>
+              <TabsTrigger value="day"><Calendar className="h-3.5 w-3.5 mr-1" />Diena</TabsTrigger>
+              <TabsTrigger value="comments"><FileText className="h-3.5 w-3.5 mr-1" />Pastabos</TabsTrigger>
             </TabsList>
 
             <TabsContent value="client" className="mt-3">
@@ -618,18 +619,27 @@ export default function ClientTools({ statusConfig }: Props) {
               <Input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
               <div className="text-xs text-muted-foreground">Bus eksportuota {reportRows.length} klientas(-ų) iš {selectedDate}</div>
             </TabsContent>
+
+            <TabsContent value="comments" className="mt-3 space-y-2">
+              <Input type="date" value={commentsDate} onChange={(e) => setCommentsDate(e.target.value)} />
+              <div className="text-xs text-muted-foreground">
+                {loadingComments
+                  ? "Įkeliama..."
+                  : `Tą dieną pastaba pridėta ${commentRows.length} klientui(-ams) (iš viso ${commentRows.reduce((n, r) => n + r.comments.length, 0)} pastabų)`}
+              </div>
+            </TabsContent>
           </Tabs>
 
           <div className="grid grid-cols-2 gap-2 pt-1">
             <Button
               onClick={exportPDF}
-              disabled={exporting || (reportMode === "client" ? !selectedId : reportRows.length === 0)}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? commentRows.length === 0 : reportRows.length === 0)}
             >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />} PDF
             </Button>
             <Button
               onClick={exportExcel}
-              disabled={exporting || (reportMode === "client" ? !selectedId : reportRows.length === 0)}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? commentRows.length === 0 : reportRows.length === 0)}
               variant="outline"
             >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />} Excel
