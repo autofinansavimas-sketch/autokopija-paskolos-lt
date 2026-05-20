@@ -82,6 +82,48 @@ export default function ClientTools({ statusConfig }: Props) {
 
   useEffect(() => { void loadSubmissions(); }, []);
 
+  useEffect(() => {
+    if (reportMode !== "comments") return;
+    let cancelled = false;
+    (async () => {
+      setLoadingComments(true);
+      const start = `${commentsDate}T00:00:00`;
+      const end = `${commentsDate}T23:59:59.999`;
+      const { data } = await supabase
+        .from("submission_comments")
+        .select("submission_id,comment,created_at")
+        .gte("created_at", start).lte("created_at", end)
+        .order("created_at", { ascending: true });
+      if (cancelled) return;
+      const grouped = new Map<string, { comment: string; created_at: string }[]>();
+      (data || []).forEach((c) => {
+        const arr = grouped.get(c.submission_id) || [];
+        arr.push({ comment: c.comment, created_at: c.created_at });
+        grouped.set(c.submission_id, arr);
+      });
+      const ids = Array.from(grouped.keys());
+      let subs: SubmissionLite[] = [];
+      if (ids.length > 0) {
+        const { data: subData } = await supabase
+          .from("contact_submissions")
+          .select("id,name,email,phone,amount,loan_type,loan_period,status,source,created_at")
+          .in("id", ids);
+        subs = (subData || []) as SubmissionLite[];
+      }
+      const rows = ids.map((id) => {
+        const submission = subs.find((s) => s.id === id) || {
+          id, name: "(ištrintas)", email: "-", phone: "-", amount: null,
+          loan_type: null, loan_period: null, status: "new", source: null,
+          created_at: new Date().toISOString(),
+        } as SubmissionLite;
+        return { submission, comments: grouped.get(id)! };
+      });
+      setCommentRows(rows);
+      setLoadingComments(false);
+    })();
+    return () => { cancelled = true; };
+  }, [reportMode, commentsDate]);
+
   const loadSubmissions = async () => {
     const { data } = await supabase
       .from("contact_submissions")
