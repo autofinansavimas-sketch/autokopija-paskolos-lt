@@ -196,6 +196,8 @@ export default function Admin() {
   const [addColumnDialogOpen, setAddColumnDialogOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnColor, setNewColumnColor] = useState(AVAILABLE_COLORS[0]);
+  const [editingColumn, setEditingColumn] = useState<string | null>(null);
+  const [editingColumnLabel, setEditingColumnLabel] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [profiles, setProfiles] = useState<{ user_id: string; email: string; display_name?: string | null }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
