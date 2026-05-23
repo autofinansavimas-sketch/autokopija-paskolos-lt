@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ScanLine, Upload, Loader2, FileText, FileSpreadsheet, X, Users,
   Sparkles, Facebook, Plus, CheckCircle2, LayoutGrid, Calendar,
+  MessageSquare, Mail, Copy, Send,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
