@@ -448,6 +448,98 @@ export default function ClientTools({ statusConfig }: Props) {
     } finally { setExporting(false); }
   };
 
+  // ===== Bulk messaging =====
+  const msgRecipients = useMemo(() => {
+    const q = msgSearch.trim().toLowerCase();
+    return submissions.filter((s) => {
+      if (msgFilter !== "all" && s.status !== msgFilter) return false;
+      if (q && !((s.name || "").toLowerCase().includes(q) || s.phone.includes(q) || s.email.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }, [submissions, msgFilter, msgSearch]);
+
+  const msgChosen = useMemo(
+    () => msgRecipients.filter((s) => msgSelected.has(s.id)),
+    [msgRecipients, msgSelected]
+  );
+
+  const firstName = (full: string | null) => (full || "").trim().split(/\s+/)[0] || "";
+
+  const renderMessage = (s: SubmissionLite) =>
+    msgText.replace(/\{vardas\}/gi, firstName(s.name) || "kliente");
+
+  const toggleMsg = (id: string) => {
+    const n = new Set(msgSelected);
+    n.has(id) ? n.delete(id) : n.add(id);
+    setMsgSelected(n);
+  };
+  const toggleMsgAll = () => {
+    if (msgChosen.length === msgRecipients.length) setMsgSelected(new Set());
+    else setMsgSelected(new Set(msgRecipients.map((s) => s.id)));
+  };
+
+  const sendBulkSMS = () => {
+    if (msgChosen.length === 0) return;
+    // If message contains personalization, send one-by-one (open sequentially)
+    const personalized = /\{vardas\}/i.test(msgText);
+    if (personalized && msgChosen.length > 1) {
+      toast({
+        title: "Asmeniniai SMS",
+        description: `Bus atidaryta ${msgChosen.length} SMS langų po vieną — paspauskite „Siųsti" kiekvienam.`,
+      });
+      msgChosen.forEach((s, idx) => {
+        setTimeout(() => {
+          const body = encodeURIComponent(renderMessage(s));
+          const phone = s.phone.replace(/\s+/g, "");
+          window.location.href = `sms:${phone}?body=${body}`;
+        }, idx * 800);
+      });
+      return;
+    }
+    // Same message to all — comma-separated numbers
+    const phones = msgChosen.map((s) => s.phone.replace(/\s+/g, "")).join(",");
+    const body = encodeURIComponent(msgText.replace(/\{vardas\}/gi, "kliente"));
+    window.location.href = `sms:${phones}?body=${body}`;
+  };
+
+  const sendBulkEmail = () => {
+    const withEmail = msgChosen.filter((s) => s.email && !s.email.includes("no-email@"));
+    if (withEmail.length === 0) {
+      toast({ title: "Nėra el. paštų", description: "Pažymėti klientai neturi el. pašto", variant: "destructive" });
+      return;
+    }
+    const personalized = /\{vardas\}/i.test(msgText);
+    if (personalized && withEmail.length > 1) {
+      toast({
+        title: "Asmeniniai laiškai",
+        description: `Bus atidaryta ${withEmail.length} laiškų po vieną.`,
+      });
+      withEmail.forEach((s, idx) => {
+        setTimeout(() => {
+          const body = encodeURIComponent(renderMessage(s));
+          window.location.href = `mailto:${s.email}?subject=AutoPaskolos&body=${body}`;
+        }, idx * 800);
+      });
+      return;
+    }
+    const bcc = withEmail.map((s) => s.email).join(",");
+    const body = encodeURIComponent(msgText.replace(/\{vardas\}/gi, "kliente"));
+    window.location.href = `mailto:?bcc=${bcc}&subject=AutoPaskolos&body=${body}`;
+  };
+
+  const copyPhones = async () => {
+    const phones = msgChosen.map((s) => s.phone).join(", ");
+    await navigator.clipboard.writeText(phones);
+    toast({ title: "Nukopijuota", description: `${msgChosen.length} telefono numerių` });
+  };
+
+  const copyEmails = async () => {
+    const emails = msgChosen.filter((s) => s.email && !s.email.includes("no-email@")).map((s) => s.email).join(", ");
+    await navigator.clipboard.writeText(emails);
+    toast({ title: "Nukopijuota", description: `${emails.split(",").filter(Boolean).length} el. paštų` });
+  };
+
+
   return (
     <div className="space-y-4 mb-6">
       {/* Import card */}
