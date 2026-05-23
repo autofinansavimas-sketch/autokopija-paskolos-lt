@@ -74,6 +74,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import UserManagement from "@/components/UserManagement";
 import ClientTools from "@/components/ClientTools";
 import WorkHours from "@/components/WorkHours";
