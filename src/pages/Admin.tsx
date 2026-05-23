@@ -1133,7 +1133,7 @@ export default function Admin() {
               return (
                 <div 
                   key={colConfig.value} 
-                  className={`flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 ${
+                  className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 ${
                     isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5 scale-[1.02]' : 'hover:bg-card/80'
                   }`}
                   onDragOver={(e) => handleDragOver(e, colConfig.value)}
@@ -1142,28 +1142,101 @@ export default function Admin() {
                 >
                   {/* Column Header */}
                   <div className="p-3 border-b">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2.5 h-2.5 rounded-full ${colConfig.color} ring-2 ring-offset-1 ring-offset-background ${colConfig.borderColor.replace('border-', 'ring-')}/30`} />
-                        <span className="font-semibold text-sm">{colConfig.label}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              title="Keisti spalvą"
+                              className={`w-3 h-3 rounded-full ${colConfig.color} ring-2 ring-offset-1 ring-offset-background ${colConfig.borderColor.replace('border-', 'ring-')}/30 hover:scale-125 transition-transform cursor-pointer`}
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2" align="start">
+                            <div className="grid grid-cols-5 gap-1.5">
+                              {AVAILABLE_COLORS.map((c, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => handleChangeColumnColor(colConfig.value, c)}
+                                  className={`w-6 h-6 rounded-full ${c.color} hover:scale-110 transition-transform ${
+                                    colConfig.color === c.color ? 'ring-2 ring-foreground ring-offset-1' : ''
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        {editingColumn === colConfig.value ? (
+                          <div className="flex items-center gap-1 flex-1 min-w-0">
+                            <Input
+                              autoFocus
+                              value={editingColumnLabel}
+                              onChange={(e) => setEditingColumnLabel(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleRenameColumn(colConfig.value);
+                                if (e.key === "Escape") { setEditingColumn(null); setEditingColumnLabel(""); }
+                              }}
+                              className="h-7 text-sm px-2"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                              onClick={() => handleRenameColumn(colConfig.value)}
+                            >
+                              <CheckIcon className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-muted-foreground"
+                              onClick={() => { setEditingColumn(null); setEditingColumnLabel(""); }}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onDoubleClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
+                            className="font-semibold text-sm truncate text-left hover:text-primary transition-colors"
+                            title="Dukart spustelėkite, kad pervadintumėte"
+                          >
+                            {colConfig.label}
+                          </button>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
-                          {statusSubmissions.length}
-                        </Badge>
-                        {statusSubmissions.length === 0 && (
+                      {editingColumn !== colConfig.value && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
+                            {statusSubmissions.length}
+                          </Badge>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleDeleteColumn(colConfig.value)}
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
+                            title="Pervadinti kortelę"
                           >
-                            <X className="h-3 w-3" />
+                            <Pencil className="h-3 w-3" />
                           </Button>
-                        )}
-                      </div>
+                          {statusSubmissions.length === 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => handleDeleteColumn(colConfig.value)}
+                              title="Ištrinti kortelę"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
+
 
                   {/* Column Cards */}
                   <div className="p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto">
