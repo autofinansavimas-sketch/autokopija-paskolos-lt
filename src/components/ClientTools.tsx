@@ -790,6 +790,100 @@ export default function ClientTools({ statusConfig }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Bulk messaging card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Send className="h-5 w-5 text-primary" /> Masinės žinutės
+          </CardTitle>
+          <CardDescription>
+            Pažymėkite klientus, parašykite žinutę ir siųskite SMS arba el. paštu visiems iš karto.
+            Naudokite <code className="px-1 rounded bg-muted">{"{vardas}"}</code> personalizacijai.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid sm:grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">Filtruoti pagal kortelę</Label>
+              <Select value={msgFilter} onValueChange={(v) => { setMsgFilter(v); setMsgSelected(new Set()); }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Visi ({submissions.length})</SelectItem>
+                  {statusConfig.map((s) => {
+                    const count = submissions.filter((x) => x.status === s.value).length;
+                    return <SelectItem key={s.value} value={s.value}>{s.label} ({count})</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Paieška</Label>
+              <Input placeholder="Vardas, telefonas, el. paštas..." value={msgSearch} onChange={(e) => setMsgSearch(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+            <Badge variant="secondary">Pažymėta {msgChosen.length} iš {msgRecipients.length}</Badge>
+            <Button size="sm" variant="outline" onClick={toggleMsgAll}>
+              {msgChosen.length === msgRecipients.length && msgRecipients.length > 0 ? "Atžymėti visus" : "Pažymėti visus"}
+            </Button>
+          </div>
+
+          <div className="border rounded-lg max-h-64 overflow-y-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 sticky top-0">
+                <tr>
+                  <th className="p-2 w-8"></th>
+                  <th className="p-2 text-left font-medium">Vardas</th>
+                  <th className="p-2 text-left font-medium">Telefonas</th>
+                  <th className="p-2 text-left font-medium hidden sm:table-cell">El. paštas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {msgRecipients.length === 0 ? (
+                  <tr><td colSpan={4} className="p-4 text-center text-muted-foreground text-xs">Nėra klientų pagal filtrą</td></tr>
+                ) : msgRecipients.map((s) => (
+                  <tr key={s.id} className="border-t hover:bg-muted/20 cursor-pointer" onClick={() => toggleMsg(s.id)}>
+                    <td className="p-2"><Checkbox checked={msgSelected.has(s.id)} onCheckedChange={() => toggleMsg(s.id)} /></td>
+                    <td className="p-2">{s.name || "-"}</td>
+                    <td className="p-2 tabular-nums">{s.phone}</td>
+                    <td className="p-2 hidden sm:table-cell text-muted-foreground truncate max-w-[200px]">{s.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs">Žinutės tekstas</Label>
+            <Textarea rows={4} value={msgText} onChange={(e) => setMsgText(e.target.value)} className="text-sm" />
+            <div className="text-xs text-muted-foreground">
+              {msgText.length} simb. {/\{vardas\}/i.test(msgText) && "· Personalizuota — bus atidaroma po vieną žinutę"}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Button onClick={sendBulkSMS} disabled={msgChosen.length === 0}>
+              <MessageSquare className="h-4 w-4 mr-1" /> SMS ({msgChosen.length})
+            </Button>
+            <Button onClick={sendBulkEmail} disabled={msgChosen.length === 0} variant="outline">
+              <Mail className="h-4 w-4 mr-1" /> El. paštu
+            </Button>
+            <Button onClick={copyPhones} disabled={msgChosen.length === 0} variant="outline">
+              <Copy className="h-4 w-4 mr-1" /> Tel. nr.
+            </Button>
+            <Button onClick={copyEmails} disabled={msgChosen.length === 0} variant="outline">
+              <Copy className="h-4 w-4 mr-1" /> El. paštai
+            </Button>
+          </div>
+
+          <div className="text-xs text-muted-foreground bg-muted/40 p-2 rounded border">
+            💡 SMS atidaro telefono žinučių programą su jau įrašytais numeriais. El. paštas atidaro Jūsų pašto programą su BCC laukeliu (gavėjai nemato vienas kito).
+          </div>
+        </CardContent>
+      </Card>
     </div>
+
   );
 }
