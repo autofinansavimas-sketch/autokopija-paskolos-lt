@@ -32,7 +32,10 @@ import {
   Clock,
   RotateCcw,
   Archive,
-  MessageCircle
+  MessageCircle,
+  Pencil,
+  Check as CheckIcon,
+  Palette
 } from "lucide-react";
 import {
   Select,
