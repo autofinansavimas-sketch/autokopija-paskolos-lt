@@ -81,6 +81,14 @@ export default function ClientTools({ statusConfig }: Props) {
   const [loadingComments, setLoadingComments] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Bulk messaging state
+  const [msgFilter, setMsgFilter] = useState<string>("all"); // "all" | status value
+  const [msgSelected, setMsgSelected] = useState<Set<string>>(new Set());
+  const [msgText, setMsgText] = useState<string>("Sveiki, {vardas}! Skambinome dėl Jūsų paskolos užklausos. Susisiekite su mumis. AutoPaskolos");
+  const [msgSearch, setMsgSearch] = useState("");
+
+
+
   useEffect(() => { void loadSubmissions(); }, []);
 
   useEffect(() => {
