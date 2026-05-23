@@ -831,6 +831,30 @@ export default function Admin() {
     });
   };
 
+  const handleRenameColumn = (columnValue: string) => {
+    const newLabel = editingColumnLabel.trim();
+    if (!newLabel) {
+      toast({ title: "Klaida", description: "Pavadinimas negali būti tuščias", variant: "destructive" });
+      return;
+    }
+    const updatedConfig = statusConfig.map(s =>
+      s.value === columnValue ? { ...s, label: newLabel } : s
+    );
+    setStatusConfig(updatedConfig);
+    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+    setEditingColumn(null);
+    setEditingColumnLabel("");
+    toast({ title: "Kortelė pervadinta", description: newLabel });
+  };
+
+  const handleChangeColumnColor = (columnValue: string, color: typeof AVAILABLE_COLORS[number]) => {
+    const updatedConfig = statusConfig.map(s =>
+      s.value === columnValue ? { ...s, color: color.color, borderColor: color.borderColor } : s
+    );
+    setStatusConfig(updatedConfig);
+    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       <SEOHead
