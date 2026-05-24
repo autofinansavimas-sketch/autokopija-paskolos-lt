@@ -255,20 +255,17 @@ const handler = async (req: Request): Promise<Response> => {
               Mūsų specialistai peržiūrės jūsų užklausą ir susisieks su jumis per <strong>30 minučių</strong>.
             </p>
 
-            <div style="background:#ecfdf5;border:1px solid #bbf7d0;border-radius:10px;padding:18px;margin:20px 0;">
+            <div style="background:#ecfdf5;border:1px solid #bbf7d0;border-radius:10px;padding:18px;margin:20px 0;text-align:center;">
               <p style="margin:0 0 10px;font-size:16px;color:#065f46;"><strong>Kada Jums patogiausia, kad paskambintume?</strong></p>
               <p style="margin:0 0 14px;font-size:14px;color:#047857;">Pasirinkite vieną mygtuką — taip sutaupysite laiko ir gausite skambutį būtent tuo metu.</p>
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;"><tr>
-                <td style="padding:4px;"><a href="https://${SUPABASE_URL!.replace(/^https?:\/\//, "").replace(".supabase.co", "")}.functions.supabase.co/schedule-callback?id=${submissionData.id}&slot=morning"
-                  style="background:#16a34a;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-size:14px;display:inline-block;">🌅 Rytas 9–12</a></td>
-                <td style="padding:4px;"><a href="https://${SUPABASE_URL!.replace(/^https?:\/\//, "").replace(".supabase.co", "")}.functions.supabase.co/schedule-callback?id=${submissionData.id}&slot=noon"
-                  style="background:#16a34a;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-size:14px;display:inline-block;">☀️ Pietūs 12–15</a></td>
-                <td style="padding:4px;"><a href="https://${SUPABASE_URL!.replace(/^https?:\/\//, "").replace(".supabase.co", "")}.functions.supabase.co/schedule-callback?id=${submissionData.id}&slot=evening"
-                  style="background:#16a34a;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-size:14px;display:inline-block;">🌇 Vakaras 15–18</a></td>
-                <td style="padding:4px;"><a href="https://${SUPABASE_URL!.replace(/^https?:\/\//, "").replace(".supabase.co", "")}.functions.supabase.co/schedule-callback?id=${submissionData.id}&slot=anytime"
-                  style="background:#475569;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-size:14px;display:inline-block;">⏱ Bet kada</a></td>
+                <td style="padding:4px;">${cbBtn("morning", "🌅 Rytas 9–12")}</td>
+                <td style="padding:4px;">${cbBtn("noon", "☀️ Pietūs 12–15")}</td>
+                <td style="padding:4px;">${cbBtn("evening", "🌇 Vakaras 15–18")}</td>
+                <td style="padding:4px;">${cbBtn("anytime", "⏱ Bet kada", "#475569")}</td>
               </tr></table>
             </div>
+
 
             <p style="font-size: 16px; line-height: 1.5;">
               Geriausios sėkmės,<br>
