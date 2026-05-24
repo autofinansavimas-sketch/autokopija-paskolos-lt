@@ -221,6 +221,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation to client
     const vocativeName = toVocativeCase(name);
+    const cbBase = `${SUPABASE_URL}/functions/v1/schedule-callback?id=${submissionData.id}&slot=`;
+    const cbBtn = (slot: string, label: string, color = "#16a34a") =>
+      `<a href="${cbBase}${slot}" style="background:${color};color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-size:14px;display:inline-block;">${label}</a>`;
+    
     
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
