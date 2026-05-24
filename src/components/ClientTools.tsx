@@ -823,6 +823,43 @@ export default function ClientTools({ statusConfig }: Props) {
             </div>
           </div>
 
+          <div className="space-y-1">
+            <Label className="text-xs">Greitas pasirinkimas — visa kategorija</Label>
+            <div className="flex flex-wrap gap-1.5">
+              <Button
+                type="button"
+                size="sm"
+                variant={msgFilter === "all" ? "default" : "outline"}
+                className="h-7 text-xs"
+                onClick={() => {
+                  setMsgFilter("all");
+                  setMsgSelected(new Set(submissions.map((s) => s.id)));
+                }}
+              >
+                Visi ({submissions.length})
+              </Button>
+              {statusConfig.map((s) => {
+                const ids = submissions.filter((x) => x.status === s.value).map((x) => x.id);
+                if (ids.length === 0) return null;
+                return (
+                  <Button
+                    key={s.value}
+                    type="button"
+                    size="sm"
+                    variant={msgFilter === s.value ? "default" : "outline"}
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      setMsgFilter(s.value);
+                      setMsgSelected(new Set(ids));
+                    }}
+                  >
+                    {s.label} ({ids.length})
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
             <Badge variant="secondary">Pažymėta {msgChosen.length} iš {msgRecipients.length}</Badge>
             <Button size="sm" variant="outline" onClick={toggleMsgAll}>
