@@ -1222,6 +1222,26 @@ export default function Admin() {
                       </div>
                       {editingColumn !== colConfig.value && (
                         <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                            onClick={() => handleMoveColumn(colConfig.value, -1)}
+                            disabled={statusConfig.findIndex(s => s.value === colConfig.value) === 0}
+                            title="Perkelti į kairę"
+                          >
+                            <ChevronLeft className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                            onClick={() => handleMoveColumn(colConfig.value, 1)}
+                            disabled={statusConfig.findIndex(s => s.value === colConfig.value) === statusConfig.length - 1}
+                            title="Perkelti į dešinę"
+                          >
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </Button>
                           <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
                             {statusSubmissions.length}
                           </Badge>
