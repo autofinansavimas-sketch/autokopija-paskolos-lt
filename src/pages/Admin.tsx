@@ -35,7 +35,9 @@ import {
   MessageCircle,
   Pencil,
   Check as CheckIcon,
-  Palette
+  Palette,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import {
   Select,
