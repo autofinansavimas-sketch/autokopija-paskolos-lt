@@ -20,6 +20,7 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { applyLtFont, PDF_FONT } from "@/lib/pdfFont";
 
 interface SubmissionLite {
   id: string;
@@ -290,12 +291,27 @@ export default function ClientTools({ statusConfig }: Props) {
 
   const statusLabel = (v: string) => statusConfig.find((s) => s.value === v)?.label || v;
 
-  const buildListPDF = (title: string, rows: SubmissionLite[], filename: string) => {
+  // Build a PDF list (category or day) with each client's comments included.
+  const buildListPDF = async (
+    title: string,
+    rows: SubmissionLite[],
+    filename: string,
+    commentsBySubmission: Record<string, { comment: string; created_at: string }[]>,
+  ) => {
     const doc = new jsPDF();
-    doc.setFontSize(16); doc.text(title, 14, 18);
-    doc.setFontSize(10); doc.setTextColor(120);
+    await applyLtFont(doc);
+    const tableStyles = { font: PDF_FONT, fontSize: 8 } as const;
+    const headStyles = { fillColor: [34, 139, 34] as [number, number, number], font: PDF_FONT, fontStyle: "bold" as const };
+
+    doc.setFont(PDF_FONT, "bold");
+    doc.setFontSize(16);
+    doc.text(title, 14, 18);
+    doc.setFont(PDF_FONT, "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120);
     doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Viso: ${rows.length}`, 14, 25);
     doc.setTextColor(0);
+
     autoTable(doc, {
       startY: 32,
       head: [["Vardas", "Telefonas", "El. paštas", "Suma", "Tipas", "Statusas", "Data"]],
@@ -304,8 +320,39 @@ export default function ClientTools({ statusConfig }: Props) {
         s.loan_type || "-", statusLabel(s.status),
         new Date(s.created_at).toLocaleDateString("lt-LT"),
       ]),
-      styles: { fontSize: 8 }, headStyles: { fillColor: [34, 139, 34] },
+      styles: tableStyles,
+      headStyles,
     });
+
+    // Append per-client comments
+    const withComments = rows.filter((r) => (commentsBySubmission[r.id] || []).length > 0);
+    if (withComments.length > 0) {
+      const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+      doc.setFont(PDF_FONT, "bold");
+      doc.setFontSize(14);
+      doc.text("Pastabos apie klientus", 14, finalY + 12);
+      const body: string[][] = [];
+      withComments.forEach((s) => {
+        const cs = commentsBySubmission[s.id] || [];
+        cs.forEach((c, idx) => {
+          body.push([
+            idx === 0 ? (s.name || s.email) : "",
+            idx === 0 ? s.phone : "",
+            new Date(c.created_at).toLocaleString("lt-LT"),
+            c.comment,
+          ]);
+        });
+      });
+      autoTable(doc, {
+        startY: finalY + 16,
+        head: [["Klientas", "Telefonas", "Data", "Pastaba"]],
+        body,
+        styles: { ...tableStyles, fontSize: 9, cellPadding: 2 },
+        headStyles,
+        columnStyles: { 3: { cellWidth: "auto" } },
+      });
+    }
+
     doc.save(filename);
   };
 
@@ -325,6 +372,22 @@ export default function ClientTools({ statusConfig }: Props) {
     XLSX.writeFile(wb, filename);
   };
 
+  // Fetch comments for many submission IDs at once.
+  const fetchCommentsFor = async (ids: string[]) => {
+    const map: Record<string, { comment: string; created_at: string }[]> = {};
+    if (ids.length === 0) return map;
+    const { data } = await supabase
+      .from("submission_comments")
+      .select("submission_id,comment,created_at")
+      .in("submission_id", ids)
+      .order("created_at", { ascending: true });
+    (data || []).forEach((c) => {
+      const key = c.submission_id as string;
+      (map[key] ||= []).push({ comment: c.comment, created_at: c.created_at });
+    });
+    return map;
+  };
+
   const exportPDF = async () => {
     setExporting(true);
     try {
@@ -335,8 +398,16 @@ export default function ClientTools({ statusConfig }: Props) {
           .from("submission_comments").select("comment,created_at")
           .eq("submission_id", selectedId).order("created_at", { ascending: true });
         const doc = new jsPDF();
-        doc.setFontSize(18); doc.text("Kliento ataskaita", 14, 20);
-        doc.setFontSize(10); doc.setTextColor(120);
+        await applyLtFont(doc);
+        const tableStyles = { font: PDF_FONT, fontSize: 10 } as const;
+        const headStyles = { fillColor: [34, 139, 34] as [number, number, number], font: PDF_FONT, fontStyle: "bold" as const };
+
+        doc.setFont(PDF_FONT, "bold");
+        doc.setFontSize(18);
+        doc.text("Kliento ataskaita", 14, 20);
+        doc.setFont(PDF_FONT, "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(120);
         doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}`, 14, 27);
         doc.setTextColor(0);
         autoTable(doc, {
@@ -349,27 +420,41 @@ export default function ClientTools({ statusConfig }: Props) {
             ["Šaltinis", s.source || "-"],
             ["Sukurta", new Date(s.created_at).toLocaleString("lt-LT")],
           ],
-          styles: { fontSize: 10 }, headStyles: { fillColor: [34, 139, 34] },
+          styles: tableStyles,
+          headStyles,
         });
         if (comments && comments.length > 0) {
           const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
-          doc.setFontSize(14); doc.text("Komentarai", 14, finalY + 12);
+          doc.setFont(PDF_FONT, "bold");
+          doc.setFontSize(14);
+          doc.text("Komentarai", 14, finalY + 12);
           autoTable(doc, {
             startY: finalY + 16,
             head: [["Data", "Komentaras"]],
             body: comments.map((c) => [new Date(c.created_at).toLocaleString("lt-LT"), c.comment]),
-            styles: { fontSize: 9 }, headStyles: { fillColor: [34, 139, 34] },
+            styles: { ...tableStyles, fontSize: 9 },
+            headStyles,
           });
         }
         doc.save(`klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.pdf`);
       } else if (reportMode === "category") {
-        buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`);
+        const map = await fetchCommentsFor(reportRows.map((r) => r.id));
+        await buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`, map);
       } else if (reportMode === "day") {
-        buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`);
+        const map = await fetchCommentsFor(reportRows.map((r) => r.id));
+        await buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`, map);
       } else if (reportMode === "comments") {
         const doc = new jsPDF();
-        doc.setFontSize(16); doc.text(`Pridėtos pastabos ${commentsDate}`, 14, 18);
-        doc.setFontSize(10); doc.setTextColor(120);
+        await applyLtFont(doc);
+        const tableStyles = { font: PDF_FONT, fontSize: 9, cellPadding: 2 } as const;
+        const headStyles = { fillColor: [34, 139, 34] as [number, number, number], font: PDF_FONT, fontStyle: "bold" as const };
+
+        doc.setFont(PDF_FONT, "bold");
+        doc.setFontSize(16);
+        doc.text(`Pridėtos pastabos ${commentsDate}`, 14, 18);
+        doc.setFont(PDF_FONT, "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(120);
         doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Klientų: ${commentRows.length}`, 14, 25);
         doc.setTextColor(0);
         const body: string[][] = [];
@@ -388,13 +473,16 @@ export default function ClientTools({ statusConfig }: Props) {
           startY: 32,
           head: [["Klientas", "Telefonas", "Kortelė", "Laikas", "Pastaba"]],
           body,
-          styles: { fontSize: 9, cellPadding: 2 },
-          headStyles: { fillColor: [34, 139, 34] },
+          styles: tableStyles,
+          headStyles,
           columnStyles: { 4: { cellWidth: "auto" } },
         });
         doc.save(`pastabos-${commentsDate}.pdf`);
       }
       toast({ title: "PDF atsisiųsta" });
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Klaida generuojant PDF", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally { setExporting(false); }
   };
 

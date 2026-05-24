@@ -221,6 +221,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation to client
     const vocativeName = toVocativeCase(name);
+    const cbBase = `${SUPABASE_URL}/functions/v1/schedule-callback?id=${submissionData.id}&slot=`;
+    const cbBtn = (slot: string, label: string, color = "#16a34a") =>
+      `<a href="${cbBase}${slot}" style="background:${color};color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-size:14px;display:inline-block;">${label}</a>`;
+    
     
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -250,6 +254,19 @@ const handler = async (req: Request): Promise<Response> => {
             <p style="font-size: 16px; line-height: 1.5;">
               Mūsų specialistai peržiūrės jūsų užklausą ir susisieks su jumis per <strong>30 minučių</strong>.
             </p>
+
+            <div style="background:#ecfdf5;border:1px solid #bbf7d0;border-radius:10px;padding:18px;margin:20px 0;text-align:center;">
+              <p style="margin:0 0 10px;font-size:16px;color:#065f46;"><strong>Kada Jums patogiausia, kad paskambintume?</strong></p>
+              <p style="margin:0 0 14px;font-size:14px;color:#047857;">Pasirinkite vieną mygtuką — taip sutaupysite laiko ir gausite skambutį būtent tuo metu.</p>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;"><tr>
+                <td style="padding:4px;">${cbBtn("morning", "🌅 Rytas 9–12")}</td>
+                <td style="padding:4px;">${cbBtn("noon", "☀️ Pietūs 12–15")}</td>
+                <td style="padding:4px;">${cbBtn("evening", "🌇 Vakaras 15–18")}</td>
+                <td style="padding:4px;">${cbBtn("anytime", "⏱ Bet kada", "#475569")}</td>
+              </tr></table>
+            </div>
+
+
             <p style="font-size: 16px; line-height: 1.5;">
               Geriausios sėkmės,<br>
               <strong>${brand.name} komanda</strong>
