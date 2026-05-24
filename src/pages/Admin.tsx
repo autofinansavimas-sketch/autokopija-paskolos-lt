@@ -861,6 +861,17 @@ export default function Admin() {
     localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
   };
 
+  const handleMoveColumn = (columnValue: string, direction: -1 | 1) => {
+    const idx = statusConfig.findIndex(s => s.value === columnValue);
+    if (idx < 0) return;
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= statusConfig.length) return;
+    const updated = [...statusConfig];
+    [updated[idx], updated[newIdx]] = [updated[newIdx], updated[idx]];
+    setStatusConfig(updated);
+    localStorage.setItem("admin_status_config", JSON.stringify(updated));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       <SEOHead
