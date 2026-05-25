@@ -757,6 +757,9 @@ export default function ClientTools({ statusConfig }: Props) {
                 <Button variant="outline" size="sm" onClick={applyBulkStatus} disabled={selected.size === 0}>
                   Priskirti pažymėtiems ({selected.size})
                 </Button>
+                <Button variant="secondary" size="sm" onClick={applyStatusToAll} disabled={extracted.length === 0}>
+                  Priskirti VISIEMS ({extracted.length})
+                </Button>
                 <Button onClick={importSelected} disabled={importing || selected.size === 0} size="sm">
                   {importing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
                   Pridėti į sistemą ({selected.size})
