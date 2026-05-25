@@ -230,6 +230,13 @@ export default function ClientTools({ statusConfig }: Props) {
     toast({ title: "Priskirta", description: `${selected.size} klientas(-ų) priskirta kortelei „${statusConfig.find(s => s.value === bulkStatus)?.label}"` });
   };
 
+  const applyStatusToAll = () => {
+    const next = extracted.map((c) => ({ ...c, status: bulkStatus }));
+    setExtracted(next);
+    setSelected(new Set(extracted.map((_, i) => i)));
+    toast({ title: "Priskirta visiems", description: `${extracted.length} klientas(-ų) priskirta kortelei „${statusConfig.find(s => s.value === bulkStatus)?.label}"` });
+  };
+
   const importSelected = async () => {
     const toInsert = extracted
       .filter((_, i) => selected.has(i))
