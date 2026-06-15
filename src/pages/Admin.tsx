@@ -872,6 +872,15 @@ export default function Admin() {
     localStorage.setItem("admin_status_config", JSON.stringify(updated));
   };
 
+  const handleResetColumns = () => {
+    localStorage.removeItem("admin_status_config");
+    setStatusConfig(DEFAULT_STATUS_CONFIG);
+    toast({
+      title: "Kolonėlės atstatytos",
+      description: "Rodomi numatytieji stulpeliai. Perkraukite puslapį, jei reikia.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       <SEOHead
