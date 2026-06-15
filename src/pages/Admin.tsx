@@ -872,6 +872,15 @@ export default function Admin() {
     localStorage.setItem("admin_status_config", JSON.stringify(updated));
   };
 
+  const handleResetColumns = () => {
+    localStorage.removeItem("admin_status_config");
+    setStatusConfig(DEFAULT_STATUS_CONFIG);
+    toast({
+      title: "Kolonėlės atstatytos",
+      description: "Rodomi numatytieji stulpeliai. Perkraukite puslapį, jei reikia.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       <SEOHead
@@ -1036,6 +1045,16 @@ export default function Admin() {
                 disabled={loading}
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={handleResetColumns}
+                title="Atstatyti kolonėles"
+              >
+                <RotateCcw className="h-4 w-4" />
               </Button>
               
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={handleLogout}>
