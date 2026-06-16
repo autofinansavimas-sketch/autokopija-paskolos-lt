@@ -141,6 +141,13 @@ const DEFAULT_STATUS_CONFIG = [
   { value: "not_financed", label: "Nefinansuojami", color: "bg-orange-500", borderColor: "border-orange-500" },
   { value: "ateityje", label: "Ateityje", color: "bg-purple-500", borderColor: "border-purple-500" },
   { value: "cancelled", label: "Atšaukti", color: "bg-red-500", borderColor: "border-red-500" },
+  { value: "outsource_", label: "Outsource", color: "bg-teal-500", borderColor: "border-teal-500" },
+  { value: "outsource_susisiekta", label: "Outsource susisiekta", color: "bg-cyan-500", borderColor: "border-cyan-500" },
+  { value: "nekelia", label: "Nekelia", color: "bg-pink-500", borderColor: "border-pink-500" },
+  { value: "nekelia_ragelio", label: "Nekelia ragelio", color: "bg-pink-500", borderColor: "border-pink-500" },
+  { value: "nusiusta_paraiska_", label: "Nusiųsta paraiška", color: "bg-indigo-500", borderColor: "border-indigo-500" },
+  { value: "out_neaktualu", label: "Out neaktualu", color: "bg-orange-500", borderColor: "border-orange-500" },
+  { value: "outsource_completed", label: "Outsource užbaigti", color: "bg-green-500", borderColor: "border-green-500" },
 ];
 
 const AVAILABLE_COLORS = [
@@ -161,6 +168,13 @@ const normalizeSearchText = (value: string | null | undefined) =>
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+
+const formatStatusLabel = (value: string) =>
+  value
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ") || "Be statuso";
 
 interface StatusConfig {
   value: string;
