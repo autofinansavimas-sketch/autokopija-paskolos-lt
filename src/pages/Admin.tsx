@@ -199,7 +199,13 @@ export default function Admin() {
   const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(() => {
     const saved = localStorage.getItem("admin_status_config");
     if (saved) {
-      const parsed: StatusConfig[] = JSON.parse(saved);
+      let parsed: StatusConfig[];
+      try {
+        parsed = JSON.parse(saved);
+      } catch {
+        localStorage.removeItem("admin_status_config");
+        return DEFAULT_STATUS_CONFIG;
+      }
       // Ensure all default statuses exist (e.g. "ateityje" may have been added later)
       const missingDefaults = DEFAULT_STATUS_CONFIG.filter(
         d => !parsed.some(p => p.value === d.value)
@@ -234,6 +240,26 @@ export default function Admin() {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const unknownStatuses = Array.from(new Set(submissions.map((s) => s.status).filter(Boolean)))
+      .filter((status) => !statusConfig.some((config) => config.value === status));
+
+    if (unknownStatuses.length === 0) return;
+
+    const generated = unknownStatuses.map((status, index) => {
+      const color = AVAILABLE_COLORS[(statusConfig.length + index) % AVAILABLE_COLORS.length];
+      return {
+        value: status,
+        label: formatStatusLabel(status),
+        color: color.color,
+        borderColor: color.borderColor,
+      };
+    });
+    const updated = [...statusConfig, ...generated];
+    setStatusConfig(updated);
+    localStorage.setItem("admin_status_config", JSON.stringify(updated));
+  }, [submissions, statusConfig]);
 
   useEffect(() => {
     checkAuth();
