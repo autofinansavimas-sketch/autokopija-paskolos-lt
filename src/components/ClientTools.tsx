@@ -281,8 +281,8 @@ export default function ClientTools({ statusConfig }: Props) {
   };
 
   const toggleAll = () => {
-    if (selected.size === extracted.length) setSelected(new Set());
-    else setSelected(new Set(extracted.map((_, i) => i)));
+    if (selected.size === importableIndexes.length) setSelected(new Set());
+    else setSelected(new Set(importableIndexes));
   };
 
   const updateField = (i: number, field: keyof ExtractedClient, value: string) => {
@@ -306,7 +306,7 @@ export default function ClientTools({ statusConfig }: Props) {
 
   const importSelected = async () => {
     const toInsert = extracted
-      .filter((_, i) => selected.has(i))
+      .filter((_, i) => selected.has(i) && !duplicateInfo.has(i))
       .filter((c) => (c.email || c.phone || c.name))
       .map((c) => ({
         name: c.name || null,
@@ -328,7 +328,7 @@ export default function ClientTools({ statusConfig }: Props) {
       if (error) throw error;
       toast({ title: "Pridėta", description: `Sukurta ${toInsert.length} klientas(-ų) sistemoje` });
       setExtracted([]); setSelected(new Set());
-      setFile(null); setPreview(null); setFreeText("");
+      setFiles([]); setPreviews([]); setFreeText("");
       void loadSubmissions();
     } catch (e) {
       toast({ title: "Klaida", description: e instanceof Error ? e.message : "Nepavyko išsaugoti", variant: "destructive" });
@@ -723,23 +723,26 @@ export default function ClientTools({ statusConfig }: Props) {
             </TabsList>
 
             <TabsContent value="image" className="space-y-3 mt-4">
-              {!preview ? (
+              {previews.length === 0 ? (
                 <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-lg p-8 cursor-pointer hover:bg-muted/30 transition">
                   <Upload className="h-8 w-8 text-muted-foreground" />
-                  <span className="text-sm font-medium">Spauskite ir įkelkite nuotrauką</span>
+                  <span className="text-sm font-medium">Spauskite ir įkelkite vieną arba kelias nuotraukas</span>
                   <span className="text-xs text-muted-foreground">
-                    Klientų sąrašas, dokumentas, ar bet kokia kita nuotrauka su tekstu (iki 10MB)
+                    Klientų sąrašai, dokumentai ar kitos nuotraukos su tekstu (iki 10MB vienam failui)
                   </span>
-                  <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                  <input type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
                 </label>
               ) : (
                 <div className="space-y-3">
-                  <div className="relative">
-                    <img src={preview} alt="Peržiūra" className="w-full max-h-72 object-contain rounded-lg border bg-muted/30" />
+                  <div className="relative grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {previews.map((src, i) => (
+                      <img key={`${files[i]?.name || "foto"}-${i}`} src={src} alt={`Peržiūra ${i + 1}`} className="w-full h-32 object-contain rounded-lg border bg-muted/30" />
+                    ))}
                     <Button size="icon" variant="secondary" className="absolute top-2 right-2 h-7 w-7" onClick={clearImage}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">Pasirinkta failų: {files.length}</p>
                   <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => scanImage("bulk")} disabled={scanning}>
                       {scanning ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Users className="h-4 w-4 mr-2" />}
