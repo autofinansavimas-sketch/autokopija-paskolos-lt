@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ScanLine, Upload, Loader2, FileText, FileSpreadsheet, X, Users,
   Sparkles, Facebook, Plus, CheckCircle2, LayoutGrid, Calendar,
-  MessageSquare, Mail, Copy, Send,
+  MessageSquare, Mail, Copy, Send, AlertTriangle,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -52,13 +52,30 @@ interface Props {
   statusConfig: StatusOpt[];
 }
 
+const normalizeEmail = (value?: string | null) => (value || "").trim().toLowerCase();
+
+const normalizePhone = (value?: string | null) => {
+  let digits = (value || "").replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("8") && digits.length === 9) digits = `370${digits.slice(1)}`;
+  if (digits.startsWith("6") && digits.length === 8) digits = `370${digits}`;
+  return digits;
+};
+
+const readAsDataUrl = (f: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result as string);
+  reader.onerror = () => reject(new Error("Nepavyko nuskaityti failo"));
+  reader.readAsDataURL(f);
+});
+
 export default function ClientTools({ statusConfig }: Props) {
   const { toast } = useToast();
   const defaultStatus = statusConfig[0]?.value || "new";
 
   // Extract state
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [freeText, setFreeText] = useState("");
   const [scanning, setScanning] = useState(false);
   const [extracted, setExtracted] = useState<ExtractedClient[]>([]);
@@ -88,6 +105,50 @@ export default function ClientTools({ statusConfig }: Props) {
   const [msgText, setMsgText] = useState<string>("Sveiki, {vardas}! Skambinome dėl Jūsų paskolos užklausos. Susisiekite su mumis. AutoPaskolos");
   const [msgSearch, setMsgSearch] = useState("");
 
+  const duplicateInfo = useMemo(() => {
+    const existingPhones = new Map<string, string>();
+    const existingEmails = new Map<string, string>();
+    submissions.forEach((s) => {
+      const phone = normalizePhone(s.phone);
+      const email = normalizeEmail(s.email);
+      const label = s.name || s.phone || s.email || "esamas klientas";
+      if (phone) existingPhones.set(phone, label);
+      if (email && !email.includes("no-email@")) existingEmails.set(email, label);
+    });
+
+    const seenPhones = new Map<string, number>();
+    const seenEmails = new Map<string, number>();
+    const result = new Map<number, string>();
+
+    extracted.forEach((c, i) => {
+      const phone = normalizePhone(c.phone);
+      const email = normalizeEmail(c.email);
+      if (email && existingEmails.has(email)) result.set(i, `Jau sistemoje: ${existingEmails.get(email)}`);
+      else if (phone && existingPhones.has(phone)) result.set(i, `Jau sistemoje: ${existingPhones.get(phone)}`);
+      else if (email && seenEmails.has(email)) result.set(i, `Dublis šiame importe (#${seenEmails.get(email)! + 1})`);
+      else if (phone && seenPhones.has(phone)) result.set(i, `Dublis šiame importe (#${seenPhones.get(phone)! + 1})`);
+
+      if (!result.has(i)) {
+        if (email) seenEmails.set(email, i);
+        if (phone) seenPhones.set(phone, i);
+      }
+    });
+
+    return result;
+  }, [extracted, submissions]);
+
+  const importableIndexes = useMemo(
+    () => extracted.map((_, i) => i).filter((i) => !duplicateInfo.has(i)),
+    [extracted, duplicateInfo],
+  );
+
+  useEffect(() => {
+    if (duplicateInfo.size === 0) return;
+    setSelected((prev) => {
+      const next = new Set(Array.from(prev).filter((i) => !duplicateInfo.has(i)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [duplicateInfo]);
 
 
   useEffect(() => { void loadSubmissions(); }, []);
@@ -144,27 +205,30 @@ export default function ClientTools({ statusConfig }: Props) {
     if (data) setSubmissions(data as SubmissionLite[]);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (!f.type.startsWith("image/")) {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length === 0) return;
+    if (selectedFiles.some((f) => !f.type.startsWith("image/"))) {
       toast({ title: "Klaida", description: "Įkelkite nuotrauką (JPG/PNG)", variant: "destructive" });
       return;
     }
-    if (f.size > 10 * 1024 * 1024) {
-      toast({ title: "Per didelis failas", description: "Maks. 10MB", variant: "destructive" });
+    if (selectedFiles.some((f) => f.size > 10 * 1024 * 1024)) {
+      toast({ title: "Per didelis failas", description: "Maks. 10MB vienam failui", variant: "destructive" });
       return;
     }
-    setFile(f);
-    setExtracted([]);
-    setSelected(new Set());
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result as string);
-    reader.readAsDataURL(f);
+    try {
+      const dataUrls = await Promise.all(selectedFiles.map(readAsDataUrl));
+      setFiles(selectedFiles);
+      setPreviews(dataUrls);
+      setExtracted([]);
+      setSelected(new Set());
+    } catch (e) {
+      toast({ title: "Klaida", description: e instanceof Error ? e.message : "Nepavyko nuskaityti failų", variant: "destructive" });
+    }
   };
 
   const clearImage = () => {
-    setFile(null); setPreview(null); setExtracted([]); setSelected(new Set());
+    setFiles([]); setPreviews([]); setExtracted([]); setSelected(new Set());
   };
 
   const ingestExtracted = (clients: ExtractedClient[]) => {
@@ -174,17 +238,20 @@ export default function ClientTools({ statusConfig }: Props) {
   };
 
   const scanImage = async (mode: "single" | "bulk") => {
-    if (!preview) return;
+    if (previews.length === 0) return;
     setScanning(true);
     try {
-      const { data, error } = await supabase.functions.invoke("extract-document", {
-        body: { mode, imageBase64: preview, mimeType: file?.type },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      const clients: ExtractedClient[] = data?.clients || [];
+      const clients: ExtractedClient[] = [];
+      for (let i = 0; i < previews.length; i += 1) {
+        const { data, error } = await supabase.functions.invoke("extract-document", {
+          body: { mode, imageBase64: previews[i], mimeType: files[i]?.type },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        clients.push(...((data?.clients || []) as ExtractedClient[]));
+      }
       ingestExtracted(clients);
-      toast({ title: "Nuskaityta", description: `Rasta ${clients.length} klientas(-ų)` });
+      toast({ title: "Nuskaityta", description: `Failų: ${previews.length}. Rasta ${clients.length} klientas(-ų)` });
     } catch (e) {
       toast({ title: "Klaida", description: e instanceof Error ? e.message : "Nepavyko", variant: "destructive" });
     } finally { setScanning(false); }
