@@ -809,6 +809,11 @@ export default function ClientTools({ statusConfig }: Props) {
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary">{extracted.length} klientas(-ų)</Badge>
+                  {duplicateInfo.size > 0 && (
+                    <Badge variant="destructive" className="gap-1">
+                      <AlertTriangle className="h-3 w-3" /> {duplicateInfo.size} dublis(-iai)
+                    </Badge>
+                  )}
                   <span className="text-xs text-muted-foreground">Pažymėta {selected.size}</span>
                 </div>
               </div>
@@ -843,7 +848,7 @@ export default function ClientTools({ statusConfig }: Props) {
                     <tr>
                       <th className="p-2 w-8">
                         <Checkbox
-                          checked={selected.size === extracted.length && extracted.length > 0}
+                          checked={selected.size === importableIndexes.length && importableIndexes.length > 0}
                           onCheckedChange={toggleAll}
                         />
                       </th>
@@ -853,13 +858,16 @@ export default function ClientTools({ statusConfig }: Props) {
                       <th className="p-2 text-left font-medium">Suma</th>
                       <th className="p-2 text-left font-medium">Tipas</th>
                       <th className="p-2 text-left font-medium">Kortelė</th>
+                      <th className="p-2 text-left font-medium">Dublis</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {extracted.map((c, i) => (
-                      <tr key={i} className="border-t hover:bg-muted/20">
+                    {extracted.map((c, i) => {
+                      const duplicate = duplicateInfo.get(i);
+                      return (
+                      <tr key={i} className={`border-t hover:bg-muted/20 ${duplicate ? "bg-destructive/5" : ""}`}>
                         <td className="p-2">
-                          <Checkbox checked={selected.has(i)} onCheckedChange={() => toggleRow(i)} />
+                          <Checkbox checked={selected.has(i)} disabled={!!duplicate} onCheckedChange={() => toggleRow(i)} />
                         </td>
                         <td className="p-1"><Input value={c.name || ""} onChange={(e) => updateField(i, "name", e.target.value)} className="h-8 text-sm" /></td>
                         <td className="p-1"><Input value={c.phone || ""} onChange={(e) => updateField(i, "phone", e.target.value)} className="h-8 text-sm" /></td>
@@ -876,8 +884,16 @@ export default function ClientTools({ statusConfig }: Props) {
                             </SelectContent>
                           </Select>
                         </td>
+                        <td className="p-2 min-w-40">
+                          {duplicate ? (
+                            <Badge variant="destructive" className="whitespace-normal text-left leading-snug">{duplicate}</Badge>
+                          ) : (
+                            <Badge variant="outline">OK</Badge>
+                          )}
+                        </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
