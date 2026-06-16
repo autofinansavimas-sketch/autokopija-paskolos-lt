@@ -141,6 +141,13 @@ const DEFAULT_STATUS_CONFIG = [
   { value: "not_financed", label: "Nefinansuojami", color: "bg-orange-500", borderColor: "border-orange-500" },
   { value: "ateityje", label: "Ateityje", color: "bg-purple-500", borderColor: "border-purple-500" },
   { value: "cancelled", label: "Atšaukti", color: "bg-red-500", borderColor: "border-red-500" },
+  { value: "outsource_", label: "Outsource", color: "bg-teal-500", borderColor: "border-teal-500" },
+  { value: "outsource_susisiekta", label: "Outsource susisiekta", color: "bg-cyan-500", borderColor: "border-cyan-500" },
+  { value: "nekelia", label: "Nekelia", color: "bg-pink-500", borderColor: "border-pink-500" },
+  { value: "nekelia_ragelio", label: "Nekelia ragelio", color: "bg-pink-500", borderColor: "border-pink-500" },
+  { value: "nusiusta_paraiska_", label: "Nusiųsta paraiška", color: "bg-indigo-500", borderColor: "border-indigo-500" },
+  { value: "out_neaktualu", label: "Out neaktualu", color: "bg-orange-500", borderColor: "border-orange-500" },
+  { value: "outsource_completed", label: "Outsource užbaigti", color: "bg-green-500", borderColor: "border-green-500" },
 ];
 
 const AVAILABLE_COLORS = [
@@ -161,6 +168,13 @@ const normalizeSearchText = (value: string | null | undefined) =>
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+
+const formatStatusLabel = (value: string) =>
+  value
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ") || "Be statuso";
 
 interface StatusConfig {
   value: string;
@@ -185,7 +199,13 @@ export default function Admin() {
   const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(() => {
     const saved = localStorage.getItem("admin_status_config");
     if (saved) {
-      const parsed: StatusConfig[] = JSON.parse(saved);
+      let parsed: StatusConfig[];
+      try {
+        parsed = JSON.parse(saved);
+      } catch {
+        localStorage.removeItem("admin_status_config");
+        return DEFAULT_STATUS_CONFIG;
+      }
       // Ensure all default statuses exist (e.g. "ateityje" may have been added later)
       const missingDefaults = DEFAULT_STATUS_CONFIG.filter(
         d => !parsed.some(p => p.value === d.value)
@@ -220,6 +240,26 @@ export default function Admin() {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const unknownStatuses = Array.from(new Set(submissions.map((s) => s.status).filter(Boolean)))
+      .filter((status) => !statusConfig.some((config) => config.value === status));
+
+    if (unknownStatuses.length === 0) return;
+
+    const generated = unknownStatuses.map((status, index) => {
+      const color = AVAILABLE_COLORS[(statusConfig.length + index) % AVAILABLE_COLORS.length];
+      return {
+        value: status,
+        label: formatStatusLabel(status),
+        color: color.color,
+        borderColor: color.borderColor,
+      };
+    });
+    const updated = [...statusConfig, ...generated];
+    setStatusConfig(updated);
+    localStorage.setItem("admin_status_config", JSON.stringify(updated));
+  }, [submissions, statusConfig]);
 
   useEffect(() => {
     checkAuth();
