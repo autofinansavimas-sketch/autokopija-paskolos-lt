@@ -633,7 +633,8 @@ export default function ClientTools({ statusConfig }: Props) {
 
   const toggleMsg = (id: string) => {
     const n = new Set(msgSelected);
-    n.has(id) ? n.delete(id) : n.add(id);
+    if (n.has(id)) n.delete(id);
+    else n.add(id);
     setMsgSelected(n);
   };
   const toggleMsgAll = () => {
