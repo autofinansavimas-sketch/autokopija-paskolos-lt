@@ -275,6 +275,7 @@ export default function ClientTools({ statusConfig }: Props) {
   };
 
   const toggleRow = (i: number) => {
+    if (duplicateInfo.has(i)) return;
     const s = new Set(selected);
     if (s.has(i)) s.delete(i); else s.add(i);
     setSelected(s);
@@ -300,7 +301,7 @@ export default function ClientTools({ statusConfig }: Props) {
   const applyStatusToAll = () => {
     const next = extracted.map((c) => ({ ...c, status: bulkStatus }));
     setExtracted(next);
-    setSelected(new Set(extracted.map((_, i) => i)));
+    setSelected(new Set(importableIndexes));
     toast({ title: "Priskirta visiems", description: `${extracted.length} klientas(-ų) priskirta kortelei „${statusConfig.find(s => s.value === bulkStatus)?.label}"` });
   };
 
