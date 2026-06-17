@@ -1,0 +1,1 @@
+REVOKE ALL ON public.admin_status_config FROM anon;

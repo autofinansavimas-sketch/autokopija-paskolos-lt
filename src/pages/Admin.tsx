@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { syncToMeta } from "@/lib/syncToMeta";
 import { SEOHead } from "@/components/SEOHead";
 import { 
@@ -134,6 +135,9 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
 
 "AUTOPASKOLOS.LT" komanda`;
 
+const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
+const STATUS_CONFIG_ROW_ID = "global";
+
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
   { value: "contacted", label: "Susisiekta", color: "bg-yellow-500", borderColor: "border-yellow-500" },
@@ -143,6 +147,7 @@ const DEFAULT_STATUS_CONFIG = [
   { value: "cancelled", label: "Atšaukti", color: "bg-red-500", borderColor: "border-red-500" },
   { value: "outsource_", label: "Outsource", color: "bg-teal-500", borderColor: "border-teal-500" },
   { value: "outsource_susisiekta", label: "Outsource susisiekta", color: "bg-cyan-500", borderColor: "border-cyan-500" },
+  { value: "outsource_nekelia", label: "Outsource nekelia", color: "bg-pink-500", borderColor: "border-pink-500" },
   { value: "nekelia", label: "Nekelia", color: "bg-pink-500", borderColor: "border-pink-500" },
   { value: "nekelia_ragelio", label: "Nekelia ragelio", color: "bg-pink-500", borderColor: "border-pink-500" },
   { value: "nusiusta_paraiska_", label: "Nusiųsta paraiška", color: "bg-indigo-500", borderColor: "border-indigo-500" },
@@ -183,6 +188,43 @@ interface StatusConfig {
   borderColor: string;
 }
 
+const isStatusConfigItem = (value: unknown): value is StatusConfig => {
+  const item = value as Partial<StatusConfig>;
+  return Boolean(
+    item &&
+    typeof item.value === "string" &&
+    typeof item.label === "string" &&
+    typeof item.color === "string" &&
+    typeof item.borderColor === "string"
+  );
+};
+
+const normalizeStatusConfig = (value: unknown): StatusConfig[] =>
+  Array.isArray(value) ? value.filter(isStatusConfigItem) : [];
+
+const mergeStatusConfigs = (...configs: StatusConfig[][]) => {
+  const merged: StatusConfig[] = [];
+  configs.flat().forEach((item) => {
+    if (!merged.some((existing) => existing.value === item.value)) {
+      merged.push(item);
+    }
+  });
+  return merged;
+};
+
+const readStatusConfigFromLocalStorage = () => {
+  const saved = localStorage.getItem(STATUS_CONFIG_STORAGE_KEY);
+  if (!saved) return DEFAULT_STATUS_CONFIG;
+
+  try {
+    const parsed = normalizeStatusConfig(JSON.parse(saved));
+    return parsed.length > 0 ? mergeStatusConfigs(parsed, DEFAULT_STATUS_CONFIG) : DEFAULT_STATUS_CONFIG;
+  } catch {
+    localStorage.removeItem(STATUS_CONFIG_STORAGE_KEY);
+    return DEFAULT_STATUS_CONFIG;
+  }
+};
+
 export default function Admin() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [deletedSubmissions, setDeletedSubmissions] = useState<Submission[]>([]);
@@ -196,29 +238,8 @@ export default function Admin() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-  const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(() => {
-    const saved = localStorage.getItem("admin_status_config");
-    if (saved) {
-      let parsed: StatusConfig[];
-      try {
-        parsed = JSON.parse(saved);
-      } catch {
-        localStorage.removeItem("admin_status_config");
-        return DEFAULT_STATUS_CONFIG;
-      }
-      // Ensure all default statuses exist (e.g. "ateityje" may have been added later)
-      const missingDefaults = DEFAULT_STATUS_CONFIG.filter(
-        d => !parsed.some(p => p.value === d.value)
-      );
-      if (missingDefaults.length > 0) {
-        const merged = [...parsed.slice(0, -1), ...missingDefaults, ...parsed.slice(-1)];
-        localStorage.setItem("admin_status_config", JSON.stringify(merged));
-        return merged;
-      }
-      return parsed;
-    }
-    return DEFAULT_STATUS_CONFIG;
-  });
+  const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(readStatusConfigFromLocalStorage);
+  const [statusConfigLoaded, setStatusConfigLoaded] = useState(false);
   const [addColumnDialogOpen, setAddColumnDialogOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
   const [newColumnColor, setNewColumnColor] = useState(AVAILABLE_COLORS[0]);
@@ -241,11 +262,59 @@ export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const saveStatusConfig = async (config: StatusConfig[], updatedBy = currentUserId) => {
+    setStatusConfig(config);
+    localStorage.setItem(STATUS_CONFIG_STORAGE_KEY, JSON.stringify(config));
+
+    const { error } = await supabase
+      .from("admin_status_config")
+      .upsert({
+        id: STATUS_CONFIG_ROW_ID,
+        config: config as unknown as Json,
+        updated_by: updatedBy,
+      });
+
+    if (error) {
+      console.error("Error saving admin status config:", error);
+      toast({
+        title: "Nepavyko išsaugoti stulpelių",
+        description: "Pakeitimas matomas šiame kompiuteryje, bet gali nesimatyti kolegoms.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchStatusConfig = async (updatedBy?: string | null) => {
+    const { data, error } = await supabase
+      .from("admin_status_config")
+      .select("config")
+      .eq("id", STATUS_CONFIG_ROW_ID)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching admin status config:", error);
+      setStatusConfigLoaded(true);
+      return;
+    }
+
+    const remoteConfig = normalizeStatusConfig(data?.config);
+    const baseConfig = remoteConfig.length > 0 ? remoteConfig : readStatusConfigFromLocalStorage();
+    const mergedConfig = mergeStatusConfigs(baseConfig, DEFAULT_STATUS_CONFIG);
+
+    setStatusConfig(mergedConfig);
+    localStorage.setItem(STATUS_CONFIG_STORAGE_KEY, JSON.stringify(mergedConfig));
+    setStatusConfigLoaded(true);
+
+    if (JSON.stringify(remoteConfig) !== JSON.stringify(mergedConfig)) {
+      await saveStatusConfig(mergedConfig, updatedBy ?? currentUserId);
+    }
+  };
+
   useEffect(() => {
     const unknownStatuses = Array.from(new Set(submissions.map((s) => s.status).filter(Boolean)))
       .filter((status) => !statusConfig.some((config) => config.value === status));
 
-    if (unknownStatuses.length === 0) return;
+    if (!statusConfigLoaded || unknownStatuses.length === 0) return;
 
     const generated = unknownStatuses.map((status, index) => {
       const color = AVAILABLE_COLORS[(statusConfig.length + index) % AVAILABLE_COLORS.length];
@@ -257,9 +326,8 @@ export default function Admin() {
       };
     });
     const updated = [...statusConfig, ...generated];
-    setStatusConfig(updated);
-    localStorage.setItem("admin_status_config", JSON.stringify(updated));
-  }, [submissions, statusConfig]);
+    saveStatusConfig(updated);
+  }, [submissions, statusConfig, statusConfigLoaded]);
 
   useEffect(() => {
     checkAuth();
@@ -285,6 +353,7 @@ export default function Admin() {
     }
     
     setCurrentUserId(session.user.id);
+    await fetchStatusConfig(session.user.id);
     
     // Fetch profiles for comment author display
     const { data: profilesData } = await supabase
@@ -814,7 +883,7 @@ export default function Admin() {
     await handleStatusChange(submissionId, newStatus);
   };
 
-  const handleAddColumn = () => {
+  const handleAddColumn = async () => {
     if (!newColumnName.trim()) {
       toast({
         title: "Klaida",
@@ -843,8 +912,7 @@ export default function Admin() {
     };
 
     const updatedConfig = [...statusConfig, newStatus];
-    setStatusConfig(updatedConfig);
-    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+    await saveStatusConfig(updatedConfig);
     
     setNewColumnName("");
     setNewColumnColor(AVAILABLE_COLORS[0]);
@@ -855,7 +923,7 @@ export default function Admin() {
     });
   };
 
-  const handleDeleteColumn = (columnValue: string) => {
+  const handleDeleteColumn = async (columnValue: string) => {
     const column = statusConfig.find(s => s.value === columnValue);
     const columnSubmissions = submissions.filter(s => s.status === columnValue);
     
@@ -869,15 +937,14 @@ export default function Admin() {
     }
 
     const updatedConfig = statusConfig.filter(s => s.value !== columnValue);
-    setStatusConfig(updatedConfig);
-    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+    await saveStatusConfig(updatedConfig);
     
     toast({
       title: `Kolonėlė "${column?.label}" ištrinta`,
     });
   };
 
-  const handleRenameColumn = (columnValue: string) => {
+  const handleRenameColumn = async (columnValue: string) => {
     const newLabel = editingColumnLabel.trim();
     if (!newLabel) {
       toast({ title: "Klaida", description: "Pavadinimas negali būti tuščias", variant: "destructive" });
@@ -886,38 +953,34 @@ export default function Admin() {
     const updatedConfig = statusConfig.map(s =>
       s.value === columnValue ? { ...s, label: newLabel } : s
     );
-    setStatusConfig(updatedConfig);
-    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+    await saveStatusConfig(updatedConfig);
     setEditingColumn(null);
     setEditingColumnLabel("");
     toast({ title: "Kortelė pervadinta", description: newLabel });
   };
 
-  const handleChangeColumnColor = (columnValue: string, color: typeof AVAILABLE_COLORS[number]) => {
+  const handleChangeColumnColor = async (columnValue: string, color: typeof AVAILABLE_COLORS[number]) => {
     const updatedConfig = statusConfig.map(s =>
       s.value === columnValue ? { ...s, color: color.color, borderColor: color.borderColor } : s
     );
-    setStatusConfig(updatedConfig);
-    localStorage.setItem("admin_status_config", JSON.stringify(updatedConfig));
+    await saveStatusConfig(updatedConfig);
   };
 
-  const handleMoveColumn = (columnValue: string, direction: -1 | 1) => {
+  const handleMoveColumn = async (columnValue: string, direction: -1 | 1) => {
     const idx = statusConfig.findIndex(s => s.value === columnValue);
     if (idx < 0) return;
     const newIdx = idx + direction;
     if (newIdx < 0 || newIdx >= statusConfig.length) return;
     const updated = [...statusConfig];
     [updated[idx], updated[newIdx]] = [updated[newIdx], updated[idx]];
-    setStatusConfig(updated);
-    localStorage.setItem("admin_status_config", JSON.stringify(updated));
+    await saveStatusConfig(updated);
   };
 
-  const handleResetColumns = () => {
-    localStorage.removeItem("admin_status_config");
-    setStatusConfig(DEFAULT_STATUS_CONFIG);
+  const handleResetColumns = async () => {
+    await saveStatusConfig(DEFAULT_STATUS_CONFIG);
     toast({
       title: "Kolonėlės atstatytos",
-      description: "Rodomi numatytieji stulpeliai. Perkraukite puslapį, jei reikia.",
+      description: "Rodomi numatytieji stulpeliai visuose kompiuteriuose.",
     });
   };
 
