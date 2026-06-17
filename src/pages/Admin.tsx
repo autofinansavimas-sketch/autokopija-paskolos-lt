@@ -298,11 +298,8 @@ export default function Admin() {
     }
 
     const remoteConfig = normalizeStatusConfig(data?.config);
-    const mergedConfig = mergeStatusConfigs(
-      remoteConfig.length > 0 ? remoteConfig : [],
-      readStatusConfigFromLocalStorage(),
-      DEFAULT_STATUS_CONFIG
-    );
+    const baseConfig = remoteConfig.length > 0 ? remoteConfig : readStatusConfigFromLocalStorage();
+    const mergedConfig = mergeStatusConfigs(baseConfig, DEFAULT_STATUS_CONFIG);
 
     setStatusConfig(mergedConfig);
     localStorage.setItem(STATUS_CONFIG_STORAGE_KEY, JSON.stringify(mergedConfig));
