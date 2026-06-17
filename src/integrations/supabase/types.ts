@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_status_config: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       call_reminders: {
         Row: {
           call_date: string

@@ -1,0 +1,2 @@
+ALTER TABLE public.admin_status_config
+DROP CONSTRAINT IF EXISTS admin_status_config_updated_by_fkey;
