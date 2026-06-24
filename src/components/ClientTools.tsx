@@ -594,17 +594,18 @@ export default function ClientTools({ statusConfig }: Props) {
         buildListExcel(selectedDate, reportRows, `diena-${selectedDate}.xlsx`);
       } else if (reportMode === "comments") {
         const wb = XLSX.utils.book_new();
-        const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Laikas", "Pastaba"]];
+        const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Operatorius", "Laikas", "Pastaba"]];
         commentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c) => {
+            const { operator: op, body } = parseOperatorTag(c.comment);
             rows.push([
-              s.name || "-", s.phone, s.email, statusLabel(s.status),
-              new Date(c.created_at).toLocaleString("lt-LT"), c.comment,
+              s.name || "-", s.phone, s.email, statusLabel(s.status), op || "-",
+              new Date(c.created_at).toLocaleString("lt-LT"), body,
             ]);
           });
         });
         const ws = XLSX.utils.aoa_to_sheet(rows);
-        ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 18 }, { wch: 60 }];
+        ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 60 }];
         XLSX.utils.book_append_sheet(wb, ws, `Pastabos ${commentsDate}`.slice(0, 31));
         XLSX.writeFile(wb, `pastabos-${commentsDate}.xlsx`);
       }
