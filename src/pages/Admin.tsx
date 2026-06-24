@@ -90,6 +90,8 @@ import QuickFilters from "@/components/QuickFilters";
 import AdminAIChat from "@/components/AdminAIChat";
 import AdminAutomations from "@/components/AdminAutomations";
 import { Bell, BarChart3, Zap } from "lucide-react";
+import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
+import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/use-operator";
 
 interface Submission {
   id: string;
@@ -261,6 +263,7 @@ export default function Admin() {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { operator } = useOperator();
 
   const saveStatusConfig = async (config: StatusConfig[], updatedBy = currentUserId) => {
     setStatusConfig(config);
@@ -656,8 +659,10 @@ export default function Admin() {
   };
 
   const handleAddComment = async (submissionId: string, text?: string) => {
-    const commentText = (text ?? newComments[submissionId] ?? "").trim();
-    if (!commentText || !currentUserId) return;
+    const rawText = (text ?? newComments[submissionId] ?? "").trim();
+    if (!rawText || !currentUserId) return;
+
+    const commentText = tagCommentWithOperator(rawText, operator);
 
     setSubmittingComment(submissionId);
     try {
@@ -1160,6 +1165,8 @@ export default function Admin() {
                 <RotateCcw className="h-4 w-4" />
               </Button>
               
+              <OperatorPicker />
+
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -1851,12 +1858,15 @@ export default function Admin() {
                   </h4>
 
                   <div className="space-y-2">
-                    {comments[selectedSubmission.id]?.map((comment) => (
+                    {comments[selectedSubmission.id]?.map((comment) => {
+                      const { operator: opName, body } = parseOperatorTag(comment.comment);
+                      return (
                       <div key={comment.id} className="bg-muted/50 rounded-lg p-3 group">
                         <div className="flex justify-between items-start gap-2">
-                          <div className="flex-1">
-                            <p className="text-sm">{comment.comment}</p>
-                            <div className="flex items-center gap-2 mt-1">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              {opName && <OperatorBadge name={opName} />}
                               <span className="text-xs font-medium text-primary">
                                 {comment.user_display_name || comment.user_email || "Nežinomas"}
                               </span>
@@ -1875,7 +1885,8 @@ export default function Admin() {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="flex gap-2">

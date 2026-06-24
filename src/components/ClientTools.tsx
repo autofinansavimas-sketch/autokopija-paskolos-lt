@@ -21,6 +21,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { applyLtFont, PDF_FONT } from "@/lib/pdfFont";
+import { parseOperatorTag } from "@/hooks/use-operator";
 
 interface SubmissionLite {
   id: string;
@@ -535,22 +536,24 @@ export default function ClientTools({ statusConfig }: Props) {
         const body: string[][] = [];
         commentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c, idx) => {
+            const { operator: op, body: text } = parseOperatorTag(c.comment);
             body.push([
               idx === 0 ? (s.name || s.email) : "",
               idx === 0 ? s.phone : "",
               idx === 0 ? statusLabel(s.status) : "",
+              op || "-",
               new Date(c.created_at).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" }),
-              c.comment,
+              text,
             ]);
           });
         });
         autoTable(doc, {
           startY: 32,
-          head: [["Klientas", "Telefonas", "Kortelė", "Laikas", "Pastaba"]],
+          head: [["Klientas", "Telefonas", "Kortelė", "Operatorius", "Laikas", "Pastaba"]],
           body,
           styles: tableStyles,
           headStyles,
-          columnStyles: { 4: { cellWidth: "auto" } },
+          columnStyles: { 5: { cellWidth: "auto" } },
         });
         doc.save(`pastabos-${commentsDate}.pdf`);
       }
@@ -593,17 +596,18 @@ export default function ClientTools({ statusConfig }: Props) {
         buildListExcel(selectedDate, reportRows, `diena-${selectedDate}.xlsx`);
       } else if (reportMode === "comments") {
         const wb = XLSX.utils.book_new();
-        const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Laikas", "Pastaba"]];
+        const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Operatorius", "Laikas", "Pastaba"]];
         commentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c) => {
+            const { operator: op, body } = parseOperatorTag(c.comment);
             rows.push([
-              s.name || "-", s.phone, s.email, statusLabel(s.status),
-              new Date(c.created_at).toLocaleString("lt-LT"), c.comment,
+              s.name || "-", s.phone, s.email, statusLabel(s.status), op || "-",
+              new Date(c.created_at).toLocaleString("lt-LT"), body,
             ]);
           });
         });
         const ws = XLSX.utils.aoa_to_sheet(rows);
-        ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 18 }, { wch: 60 }];
+        ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 60 }];
         XLSX.utils.book_append_sheet(wb, ws, `Pastabos ${commentsDate}`.slice(0, 31));
         XLSX.writeFile(wb, `pastabos-${commentsDate}.xlsx`);
       }
