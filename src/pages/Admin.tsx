@@ -1858,12 +1858,15 @@ export default function Admin() {
                   </h4>
 
                   <div className="space-y-2">
-                    {comments[selectedSubmission.id]?.map((comment) => (
+                    {comments[selectedSubmission.id]?.map((comment) => {
+                      const { operator: opName, body } = parseOperatorTag(comment.comment);
+                      return (
                       <div key={comment.id} className="bg-muted/50 rounded-lg p-3 group">
                         <div className="flex justify-between items-start gap-2">
-                          <div className="flex-1">
-                            <p className="text-sm">{comment.comment}</p>
-                            <div className="flex items-center gap-2 mt-1">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              {opName && <OperatorBadge name={opName} />}
                               <span className="text-xs font-medium text-primary">
                                 {comment.user_display_name || comment.user_email || "Nežinomas"}
                               </span>
