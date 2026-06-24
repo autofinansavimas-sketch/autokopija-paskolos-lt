@@ -21,6 +21,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { applyLtFont, PDF_FONT } from "@/lib/pdfFont";
+import { parseOperatorTag } from "@/hooks/use-operator";
 
 interface SubmissionLite {
   id: string;
