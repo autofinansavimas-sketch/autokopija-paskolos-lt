@@ -536,22 +536,24 @@ export default function ClientTools({ statusConfig }: Props) {
         const body: string[][] = [];
         commentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c, idx) => {
+            const { operator: op, body: text } = parseOperatorTag(c.comment);
             body.push([
               idx === 0 ? (s.name || s.email) : "",
               idx === 0 ? s.phone : "",
               idx === 0 ? statusLabel(s.status) : "",
+              op || "-",
               new Date(c.created_at).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" }),
-              c.comment,
+              text,
             ]);
           });
         });
         autoTable(doc, {
           startY: 32,
-          head: [["Klientas", "Telefonas", "Kortelė", "Laikas", "Pastaba"]],
+          head: [["Klientas", "Telefonas", "Kortelė", "Operatorius", "Laikas", "Pastaba"]],
           body,
           styles: tableStyles,
           headStyles,
-          columnStyles: { 4: { cellWidth: "auto" } },
+          columnStyles: { 5: { cellWidth: "auto" } },
         });
         doc.save(`pastabos-${commentsDate}.pdf`);
       }
