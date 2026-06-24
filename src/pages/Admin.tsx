@@ -659,8 +659,10 @@ export default function Admin() {
   };
 
   const handleAddComment = async (submissionId: string, text?: string) => {
-    const commentText = (text ?? newComments[submissionId] ?? "").trim();
-    if (!commentText || !currentUserId) return;
+    const rawText = (text ?? newComments[submissionId] ?? "").trim();
+    if (!rawText || !currentUserId) return;
+
+    const commentText = tagCommentWithOperator(rawText, operator);
 
     setSubmittingComment(submissionId);
     try {
