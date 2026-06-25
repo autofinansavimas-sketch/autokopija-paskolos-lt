@@ -358,13 +358,22 @@ export default function ClientTools({ statusConfig }: Props) {
 
   const reportRows = useMemo(() => {
     if (reportMode === "category") {
-      return submissions.filter((s) => s.status === selectedCategory);
+      if (selectedCategories.size === 0) return [];
+      return submissions.filter((s) => selectedCategories.has(s.status));
     }
     if (reportMode === "day") {
       return submissions.filter((s) => s.created_at.slice(0, 10) === selectedDate);
     }
     return [];
-  }, [submissions, reportMode, selectedCategory, selectedDate]);
+  }, [submissions, reportMode, selectedCategories, selectedDate]);
+
+  const toggleCategory = (val: string) => {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(val)) next.delete(val); else next.add(val);
+      return next;
+    });
+  };
 
   const statusLabel = (v: string) => statusConfig.find((s) => s.value === v)?.label || v;
 
