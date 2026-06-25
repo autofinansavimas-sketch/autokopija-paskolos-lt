@@ -648,7 +648,7 @@ export default function ClientTools({ statusConfig }: Props) {
       } else if (reportMode === "comments") {
         const wb = XLSX.utils.book_new();
         const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Operatorius", "Laikas", "Pastaba"]];
-        commentRows.forEach(({ submission: s, comments }) => {
+        filteredCommentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c) => {
             const { operator: op, body } = parseOperatorTag(c.comment);
             rows.push([
@@ -660,7 +660,7 @@ export default function ClientTools({ statusConfig }: Props) {
         const ws = XLSX.utils.aoa_to_sheet(rows);
         ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 60 }];
         XLSX.utils.book_append_sheet(wb, ws, `Pastabos ${commentsDate}`.slice(0, 31));
-        XLSX.writeFile(wb, `pastabos-${commentsDate}.xlsx`);
+        XLSX.writeFile(wb, `pastabos-${commentsDate}${commentsOperator !== "all" ? `-${commentsOperator}` : ""}.xlsx`);
       }
       toast({ title: "Excel atsisiųsta" });
     } finally { setExporting(false); }
