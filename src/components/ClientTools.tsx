@@ -604,7 +604,29 @@ export default function ClientTools({ statusConfig }: Props) {
         }
         XLSX.writeFile(wb, `klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.xlsx`);
       } else if (reportMode === "category") {
-        buildListExcel(statusLabel(selectedCategory), reportRows, `kategorija-${selectedCategory}.xlsx`);
+        const cats = Array.from(selectedCategories);
+        const fileSlug = cats.join("-").replace(/[^a-z0-9_-]/gi, "_").slice(0, 60);
+        if (cats.length <= 1) {
+          buildListExcel(statusLabel(cats[0] || ""), reportRows, `korteles-${fileSlug}.xlsx`);
+        } else {
+          // One sheet per selected category for easier filtering
+          const wb = XLSX.utils.book_new();
+          cats.forEach((cat) => {
+            const rows = submissions.filter((s) => s.status === cat);
+            const ws = XLSX.utils.aoa_to_sheet([
+              ["Vardas", "Telefonas", "El. paštas", "Suma", "Paskolos tipas", "Terminas", "Statusas", "Šaltinis", "Sukurta"],
+              ...rows.map((s) => [
+                s.name || "-", s.phone, s.email, s.amount || "-",
+                s.loan_type || "-", s.loan_period || "-",
+                statusLabel(s.status), s.source || "-",
+                new Date(s.created_at).toLocaleString("lt-LT"),
+              ]),
+            ]);
+            ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 18 }];
+            XLSX.utils.book_append_sheet(wb, ws, statusLabel(cat).slice(0, 31));
+          });
+          XLSX.writeFile(wb, `korteles-${fileSlug}.xlsx`);
+        }
       } else if (reportMode === "day") {
         buildListExcel(selectedDate, reportRows, `diena-${selectedDate}.xlsx`);
       } else if (reportMode === "comments") {
