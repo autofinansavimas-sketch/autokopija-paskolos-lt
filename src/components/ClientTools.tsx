@@ -93,7 +93,7 @@ export default function ClientTools({ statusConfig }: Props) {
   const [submissions, setSubmissions] = useState<SubmissionLite[]>([]);
   const [reportMode, setReportMode] = useState<"client" | "category" | "day" | "comments">("client");
   const [selectedId, setSelectedId] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>(defaultStatus);
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set([defaultStatus]));
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [commentsDate, setCommentsDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [commentRows, setCommentRows] = useState<Array<{ submission: SubmissionLite; comments: { comment: string; created_at: string }[] }>>([]);
@@ -357,13 +357,22 @@ export default function ClientTools({ statusConfig }: Props) {
 
   const reportRows = useMemo(() => {
     if (reportMode === "category") {
-      return submissions.filter((s) => s.status === selectedCategory);
+      if (selectedCategories.size === 0) return [];
+      return submissions.filter((s) => selectedCategories.has(s.status));
     }
     if (reportMode === "day") {
       return submissions.filter((s) => s.created_at.slice(0, 10) === selectedDate);
     }
     return [];
-  }, [submissions, reportMode, selectedCategory, selectedDate]);
+  }, [submissions, reportMode, selectedCategories, selectedDate]);
+
+  const toggleCategory = (val: string) => {
+    setSelectedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(val)) next.delete(val); else next.add(val);
+      return next;
+    });
+  };
 
   const statusLabel = (v: string) => statusConfig.find((s) => s.value === v)?.label || v;
 
@@ -514,8 +523,11 @@ export default function ClientTools({ statusConfig }: Props) {
         }
         doc.save(`klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.pdf`);
       } else if (reportMode === "category") {
+        const labels = Array.from(selectedCategories).map((v) => statusLabel(v));
+        const titleLabel = labels.length === 1 ? labels[0] : `${labels.length} kortelės`;
+        const fileSlug = Array.from(selectedCategories).join("-").replace(/[^a-z0-9_-]/gi, "_").slice(0, 60);
         const map = await fetchCommentsFor(reportRows.map((r) => r.id));
-        await buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`, map);
+        await buildListPDF(`Kortelės: ${titleLabel}`, reportRows, `korteles-${fileSlug}.pdf`, map);
       } else if (reportMode === "day") {
         const map = await fetchCommentsFor(reportRows.map((r) => r.id));
         await buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`, map);
@@ -591,7 +603,29 @@ export default function ClientTools({ statusConfig }: Props) {
         }
         XLSX.writeFile(wb, `klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.xlsx`);
       } else if (reportMode === "category") {
-        buildListExcel(statusLabel(selectedCategory), reportRows, `kategorija-${selectedCategory}.xlsx`);
+        const cats = Array.from(selectedCategories);
+        const fileSlug = cats.join("-").replace(/[^a-z0-9_-]/gi, "_").slice(0, 60);
+        if (cats.length <= 1) {
+          buildListExcel(statusLabel(cats[0] || ""), reportRows, `korteles-${fileSlug}.xlsx`);
+        } else {
+          // One sheet per selected category for easier filtering
+          const wb = XLSX.utils.book_new();
+          cats.forEach((cat) => {
+            const rows = submissions.filter((s) => s.status === cat);
+            const ws = XLSX.utils.aoa_to_sheet([
+              ["Vardas", "Telefonas", "El. paštas", "Suma", "Paskolos tipas", "Terminas", "Statusas", "Šaltinis", "Sukurta"],
+              ...rows.map((s) => [
+                s.name || "-", s.phone, s.email, s.amount || "-",
+                s.loan_type || "-", s.loan_period || "-",
+                statusLabel(s.status), s.source || "-",
+                new Date(s.created_at).toLocaleString("lt-LT"),
+              ]),
+            ]);
+            ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 18 }];
+            XLSX.utils.book_append_sheet(wb, ws, statusLabel(cat).slice(0, 31));
+          });
+          XLSX.writeFile(wb, `korteles-${fileSlug}.xlsx`);
+        }
       } else if (reportMode === "day") {
         buildListExcel(selectedDate, reportRows, `diena-${selectedDate}.xlsx`);
       } else if (reportMode === "comments") {
@@ -936,17 +970,39 @@ export default function ClientTools({ statusConfig }: Props) {
             </TabsContent>
 
             <TabsContent value="category" className="mt-3 space-y-2">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {statusConfig.map((s) => {
-                    const count = submissions.filter((x) => x.status === s.value).length;
-                    return <SelectItem key={s.value} value={s.value}>{s.label} ({count})</SelectItem>;
-                  })}
-                </SelectContent>
-              </Select>
-              <div className="text-xs text-muted-foreground">Bus eksportuota {reportRows.length} klientas(-ų)</div>
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-muted-foreground">Pasirinkite vieną ar kelias korteles:</div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() => setSelectedCategories(new Set(statusConfig.map((s) => s.value)))}
+                  >Visi</button>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:underline"
+                    onClick={() => setSelectedCategories(new Set())}
+                  >Išvalyti</button>
+                </div>
+              </div>
+              <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-1">
+                {statusConfig.map((s) => {
+                  const count = submissions.filter((x) => x.status === s.value).length;
+                  const checked = selectedCategories.has(s.value);
+                  return (
+                    <label key={s.value} className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-muted text-sm">
+                      <Checkbox checked={checked} onCheckedChange={() => toggleCategory(s.value)} />
+                      <span className="flex-1">{s.label}</span>
+                      <span className="text-xs text-muted-foreground">({count})</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Pažymėta {selectedCategories.size} kortelė(-ės) • bus eksportuota {reportRows.length} klientas(-ų)
+              </div>
             </TabsContent>
+
 
             <TabsContent value="day" className="mt-3 space-y-2">
               <Input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
