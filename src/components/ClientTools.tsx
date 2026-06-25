@@ -101,6 +101,22 @@ export default function ClientTools({ statusConfig }: Props) {
   const [exporting, setExporting] = useState(false);
   const [commentsOperator, setCommentsOperator] = useState<string>("all");
 
+  const filteredCommentRows = useMemo(() => {
+    if (commentsOperator === "all") return commentRows;
+    return commentRows
+      .map(({ submission, comments }) => ({
+        submission,
+        comments: comments.filter((c) => {
+          const { operator } = parseOperatorTag(c.comment);
+          if (commentsOperator === "none") return !operator;
+          return operator === commentsOperator;
+        }),
+      }))
+      .filter((r) => r.comments.length > 0);
+  }, [commentRows, commentsOperator]);
+
+
+
   // Bulk messaging state
   const [msgFilter, setMsgFilter] = useState<string>("all"); // "all" | status value
   const [msgSelected, setMsgSelected] = useState<Set<string>>(new Set());
