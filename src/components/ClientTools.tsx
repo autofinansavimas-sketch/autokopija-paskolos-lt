@@ -971,17 +971,39 @@ export default function ClientTools({ statusConfig }: Props) {
             </TabsContent>
 
             <TabsContent value="category" className="mt-3 space-y-2">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {statusConfig.map((s) => {
-                    const count = submissions.filter((x) => x.status === s.value).length;
-                    return <SelectItem key={s.value} value={s.value}>{s.label} ({count})</SelectItem>;
-                  })}
-                </SelectContent>
-              </Select>
-              <div className="text-xs text-muted-foreground">Bus eksportuota {reportRows.length} klientas(-ų)</div>
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-muted-foreground">Pasirinkite vieną ar kelias korteles:</div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() => setSelectedCategories(new Set(statusConfig.map((s) => s.value)))}
+                  >Visi</button>
+                  <button
+                    type="button"
+                    className="text-xs text-muted-foreground hover:underline"
+                    onClick={() => setSelectedCategories(new Set())}
+                  >Išvalyti</button>
+                </div>
+              </div>
+              <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-1">
+                {statusConfig.map((s) => {
+                  const count = submissions.filter((x) => x.status === s.value).length;
+                  const checked = selectedCategories.has(s.value);
+                  return (
+                    <label key={s.value} className="flex items-center gap-2 cursor-pointer px-2 py-1 rounded hover:bg-muted text-sm">
+                      <Checkbox checked={checked} onCheckedChange={() => toggleCategory(s.value)} />
+                      <span className="flex-1">{s.label}</span>
+                      <span className="text-xs text-muted-foreground">({count})</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Pažymėta {selectedCategories.size} kortelė(-ės) • bus eksportuota {reportRows.length} klientas(-ų)
+              </div>
             </TabsContent>
+
 
             <TabsContent value="day" className="mt-3 space-y-2">
               <Input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
