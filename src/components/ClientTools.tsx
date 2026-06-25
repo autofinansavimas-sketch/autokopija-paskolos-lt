@@ -99,6 +99,23 @@ export default function ClientTools({ statusConfig }: Props) {
   const [commentRows, setCommentRows] = useState<Array<{ submission: SubmissionLite; comments: { comment: string; created_at: string }[] }>>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [commentsOperator, setCommentsOperator] = useState<string>("all");
+
+  const filteredCommentRows = useMemo(() => {
+    if (commentsOperator === "all") return commentRows;
+    return commentRows
+      .map(({ submission, comments }) => ({
+        submission,
+        comments: comments.filter((c) => {
+          const { operator } = parseOperatorTag(c.comment);
+          if (commentsOperator === "none") return !operator;
+          return operator === commentsOperator;
+        }),
+      }))
+      .filter((r) => r.comments.length > 0);
+  }, [commentRows, commentsOperator]);
+
+
 
   // Bulk messaging state
   const [msgFilter, setMsgFilter] = useState<string>("all"); // "all" | status value
@@ -543,10 +560,10 @@ export default function ClientTools({ statusConfig }: Props) {
         doc.setFont(PDF_FONT, "normal");
         doc.setFontSize(10);
         doc.setTextColor(120);
-        doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Klientų: ${commentRows.length}`, 14, 25);
+        doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Klientų: ${filteredCommentRows.length}${commentsOperator !== "all" ? `  •  Operatorius: ${commentsOperator}` : ""}`, 14, 25);
         doc.setTextColor(0);
         const body: string[][] = [];
-        commentRows.forEach(({ submission: s, comments }) => {
+        filteredCommentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c, idx) => {
             const { operator: op, body: text } = parseOperatorTag(c.comment);
             body.push([
@@ -567,7 +584,7 @@ export default function ClientTools({ statusConfig }: Props) {
           headStyles,
           columnStyles: { 5: { cellWidth: "auto" } },
         });
-        doc.save(`pastabos-${commentsDate}.pdf`);
+        doc.save(`pastabos-${commentsDate}${commentsOperator !== "all" ? `-${commentsOperator}` : ""}.pdf`);
       }
       toast({ title: "PDF atsisiųsta" });
     } catch (e) {
@@ -631,7 +648,7 @@ export default function ClientTools({ statusConfig }: Props) {
       } else if (reportMode === "comments") {
         const wb = XLSX.utils.book_new();
         const rows: (string | number)[][] = [["Klientas", "Telefonas", "El. paštas", "Kortelė", "Operatorius", "Laikas", "Pastaba"]];
-        commentRows.forEach(({ submission: s, comments }) => {
+        filteredCommentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c) => {
             const { operator: op, body } = parseOperatorTag(c.comment);
             rows.push([
@@ -643,7 +660,7 @@ export default function ClientTools({ statusConfig }: Props) {
         const ws = XLSX.utils.aoa_to_sheet(rows);
         ws["!cols"] = [{ wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 60 }];
         XLSX.utils.book_append_sheet(wb, ws, `Pastabos ${commentsDate}`.slice(0, 31));
-        XLSX.writeFile(wb, `pastabos-${commentsDate}.xlsx`);
+        XLSX.writeFile(wb, `pastabos-${commentsDate}${commentsOperator !== "all" ? `-${commentsOperator}` : ""}.xlsx`);
       }
       toast({ title: "Excel atsisiųsta" });
     } finally { setExporting(false); }
@@ -1010,11 +1027,22 @@ export default function ClientTools({ statusConfig }: Props) {
             </TabsContent>
 
             <TabsContent value="comments" className="mt-3 space-y-2">
-              <Input type="date" value={commentsDate} onChange={(e) => setCommentsDate(e.target.value)} />
+              <div className="grid grid-cols-2 gap-2">
+                <Input type="date" value={commentsDate} onChange={(e) => setCommentsDate(e.target.value)} />
+                <Select value={commentsOperator} onValueChange={setCommentsOperator}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Visi operatoriai</SelectItem>
+                    <SelectItem value="Aivaras">Aivaras</SelectItem>
+                    <SelectItem value="Paulina">Paulina</SelectItem>
+                    <SelectItem value="none">Be operatoriaus</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="text-xs text-muted-foreground">
                 {loadingComments
                   ? "Įkeliama..."
-                  : `Tą dieną pastaba pridėta ${commentRows.length} klientui(-ams) (iš viso ${commentRows.reduce((n, r) => n + r.comments.length, 0)} pastabų)`}
+                  : `Tą dieną pastaba pridėta ${filteredCommentRows.length} klientui(-ams) (iš viso ${filteredCommentRows.reduce((n, r) => n + r.comments.length, 0)} pastabų)`}
               </div>
             </TabsContent>
           </Tabs>
@@ -1022,13 +1050,13 @@ export default function ClientTools({ statusConfig }: Props) {
           <div className="grid grid-cols-2 gap-2 pt-1">
             <Button
               onClick={exportPDF}
-              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? commentRows.length === 0 : reportRows.length === 0)}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? filteredCommentRows.length === 0 : reportRows.length === 0)}
             >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />} PDF
             </Button>
             <Button
               onClick={exportExcel}
-              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? commentRows.length === 0 : reportRows.length === 0)}
+              disabled={exporting || (reportMode === "client" ? !selectedId : reportMode === "comments" ? filteredCommentRows.length === 0 : reportRows.length === 0)}
               variant="outline"
             >
               {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />} Excel
