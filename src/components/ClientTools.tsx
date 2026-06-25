@@ -584,7 +584,7 @@ export default function ClientTools({ statusConfig }: Props) {
           headStyles,
           columnStyles: { 5: { cellWidth: "auto" } },
         });
-        doc.save(`pastabos-${commentsDate}.pdf`);
+        doc.save(`pastabos-${commentsDate}${commentsOperator !== "all" ? `-${commentsOperator}` : ""}.pdf`);
       }
       toast({ title: "PDF atsisiųsta" });
     } catch (e) {
