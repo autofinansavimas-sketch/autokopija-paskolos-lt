@@ -99,6 +99,7 @@ export default function ClientTools({ statusConfig }: Props) {
   const [commentRows, setCommentRows] = useState<Array<{ submission: SubmissionLite; comments: { comment: string; created_at: string }[] }>>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [commentsOperator, setCommentsOperator] = useState<string>("all");
 
   // Bulk messaging state
   const [msgFilter, setMsgFilter] = useState<string>("all"); // "all" | status value
