@@ -524,8 +524,11 @@ export default function ClientTools({ statusConfig }: Props) {
         }
         doc.save(`klientas-${(s.name || s.email).replace(/[^a-z0-9]/gi, "_")}.pdf`);
       } else if (reportMode === "category") {
+        const labels = Array.from(selectedCategories).map((v) => statusLabel(v));
+        const titleLabel = labels.length === 1 ? labels[0] : `${labels.length} kortelės`;
+        const fileSlug = Array.from(selectedCategories).join("-").replace(/[^a-z0-9_-]/gi, "_").slice(0, 60);
         const map = await fetchCommentsFor(reportRows.map((r) => r.id));
-        await buildListPDF(`Kategorija: ${statusLabel(selectedCategory)}`, reportRows, `kategorija-${selectedCategory}.pdf`, map);
+        await buildListPDF(`Kortelės: ${titleLabel}`, reportRows, `korteles-${fileSlug}.pdf`, map);
       } else if (reportMode === "day") {
         const map = await fetchCommentsFor(reportRows.map((r) => r.id));
         await buildListPDF(`Dienos ataskaita: ${selectedDate}`, reportRows, `diena-${selectedDate}.pdf`, map);
