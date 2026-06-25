@@ -560,10 +560,10 @@ export default function ClientTools({ statusConfig }: Props) {
         doc.setFont(PDF_FONT, "normal");
         doc.setFontSize(10);
         doc.setTextColor(120);
-        doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Klientų: ${commentRows.length}`, 14, 25);
+        doc.text(`Sugeneruota: ${new Date().toLocaleString("lt-LT")}  •  Klientų: ${filteredCommentRows.length}${commentsOperator !== "all" ? `  •  Operatorius: ${commentsOperator}` : ""}`, 14, 25);
         doc.setTextColor(0);
         const body: string[][] = [];
-        commentRows.forEach(({ submission: s, comments }) => {
+        filteredCommentRows.forEach(({ submission: s, comments }) => {
           comments.forEach((c, idx) => {
             const { operator: op, body: text } = parseOperatorTag(c.comment);
             body.push([
