@@ -1658,6 +1658,8 @@ export default function Admin() {
             <UserManagement />
           </TabsContent>
         </Tabs>
+
+        <OperatorTimeStats />
       </main>
 
       {/* Detail Sheet */}
