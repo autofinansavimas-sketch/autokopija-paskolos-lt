@@ -267,6 +267,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { operator } = useOperator();
+  useOperatorHeartbeat(operator);
 
   const saveStatusConfig = async (config: StatusConfig[], updatedBy = currentUserId) => {
     setStatusConfig(config);
