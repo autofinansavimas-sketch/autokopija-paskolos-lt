@@ -92,6 +92,8 @@ import AdminAutomations from "@/components/AdminAutomations";
 import { Bell, BarChart3, Zap } from "lucide-react";
 import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
 import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/use-operator";
+import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
+import OperatorTimeStats from "@/components/OperatorTimeStats";
 
 interface Submission {
   id: string;
@@ -220,7 +222,8 @@ const readStatusConfigFromLocalStorage = () => {
 
   try {
     const parsed = normalizeStatusConfig(JSON.parse(saved));
-    return parsed.length > 0 ? mergeStatusConfigs(parsed, DEFAULT_STATUS_CONFIG) : DEFAULT_STATUS_CONFIG;
+    // Trust saved config as-is so deleted columns stay deleted.
+    return parsed.length > 0 ? parsed : DEFAULT_STATUS_CONFIG;
   } catch {
     localStorage.removeItem(STATUS_CONFIG_STORAGE_KEY);
     return DEFAULT_STATUS_CONFIG;
@@ -264,6 +267,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { operator } = useOperator();
+  useOperatorHeartbeat(operator);
 
   const saveStatusConfig = async (config: StatusConfig[], updatedBy = currentUserId) => {
     setStatusConfig(config);
@@ -301,8 +305,15 @@ export default function Admin() {
     }
 
     const remoteConfig = normalizeStatusConfig(data?.config);
-    const baseConfig = remoteConfig.length > 0 ? remoteConfig : readStatusConfigFromLocalStorage();
-    const mergedConfig = mergeStatusConfigs(baseConfig, DEFAULT_STATUS_CONFIG);
+    // If there is any saved config (remote or local), trust it as-is.
+    // Only seed defaults when there is nothing saved anywhere.
+    const localConfig = readStatusConfigFromLocalStorage();
+    const mergedConfig =
+      remoteConfig.length > 0
+        ? remoteConfig
+        : localConfig.length > 0
+          ? localConfig
+          : DEFAULT_STATUS_CONFIG;
 
     setStatusConfig(mergedConfig);
     localStorage.setItem(STATUS_CONFIG_STORAGE_KEY, JSON.stringify(mergedConfig));
@@ -1650,6 +1661,8 @@ export default function Admin() {
             <UserManagement />
           </TabsContent>
         </Tabs>
+
+        <OperatorTimeStats />
       </main>
 
       {/* Detail Sheet */}

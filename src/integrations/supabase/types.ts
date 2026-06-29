@@ -130,6 +130,33 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_time: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          operator: string
+          seconds: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          operator: string
+          seconds?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          operator?: string
+          seconds?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           approved: boolean
@@ -227,6 +254,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_operator_time: {
+        Args: { _operator: string; _seconds: number }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
       is_approved: { Args: never; Returns: boolean }
     }
