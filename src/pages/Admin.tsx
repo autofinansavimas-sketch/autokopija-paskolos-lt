@@ -220,7 +220,8 @@ const readStatusConfigFromLocalStorage = () => {
 
   try {
     const parsed = normalizeStatusConfig(JSON.parse(saved));
-    return parsed.length > 0 ? mergeStatusConfigs(parsed, DEFAULT_STATUS_CONFIG) : DEFAULT_STATUS_CONFIG;
+    // Trust saved config as-is so deleted columns stay deleted.
+    return parsed.length > 0 ? parsed : DEFAULT_STATUS_CONFIG;
   } catch {
     localStorage.removeItem(STATUS_CONFIG_STORAGE_KEY);
     return DEFAULT_STATUS_CONFIG;
