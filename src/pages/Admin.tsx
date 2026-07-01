@@ -1658,11 +1658,10 @@ export default function Admin() {
           
           <TabsContent value="users">
             <ClientTools statusConfig={statusConfig} />
+            <OperatorTimeStats />
             <UserManagement />
           </TabsContent>
         </Tabs>
-
-        <OperatorTimeStats />
       </main>
 
       {/* Detail Sheet */}
