@@ -1344,17 +1344,24 @@ export default function Admin() {
               <div className="relative w-full sm:w-64 md:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Ieškoti pagal vardą, el. paštą..."
+                  ref={searchInputRef}
+                  placeholder="Ieškoti (paspauskite / arba Ctrl+K)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-8 bg-card shadow-sm"
+                  className="pl-9 pr-16 h-8 bg-card shadow-sm"
                 />
+                {!searchQuery && (
+                  <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                    /
+                  </kbd>
+                )}
                 {searchQuery && (
                   <Button
                     variant="ghost"
                     size="sm"
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
                     onClick={() => setSearchQuery("")}
+                    title="Išvalyti (Esc)"
                   >
                     <X className="h-3 w-3" />
                   </Button>
