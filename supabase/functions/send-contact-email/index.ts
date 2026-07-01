@@ -136,8 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Processing contact submission from:", source);
-    
+    // PII redacted: avoid logging emails/phones/IDs
     const { data: submissionData, error: dbError } = await supabase
       .from("contact_submissions")
       .insert({
@@ -154,9 +153,7 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (dbError) {
-      console.error("Failed to save submission to database:", dbError);
-    } else {
-      console.log("Submission saved to database with ID:", submissionData.id);
+      console.error("Failed to save submission to database");
     }
 
     // Send notification email to admin

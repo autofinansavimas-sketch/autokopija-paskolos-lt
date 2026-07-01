@@ -50,14 +50,8 @@ export default function AdminLogin() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const checkUserAccess = async (userId: string, email: string) => {
-    // Admin always has access
-    if (email === "autofinansavimas@gmail.com") {
-      navigate("/admin");
-      return;
-    }
-
-    // Check if user is approved
+  const checkUserAccess = async (userId: string, _email: string) => {
+    // Server-side approval check via profiles table (RLS-protected)
     const { data: profile } = await supabase
       .from("profiles")
       .select("approved")
@@ -92,17 +86,7 @@ export default function AdminLogin() {
         return;
       }
 
-      // Check if admin
-      if (data.user?.email === "autofinansavimas@gmail.com") {
-        toast({
-          title: "Sėkmingai prisijungta!",
-          description: "Nukreipiama į admin panelę...",
-        });
-        navigate("/admin");
-        return;
-      }
-
-      // Check if approved user
+      // Check approval status server-side via profiles table (RLS-protected)
       const { data: profile } = await supabase
         .from("profiles")
         .select("approved")
