@@ -155,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Processing inquiry from:", normalizedSource);
+    // PII redacted: avoid logging emails/phones/IDs
 
     // Save submission to database
     
@@ -182,7 +182,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Submission saved with ID:", submissionData.id);
+    // Submission saved (ID intentionally not logged to avoid PII linkage)
 
     // Send notification email to admin
     const notificationEmail = await fetch("https://api.resend.com/emails", {
