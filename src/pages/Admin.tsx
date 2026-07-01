@@ -1448,7 +1448,7 @@ export default function Admin() {
                           >
                             <Pencil className="h-3 w-3" />
                           </Button>
-                          {statusSubmissions.length === 0 && (
+                          {statusConfig.length > 1 && (
                             <Button
                               variant="ghost"
                               size="sm"
