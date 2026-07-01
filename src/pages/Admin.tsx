@@ -178,6 +178,14 @@ const normalizeSearchText = (value: string | null | undefined) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
+const chunkArray = <T,>(items: T[], size: number) => {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+};
+
 const formatStatusLabel = (value: string) =>
   value
     .split("_")
@@ -408,18 +416,24 @@ export default function Admin() {
       const allSubmissions = [...(data || []), ...(deletedData || [])];
 
       if (allSubmissions.length > 0) {
-        const { data: commentsData, error: commentsError } = await supabase
-          .from("submission_comments")
-          .select("*")
-          .in("submission_id", allSubmissions.map(s => s.id))
-          .order("created_at", { ascending: true });
+        const commentsData: Comment[] = [];
+        const submissionIdChunks = chunkArray(allSubmissions.map(s => s.id), 100);
 
-        if (commentsError) throw commentsError;
+        for (const submissionIdChunk of submissionIdChunks) {
+          const { data: chunkData, error: commentsError } = await supabase
+            .from("submission_comments")
+            .select("*")
+            .in("submission_id", submissionIdChunk)
+            .order("created_at", { ascending: true });
+
+          if (commentsError) throw commentsError;
+          commentsData.push(...((chunkData || []) as Comment[]));
+        }
 
         const profilesToUse = profilesList || profiles;
         
         const groupedComments: Record<string, Comment[]> = {};
-        commentsData?.forEach(comment => {
+        commentsData.forEach(comment => {
           const profile = profilesToUse.find(p => p.user_id === comment.user_id);
           const commentWithEmail: Comment = {
             ...comment,
