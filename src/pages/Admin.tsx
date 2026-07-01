@@ -260,6 +260,7 @@ export default function Admin() {
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [editingColumnLabel, setEditingColumnLabel] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [profiles, setProfiles] = useState<{ user_id: string; email: string; display_name?: string | null }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
