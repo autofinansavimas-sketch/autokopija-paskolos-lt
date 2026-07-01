@@ -142,6 +142,8 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
 
 const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
+const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at,deleted_at";
+const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
 
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
@@ -434,26 +436,63 @@ export default function Admin() {
   const fetchSubmissions = async (profilesList?: { user_id: string; email: string; display_name?: string | null }[]) => {
     setLoading(true);
     try {
-      // Fetch active submissions (not deleted)
-      const { data, error } = await supabase
-        .from("contact_submissions")
-        .select("*")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+      let activeData: Submission[] = [];
+      let deletedData: Submission[] = [];
 
-      if (error) throw error;
-      setSubmissions(data || []);
+      // Primary path: load active cards and trash separately.
+      const [activeResult, deletedResult] = await Promise.all([
+        supabase
+          .from("contact_submissions")
+          .select(SUBMISSION_SELECT)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("contact_submissions")
+          .select(SUBMISSION_SELECT)
+          .not("deleted_at", "is", null)
+          .order("deleted_at", { ascending: false }),
+      ]);
 
-      // Fetch deleted submissions for trash
-      const { data: deletedData } = await supabase
-        .from("contact_submissions")
-        .select("*")
-        .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
-      
-      setDeletedSubmissions(deletedData || []);
+      if (activeResult.error || deletedResult.error) {
+        console.warn("Filtered submissions query failed, using compatibility fallback:", {
+          activeError: activeResult.error,
+          deletedError: deletedResult.error,
+        });
 
-      const allSubmissions = [...(data || []), ...(deletedData || [])];
+        // Fallback for older/stale backend schema cache: load without the deleted_at filter.
+        const fallbackResult = await supabase
+          .from("contact_submissions")
+          .select(SUBMISSION_SELECT)
+          .order("created_at", { ascending: false });
+
+        if (fallbackResult.error) {
+          // Last-resort fallback for browsers hitting an old API schema that does not know deleted_at yet.
+          const legacyResult = await supabase
+            .from("contact_submissions")
+            .select(LEGACY_SUBMISSION_SELECT)
+            .order("created_at", { ascending: false });
+
+          if (legacyResult.error) throw legacyResult.error;
+
+          activeData = ((legacyResult.data || []) as Submission[]).map((item) => ({
+            ...item,
+            deleted_at: null,
+          }));
+          deletedData = [];
+        } else {
+          const allLoaded = (fallbackResult.data || []) as Submission[];
+          activeData = allLoaded.filter((item) => !item.deleted_at);
+          deletedData = allLoaded.filter((item) => item.deleted_at);
+        }
+      } else {
+        activeData = (activeResult.data || []) as Submission[];
+        deletedData = (deletedResult.data || []) as Submission[];
+      }
+
+      setSubmissions(activeData);
+      setDeletedSubmissions(deletedData);
+
+      const allSubmissions = [...activeData, ...deletedData];
 
       if (allSubmissions.length > 0) {
         const commentsData: Comment[] = [];
@@ -466,7 +505,10 @@ export default function Admin() {
             .in("submission_id", submissionIdChunk)
             .order("created_at", { ascending: true });
 
-          if (commentsError) throw commentsError;
+          if (commentsError) {
+            console.warn("Error fetching submission comments:", commentsError);
+            continue;
+          }
           commentsData.push(...((chunkData || []) as Comment[]));
         }
 
@@ -486,6 +528,8 @@ export default function Admin() {
           groupedComments[comment.submission_id].push(commentWithEmail);
         });
         setComments(groupedComments);
+      } else {
+        setComments({});
       }
     } catch (error) {
       console.error("Error fetching submissions:", error);
