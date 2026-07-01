@@ -967,22 +967,50 @@ export default function Admin() {
 
   const handleDeleteColumn = async (columnValue: string) => {
     const column = statusConfig.find(s => s.value === columnValue);
-    const columnSubmissions = submissions.filter(s => s.status === columnValue);
-    
-    if (columnSubmissions.length > 0) {
+    if (!column) return;
+
+    const updatedConfig = statusConfig.filter(s => s.value !== columnValue);
+    if (updatedConfig.length === 0) {
       toast({
         title: "Negalima ištrinti",
-        description: "Kolonėlėje yra paraiškų. Perkelkite jas į kitą kolonėlę.",
+        description: "Turi likti bent viena kolonėlė.",
         variant: "destructive",
       });
       return;
     }
 
-    const updatedConfig = statusConfig.filter(s => s.value !== columnValue);
+    // Move any submissions (active or trashed) with this status to the first remaining column
+    const fallbackStatus = updatedConfig[0].value;
+    const affected = [
+      ...submissions.filter(s => s.status === columnValue),
+      ...deletedSubmissions.filter(s => s.status === columnValue),
+    ];
+
+    if (affected.length > 0) {
+      const ids = affected.map(s => s.id);
+      const { error: moveError } = await supabase
+        .from("contact_submissions")
+        .update({ status: fallbackStatus })
+        .in("id", ids);
+
+      if (moveError) {
+        toast({
+          title: "Klaida",
+          description: "Nepavyko perkelti paraiškų iš kolonėlės.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSubmissions(prev => prev.map(s => s.status === columnValue ? { ...s, status: fallbackStatus } : s));
+      setDeletedSubmissions(prev => prev.map(s => s.status === columnValue ? { ...s, status: fallbackStatus } : s));
+    }
+
     await saveStatusConfig(updatedConfig);
-    
+
     toast({
-      title: `Kolonėlė "${column?.label}" ištrinta`,
+      title: `Kolonėlė "${column.label}" ištrinta`,
+      description: affected.length > 0 ? `Perkelta ${affected.length} paraiška(-ų) į "${updatedConfig[0].label}".` : undefined,
     });
   };
 
@@ -1420,7 +1448,7 @@ export default function Admin() {
                           >
                             <Pencil className="h-3 w-3" />
                           </Button>
-                          {statusSubmissions.length === 0 && (
+                          {statusConfig.length > 1 && (
                             <Button
                               variant="ghost"
                               size="sm"
