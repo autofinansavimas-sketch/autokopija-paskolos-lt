@@ -1674,8 +1674,12 @@ export default function Admin() {
                 </div>
               );
             })}
-          </div>
-        )}
+                      </div>
+                    )}
+                  </>
+                );
+              })()
+            )}
           </TabsContent>
           
           {/* Trash Tab */}
