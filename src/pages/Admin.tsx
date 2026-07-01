@@ -1379,11 +1379,44 @@ export default function Admin() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
-            {statusConfig.map(colConfig => {
-              const statusSubmissions = getSubmissionsByStatus(colConfig.value);
-              const isDropTarget = dragOverColumn === colConfig.value;
-              return (
+              (() => {
+                const columnsWithData = statusConfig.map(colConfig => ({
+                  colConfig,
+                  statusSubmissions: getSubmissionsByStatus(colConfig.value),
+                }));
+                const isSearching = searchQuery.trim().length > 0;
+                const visibleColumns = isSearching
+                  ? columnsWithData.filter(c => c.statusSubmissions.length > 0)
+                  : columnsWithData;
+                const totalResults = columnsWithData.reduce((acc, c) => acc + c.statusSubmissions.length, 0);
+
+                return (
+                  <>
+                    {isSearching && (
+                      <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>
+                          Rasta <span className="font-semibold text-foreground">{totalResults}</span> paraiška(-ų) {visibleColumns.length > 0 && `${visibleColumns.length} kolonėlėje(-se)`}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => setSearchQuery("")}
+                        >
+                          Išvalyti
+                        </Button>
+                      </div>
+                    )}
+                    {isSearching && totalResults === 0 ? (
+                      <div className="text-center py-16 text-muted-foreground">
+                        <Search className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">Nieko nerasta pagal „{searchQuery}"</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
+                        {visibleColumns.map(({ colConfig, statusSubmissions }) => {
+                          const isDropTarget = dragOverColumn === colConfig.value;
+                          return (
                 <div 
                   key={colConfig.value} 
                   className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 ${
