@@ -439,54 +439,31 @@ export default function Admin() {
       let activeData: Submission[] = [];
       let deletedData: Submission[] = [];
 
-      // Primary path: load active cards and trash separately.
-      const [activeResult, deletedResult] = await Promise.all([
-        supabase
-          .from("contact_submissions")
-          .select(SUBMISSION_SELECT)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("contact_submissions")
-          .select(SUBMISSION_SELECT)
-          .not("deleted_at", "is", null)
-          .order("deleted_at", { ascending: false }),
-      ]);
+      // Load once and split in the browser. This avoids intermittent PostgREST 400s from
+      // schema-cache/filter edge cases while keeping deleted cards out of the board.
+      const submissionsResult = await supabase
+        .from("contact_submissions")
+        .select(SUBMISSION_SELECT)
+        .order("created_at", { ascending: false });
 
-      if (activeResult.error || deletedResult.error) {
-        console.warn("Filtered submissions query failed, using compatibility fallback:", {
-          activeError: activeResult.error,
-          deletedError: deletedResult.error,
-        });
-
-        // Fallback for older/stale backend schema cache: load without the deleted_at filter.
-        const fallbackResult = await supabase
+      if (submissionsResult.error) {
+        // Last-resort fallback for browsers hitting an old API schema that does not know deleted_at yet.
+        const legacyResult = await supabase
           .from("contact_submissions")
-          .select(SUBMISSION_SELECT)
+          .select(LEGACY_SUBMISSION_SELECT)
           .order("created_at", { ascending: false });
 
-        if (fallbackResult.error) {
-          // Last-resort fallback for browsers hitting an old API schema that does not know deleted_at yet.
-          const legacyResult = await supabase
-            .from("contact_submissions")
-            .select(LEGACY_SUBMISSION_SELECT)
-            .order("created_at", { ascending: false });
+        if (legacyResult.error) throw legacyResult.error;
 
-          if (legacyResult.error) throw legacyResult.error;
-
-          activeData = ((legacyResult.data || []) as Submission[]).map((item) => ({
-            ...item,
-            deleted_at: null,
-          }));
-          deletedData = [];
-        } else {
-          const allLoaded = (fallbackResult.data || []) as Submission[];
-          activeData = allLoaded.filter((item) => !item.deleted_at);
-          deletedData = allLoaded.filter((item) => item.deleted_at);
-        }
+        activeData = ((legacyResult.data || []) as Submission[]).map((item) => ({
+          ...item,
+          deleted_at: null,
+        }));
+        deletedData = [];
       } else {
-        activeData = (activeResult.data || []) as Submission[];
-        deletedData = (deletedResult.data || []) as Submission[];
+        const allLoaded = (submissionsResult.data || []) as Submission[];
+        activeData = allLoaded.filter((item) => !item.deleted_at);
+        deletedData = allLoaded.filter((item) => item.deleted_at);
       }
 
       setSubmissions(activeData);
