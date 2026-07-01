@@ -631,10 +631,21 @@ export default function Admin() {
   };
 
   const handleAddSubmission = async () => {
-    if (!newSubmission.email || !newSubmission.phone) {
+    // Input validation schema
+    const submissionSchema = z.object({
+      name: z.string().trim().max(100, "Vardas per ilgas").optional().or(z.literal("")),
+      email: z.string().trim().email("Neteisingas el. paštas").max(255),
+      phone: z.string().trim().min(6, "Neteisingas telefonas").max(20, "Telefonas per ilgas"),
+      amount: z.string().trim().max(20).optional().or(z.literal("")),
+      loan_type: z.string().trim().max(50).optional().or(z.literal("")),
+      loan_period: z.string().trim().max(50).optional().or(z.literal("")),
+    });
+
+    const parsed = submissionSchema.safeParse(newSubmission);
+    if (!parsed.success) {
       toast({
         title: "Klaida",
-        description: "El. paštas ir telefonas yra privalomi",
+        description: parsed.error.errors[0]?.message ?? "Neteisingi duomenys",
         variant: "destructive",
       });
       return;

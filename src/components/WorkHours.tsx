@@ -45,10 +45,12 @@ export default function WorkHours() {
   const checkAuthAndFetch = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    
+
     setCurrentUserId(session.user.id);
-    setIsAdmin(session.user.email === "autofinansavimas@gmail.com");
-    
+    // Server-side admin check via SECURITY DEFINER function
+    const { data: adminFlag } = await supabase.rpc("is_admin");
+    setIsAdmin(!!adminFlag);
+
     await fetchData();
   };
 
