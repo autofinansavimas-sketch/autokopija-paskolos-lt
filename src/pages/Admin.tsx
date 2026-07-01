@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -260,6 +260,7 @@ export default function Admin() {
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
   const [editingColumnLabel, setEditingColumnLabel] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [profiles, setProfiles] = useState<{ user_id: string; email: string; display_name?: string | null }[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
@@ -355,6 +356,44 @@ export default function Admin() {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  // Keyboard shortcuts: `/` or Ctrl/Cmd+K focuses search, Esc clears/blurs
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isEditable = target && (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      );
+
+      if ((e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      if (e.key === "/" && !isEditable) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (document.activeElement === searchInputRef.current) {
+          if (searchQuery) {
+            setSearchQuery("");
+          } else {
+            searchInputRef.current?.blur();
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [searchQuery]);
+
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -1305,17 +1344,24 @@ export default function Admin() {
               <div className="relative w-full sm:w-64 md:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Ieškoti pagal vardą, el. paštą..."
+                  ref={searchInputRef}
+                  placeholder="Ieškoti (paspauskite / arba Ctrl+K)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-8 bg-card shadow-sm"
+                  className="pl-9 pr-16 h-8 bg-card shadow-sm"
                 />
+                {!searchQuery && (
+                  <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+                    /
+                  </kbd>
+                )}
                 {searchQuery && (
                   <Button
                     variant="ghost"
                     size="sm"
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
                     onClick={() => setSearchQuery("")}
+                    title="Išvalyti (Esc)"
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -1333,11 +1379,44 @@ export default function Admin() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
-            {statusConfig.map(colConfig => {
-              const statusSubmissions = getSubmissionsByStatus(colConfig.value);
-              const isDropTarget = dragOverColumn === colConfig.value;
-              return (
+              (() => {
+                const columnsWithData = statusConfig.map(colConfig => ({
+                  colConfig,
+                  statusSubmissions: getSubmissionsByStatus(colConfig.value),
+                }));
+                const isSearching = searchQuery.trim().length > 0;
+                const visibleColumns = isSearching
+                  ? columnsWithData.filter(c => c.statusSubmissions.length > 0)
+                  : columnsWithData;
+                const totalResults = columnsWithData.reduce((acc, c) => acc + c.statusSubmissions.length, 0);
+
+                return (
+                  <>
+                    {isSearching && (
+                      <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>
+                          Rasta <span className="font-semibold text-foreground">{totalResults}</span> paraiška(-ų) {visibleColumns.length > 0 && `${visibleColumns.length} kolonėlėje(-se)`}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => setSearchQuery("")}
+                        >
+                          Išvalyti
+                        </Button>
+                      </div>
+                    )}
+                    {isSearching && totalResults === 0 ? (
+                      <div className="text-center py-16 text-muted-foreground">
+                        <Search className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">Nieko nerasta pagal „{searchQuery}"</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
+                        {visibleColumns.map(({ colConfig, statusSubmissions }) => {
+                          const isDropTarget = dragOverColumn === colConfig.value;
+                          return (
                 <div 
                   key={colConfig.value} 
                   className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 ${
@@ -1595,8 +1674,12 @@ export default function Admin() {
                 </div>
               );
             })}
-          </div>
-        )}
+                      </div>
+                    )}
+                  </>
+                );
+              })()
+            )}
           </TabsContent>
           
           {/* Trash Tab */}
