@@ -910,12 +910,19 @@ export default function Admin() {
       const created = new Date(s.created_at);
       return created < threeDaysAgo;
     }).length;
+
+    const staleCount = submissions.filter(s => {
+      if ((comments[s.id]?.length || 0) > 0) return false;
+      const created = new Date(s.created_at);
+      return (Date.now() - created.getTime()) >= 24 * 60 * 60 * 1000;
+    }).length;
     
     return {
       today: todayCount,
       week: weekCount,
       withReminders: withRemindersCount,
       noContact: noContactCount,
+      stale: staleCount,
     };
   }, [submissions, reminders]);
 
@@ -944,6 +951,9 @@ export default function Admin() {
           if (created < weekAgo) return false;
         } else if (quickFilter === 'withReminders') {
           if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
+        } else if (quickFilter === 'stale') {
+          if ((comments[s.id]?.length || 0) > 0) return false;
+          if (created >= threeDaysAgo && (Date.now() - created.getTime()) < 24 * 60 * 60 * 1000) return false;
         } else if (quickFilter === 'noContact') {
           if (s.status !== 'new' || created >= threeDaysAgo) return false;
         }
