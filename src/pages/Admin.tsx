@@ -994,10 +994,11 @@ export default function Admin() {
           if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
         } else if (quickFilter === 'stale') {
           if (s.status !== 'nusiusta_paraiska_') return false;
+          const snoozedUntil = snoozeMap[s.id];
+          if (snoozedUntil && Date.now() < snoozedUntil) return false;
           const sComments = comments[s.id] || [];
-          if (sComments.length === 0) return false;
-          const lastComment = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
-          if (Date.now() - lastComment < 24 * 60 * 60 * 1000) return false;
+          if (sComments.length > 0) return false;
+          if (Date.now() - new Date(s.created_at).getTime() < 24 * 60 * 60 * 1000) return false;
         } else if (quickFilter === 'noContact') {
           if (s.status !== 'new' || created >= threeDaysAgo) return false;
         }
