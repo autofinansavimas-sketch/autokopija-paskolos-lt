@@ -1373,16 +1373,6 @@ export default function Admin() {
             {/* Charts Toggle & Quick Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2 flex-wrap">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5 shadow-sm"
-                  onClick={() => exportContactsToExcel(submissions, "Visi kontaktai", `kontaktai-visi-${new Date().toISOString().slice(0,10)}.xlsx`)}
-                  title="Atsisiųsti visų kortelių kontaktus vienoje Excel byloje"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  <span>Kontaktai</span>
-                </Button>
                 <QuickFilters 
                   activeFilter={quickFilter}
                   onFilterChange={setQuickFilter}
