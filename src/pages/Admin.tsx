@@ -1649,7 +1649,9 @@ export default function Admin() {
                         const hasReminder = submissionReminders.length > 0;
                         const commentCount = comments[submission.id]?.length || 0;
                         const ageMinutes = (Date.now() - new Date(submission.created_at).getTime()) / 60000;
+                        const ageHours = ageMinutes / 60;
                         const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
+                        const staleWarn = commentCount === 0 && ageHours >= 24;
                         
                         return (
                           <Card 
@@ -1658,7 +1660,15 @@ export default function Admin() {
                               draggedSubmission === submission.id 
                                 ? 'opacity-50 scale-95 rotate-1 shadow-lg' 
                                 : 'hover:-translate-y-0.5 hover:shadow-md'
-                            } ${slaWarn ? 'ring-2 ring-red-500/70 bg-red-50/40 dark:bg-red-950/20 animate-pulse' : hasReminder ? 'ring-1 ring-amber-400/50 bg-amber-50/30 dark:bg-amber-950/20' : ''}`}
+                            } ${
+                              slaWarn 
+                                ? 'ring-2 ring-red-500/70 bg-red-50/40 dark:bg-red-950/20 animate-pulse' 
+                                : staleWarn 
+                                  ? 'ring-2 ring-amber-500/70 bg-amber-50/40 dark:bg-amber-950/20 animate-pulse' 
+                                  : hasReminder 
+                                    ? 'ring-1 ring-amber-400/50 bg-amber-50/30 dark:bg-amber-950/20' 
+                                    : ''
+                            }`}
                             draggable
                             onDragStart={(e) => handleDragStart(e, submission.id)}
                             onDragEnd={handleDragEnd}
@@ -1669,6 +1679,12 @@ export default function Admin() {
                                 <div className="flex items-center gap-1.5 text-[10px] font-semibold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-950/50 rounded px-2 py-0.5 -mx-1 -mt-1 mb-1">
                                   <Flame className="h-3 w-3" />
                                   SLA: {Math.round(ageMinutes)} min be atsakymo
+                                </div>
+                              )}
+                              {staleWarn && !slaWarn && (
+                                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/50 rounded px-2 py-0.5 -mx-1 -mt-1 mb-1">
+                                  <Clock className="h-3 w-3" />
+                                  {Math.floor(ageHours)} val. be komentaro
                                 </div>
                               )}
                               {/* Header with name and source */}
