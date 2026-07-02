@@ -1719,8 +1719,10 @@ export default function Admin() {
                           ? Math.max(...submissionComments.map(c => new Date(c.created_at).getTime()))
                           : null;
                         const hoursSinceLastComment = lastCommentMs ? (Date.now() - lastCommentMs) / 3600000 : Infinity;
+                        const hoursSinceCreated = (Date.now() - new Date(submission.created_at).getTime()) / 3600000;
+                        const isSnoozed = snoozeMap[submission.id] && Date.now() < snoozeMap[submission.id];
                         const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
-                        const staleWarn = stalePulseEnabled && submission.status === 'nusiusta_paraiska_' && commentCount > 0 && hoursSinceLastComment >= 24;
+                        const staleWarn = stalePulseEnabled && !isSnoozed && submission.status === 'nusiusta_paraiska_' && commentCount === 0 && hoursSinceCreated >= 24;
                         
                         return (
                           <Card 
