@@ -83,7 +83,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import UserManagement from "@/components/UserManagement";
 import ClientTools from "@/components/ClientTools";
-import WorkHours from "@/components/WorkHours";
+
 import CallCalendar from "@/components/CallCalendar";
 import AddReminderDialog from "@/components/AddReminderDialog";
 import TodayReminders from "@/components/TodayReminders";
@@ -1363,10 +1363,6 @@ export default function Admin() {
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="hours" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-              <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs font-medium">Valandos</span>
-            </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Vartotojai</span>
@@ -1849,10 +1845,8 @@ export default function Admin() {
               currentUserId={currentUserId} 
             />
           </TabsContent>
-          
-          <TabsContent value="hours">
-            <WorkHours />
-          </TabsContent>
+
+
           
           <TabsContent value="users">
             <div className="mb-4">
