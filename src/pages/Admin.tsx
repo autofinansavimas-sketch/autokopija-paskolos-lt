@@ -951,10 +951,11 @@ export default function Admin() {
 
     const staleCount = submissions.filter(s => {
       if (s.status !== 'nusiusta_paraiska_') return false;
+      const snoozedUntil = snoozeMap[s.id];
+      if (snoozedUntil && Date.now() < snoozedUntil) return false;
       const sComments = comments[s.id] || [];
-      if (sComments.length === 0) return false;
-      const lastComment = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
-      return (Date.now() - lastComment) >= 24 * 60 * 60 * 1000;
+      if (sComments.length > 0) return false;
+      return (Date.now() - new Date(s.created_at).getTime()) >= 24 * 60 * 60 * 1000;
     }).length;
     
     return {
