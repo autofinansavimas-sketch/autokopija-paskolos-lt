@@ -43,7 +43,9 @@ import {
   Download,
   Flame,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -274,6 +276,13 @@ export default function Admin() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [stalePulseEnabled, setStalePulseEnabled] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("admin_stale_pulse_enabled") !== "false";
+    } catch {
+      return true;
+    }
+  });
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [myDayOnly, setMyDayOnly] = useState(false);
 
@@ -404,6 +413,15 @@ export default function Admin() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [searchQuery]);
+
+  // Persist stale pulse toggle preference
+  useEffect(() => {
+    try {
+      localStorage.setItem("admin_stale_pulse_enabled", String(stalePulseEnabled));
+    } catch {
+      // ignore storage errors
+    }
+  }, [stalePulseEnabled]);
 
 
   const checkAuth = async () => {
@@ -1437,6 +1455,16 @@ export default function Admin() {
                   <Sparkles className="h-3.5 w-3.5" />
                   Mano diena {operator ? `(${operator})` : ""}
                 </Button>
+                <Button
+                  variant={stalePulseEnabled ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setStalePulseEnabled(v => !v)}
+                  title={stalePulseEnabled ? "Išjungti mirksėjimo perspėjimą" : "Įjungti mirksėjimo perspėjimą"}
+                >
+                  {stalePulseEnabled ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  Mirksėjimas
+                </Button>
               </div>
               
               {/* Search Bar */}
@@ -1670,7 +1698,7 @@ export default function Admin() {
                           : null;
                         const hoursSinceLastComment = lastCommentMs ? (Date.now() - lastCommentMs) / 3600000 : Infinity;
                         const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
-                        const staleWarn = submission.status === 'nusiusta_paraiska_' && commentCount > 0 && hoursSinceLastComment >= 24;
+                        const staleWarn = stalePulseEnabled && submission.status === 'nusiusta_paraiska_' && commentCount > 0 && hoursSinceLastComment >= 24;
                         
                         return (
                           <Card 
