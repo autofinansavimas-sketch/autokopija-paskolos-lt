@@ -46,7 +46,7 @@ import {
   Sparkles,
   Eye,
   EyeOff,
-  Snooze
+  Moon
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
