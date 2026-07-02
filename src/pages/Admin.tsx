@@ -1423,10 +1423,8 @@ export default function Admin() {
               </div>
             </div>
             
-            {/* Charts */}
-            {showCharts && (
-              <AdminCharts submissions={submissions} />
-            )}
+            
+
             
             {loading ? (
               <div className="flex items-center justify-center py-20">
