@@ -91,6 +91,7 @@ import AdminStats from "@/components/AdminStats";
 import AdminCharts from "@/components/AdminCharts";
 import QuickFilters from "@/components/QuickFilters";
 import AdminAIChat from "@/components/AdminAIChat";
+import CommandPalette from "@/components/CommandPalette";
 import AdminAutomations from "@/components/AdminAutomations";
 import { Bell, BarChart3, Zap } from "lucide-react";
 import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
