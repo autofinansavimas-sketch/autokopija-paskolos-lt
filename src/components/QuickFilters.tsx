@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Filter, X, TrendingUp } from "lucide-react";
+import { Calendar, Clock, Filter, X, TrendingUp, AlertTriangle } from "lucide-react";
 import {
   Popover,
   PopoverContent,
