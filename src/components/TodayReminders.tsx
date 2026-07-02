@@ -240,6 +240,23 @@ export default function TodayReminders() {
                     </Button>
                   </a>
                 )}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                      title="Atidėti"
+                    >
+                      <Clock className="h-3 w-3" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-40 p-1" align="end">
+                    <button className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-accent" onClick={() => handleSnooze(reminder.id, 60)}>+ 1 val.</button>
+                    <button className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-accent" onClick={() => handleSnooze(reminder.id, 120)}>+ 2 val.</button>
+                    <button className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-accent" onClick={() => handleSnooze(reminder.id, "tomorrow9")}>Rytoj 09:00</button>
+                  </PopoverContent>
+                </Popover>
                 <Button
                   variant="ghost"
                   size="sm"
