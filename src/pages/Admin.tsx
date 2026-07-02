@@ -270,6 +270,8 @@ export default function Admin() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("kanban");
+
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
