@@ -1846,8 +1846,7 @@ export default function Admin() {
             />
           </TabsContent>
           
-          <TabsContent value="hours">
-            <WorkHours />
+
           </TabsContent>
           
           <TabsContent value="users">
