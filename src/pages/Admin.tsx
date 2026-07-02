@@ -965,7 +965,7 @@ export default function Admin() {
       noContact: noContactCount,
       stale: staleCount,
     };
-  }, [submissions, reminders]);
+  }, [submissions, reminders, snoozeMap]);
 
   const getSubmissionsByStatus = (status: string) => {
     const query = normalizeSearchText(searchQuery.trim());
