@@ -83,7 +83,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import UserManagement from "@/components/UserManagement";
 import ClientTools from "@/components/ClientTools";
-import WorkHours from "@/components/WorkHours";
+
 import CallCalendar from "@/components/CallCalendar";
 import AddReminderDialog from "@/components/AddReminderDialog";
 import TodayReminders from "@/components/TodayReminders";
