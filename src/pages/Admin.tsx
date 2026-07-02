@@ -414,6 +414,15 @@ export default function Admin() {
     return () => window.removeEventListener("keydown", handler);
   }, [searchQuery]);
 
+  // Persist stale pulse toggle preference
+  useEffect(() => {
+    try {
+      localStorage.setItem("admin_stale_pulse_enabled", String(stalePulseEnabled));
+    } catch {
+      // ignore storage errors
+    }
+  }, [stalePulseEnabled]);
+
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
