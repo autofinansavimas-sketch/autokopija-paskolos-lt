@@ -179,11 +179,11 @@ All colors MUST be HSL.
 @keyframes stale-pulse {
   0%, 100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.2);
   }
   50% {
     opacity: 0.92;
-    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+    box-shadow: 0 0 0 5px rgba(245, 158, 11, 0);
   }
 }
 
@@ -263,7 +263,7 @@ All colors MUST be HSL.
 }
 
 .animate-stale-pulse {
-  animation: stale-pulse 3s ease-in-out infinite;
+  animation: stale-pulse 5s ease-in-out infinite;
 }
 
 .animate-float {

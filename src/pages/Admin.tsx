@@ -45,7 +45,8 @@ import {
   AlertTriangle,
   Sparkles,
   Eye,
-  EyeOff
+  EyeOff,
+  Moon
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -283,6 +284,25 @@ export default function Admin() {
       return true;
     }
   });
+  const [snoozeMap, setSnoozeMap] = useState<Record<string, number>>(() => {
+    try {
+      const raw = localStorage.getItem("admin_stale_snoozes");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+  const snoozeSubmission = (id: string) => {
+    const until = Date.now() + 24 * 60 * 60 * 1000;
+    const next = { ...snoozeMap, [id]: until };
+    setSnoozeMap(next);
+    try {
+      localStorage.setItem("admin_stale_snoozes", JSON.stringify(next));
+    } catch {
+      // ignore storage errors
+    }
+    toast({ title: "Snaudžiama 24 val.", description: "Perspėjimas šiai kortelei išjungtas 24 val." });
+  };
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [myDayOnly, setMyDayOnly] = useState(false);
 
@@ -931,10 +951,11 @@ export default function Admin() {
 
     const staleCount = submissions.filter(s => {
       if (s.status !== 'nusiusta_paraiska_') return false;
+      const snoozedUntil = snoozeMap[s.id];
+      if (snoozedUntil && Date.now() < snoozedUntil) return false;
       const sComments = comments[s.id] || [];
-      if (sComments.length === 0) return false;
-      const lastComment = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
-      return (Date.now() - lastComment) >= 24 * 60 * 60 * 1000;
+      if (sComments.length > 0) return false;
+      return (Date.now() - new Date(s.created_at).getTime()) >= 24 * 60 * 60 * 1000;
     }).length;
     
     return {
@@ -944,7 +965,7 @@ export default function Admin() {
       noContact: noContactCount,
       stale: staleCount,
     };
-  }, [submissions, reminders]);
+  }, [submissions, reminders, snoozeMap]);
 
   const getSubmissionsByStatus = (status: string) => {
     const query = normalizeSearchText(searchQuery.trim());
@@ -973,10 +994,11 @@ export default function Admin() {
           if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
         } else if (quickFilter === 'stale') {
           if (s.status !== 'nusiusta_paraiska_') return false;
+          const snoozedUntil = snoozeMap[s.id];
+          if (snoozedUntil && Date.now() < snoozedUntil) return false;
           const sComments = comments[s.id] || [];
-          if (sComments.length === 0) return false;
-          const lastComment = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
-          if (Date.now() - lastComment < 24 * 60 * 60 * 1000) return false;
+          if (sComments.length > 0) return false;
+          if (Date.now() - new Date(s.created_at).getTime() < 24 * 60 * 60 * 1000) return false;
         } else if (quickFilter === 'noContact') {
           if (s.status !== 'new' || created >= threeDaysAgo) return false;
         }
@@ -1697,8 +1719,10 @@ export default function Admin() {
                           ? Math.max(...submissionComments.map(c => new Date(c.created_at).getTime()))
                           : null;
                         const hoursSinceLastComment = lastCommentMs ? (Date.now() - lastCommentMs) / 3600000 : Infinity;
+                        const hoursSinceCreated = (Date.now() - new Date(submission.created_at).getTime()) / 3600000;
+                        const isSnoozed = snoozeMap[submission.id] && Date.now() < snoozeMap[submission.id];
                         const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
-                        const staleWarn = stalePulseEnabled && submission.status === 'nusiusta_paraiska_' && commentCount > 0 && hoursSinceLastComment >= 24;
+                        const staleWarn = stalePulseEnabled && !isSnoozed && submission.status === 'nusiusta_paraiska_' && commentCount === 0 && hoursSinceCreated >= 24;
                         
                         return (
                           <Card 
@@ -1731,7 +1755,20 @@ export default function Admin() {
                               {staleWarn && !slaWarn && (
                                 <div className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/50 rounded px-2 py-0.5 -mx-1 -mt-1 mb-1">
                                   <Clock className="h-3 w-3" />
-                                  {Math.floor(hoursSinceLastComment)} val. be komentaro
+                                  <span className="flex-1">24h be komentaro</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 px-1.5 text-[10px] text-amber-800 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      snoozeSubmission(submission.id);
+                                    }}
+                                    title="Snausti 24 val."
+                                  >
+                                    <Moon className="h-3 w-3 mr-1" />
+                                    Snausti
+                                  </Button>
                                 </div>
                               )}
                               {/* Header with name and source */}
