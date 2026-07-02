@@ -949,6 +949,16 @@ export default function Admin() {
         }
       }
       
+      // "Mano diena" filter — cards with a reminder OR any comment tagged with current operator
+      if (myDayOnly && !query) {
+        const hasReminder = reminders.some(r => r.submission_id === s.id && !r.completed);
+        const mine = (comments[s.id] || []).some(c => {
+          const { operator: op } = parseOperatorTag(c.comment);
+          return op === operator;
+        });
+        if (!hasReminder && !mine) return false;
+      }
+
       // Apply search query
       if (!query) return true;
       return (
