@@ -91,6 +91,7 @@ import AdminStats from "@/components/AdminStats";
 import AdminCharts from "@/components/AdminCharts";
 import QuickFilters from "@/components/QuickFilters";
 import AdminAIChat from "@/components/AdminAIChat";
+import CommandPalette from "@/components/CommandPalette";
 import AdminAutomations from "@/components/AdminAutomations";
 import { Bell, BarChart3, Zap } from "lucide-react";
 import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
@@ -270,6 +271,8 @@ export default function Admin() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("kanban");
+
   const [newSubmission, setNewSubmission] = useState({
     name: "",
     email: "",
@@ -1342,7 +1345,7 @@ export default function Admin() {
         {/* Today's Reminders Banner */}
         <TodayReminders />
         
-        <Tabs defaultValue="kanban" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-6 gap-1">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <LayoutDashboard className="h-4 w-4" />
@@ -1878,6 +1881,15 @@ export default function Admin() {
 
         </Tabs>
       </main>
+
+      <CommandPalette
+        submissions={submissions as any}
+        onOpenSubmission={(s) => setSelectedSubmission(s as any)}
+        onSwitchTab={setActiveTab}
+        statusLabelFor={(status) => statusConfig.find((c) => c.value === status)?.label || status}
+      />
+
+
 
       {/* Detail Sheet */}
       <Sheet open={!!selectedSubmission} onOpenChange={(open) => !open && setSelectedSubmission(null)}>
