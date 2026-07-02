@@ -2153,6 +2153,8 @@ export default function Admin() {
                       { label: "📄 Laukiu dokumentų", text: "Laukiu dokumentų" },
                       { label: "✅ Ruošiame pasiūlymą", text: "Ruošiame pasiūlymą" },
                       { label: "❌ Neaktualu", text: "Neaktualu" },
+                      { label: "🏦 Nusiųsta Inbank paraiška", text: "Paraiška nusiųsta į Inbank" },
+                      { label: "🏦 Nusiųsta Bigbank paraiška", text: "Paraiška nusiųsta į Bigbank" },
                       { label: "⏳ Ar dar aktualu?", text: "Išsiųstas 'ar dar aktualu?' priminimas" },
                     ].map((tpl) => (
                       <Button
