@@ -1858,6 +1858,9 @@ export default function Admin() {
             <div className="mb-4">
               <AdminStats submissions={submissions} reminders={reminders} />
             </div>
+            <div className="mb-4">
+              <AdminCharts submissions={submissions} />
+            </div>
             <ClientTools statusConfig={statusConfig} />
             <OperatorTimeStats />
             <UserManagement />
