@@ -1412,6 +1412,16 @@ export default function Admin() {
                   onFilterChange={setQuickFilter}
                   counts={quickFilterCounts}
                 />
+                <Button
+                  variant={myDayOnly ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setMyDayOnly(v => !v)}
+                  title="Rodyti tik mano korteles (su priminimu arba kur aš komentavau)"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Mano diena {operator ? `(${operator})` : ""}
+                </Button>
               </div>
               
               {/* Search Bar */}
