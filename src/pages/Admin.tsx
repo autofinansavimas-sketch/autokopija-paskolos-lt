@@ -1098,6 +1098,36 @@ export default function Admin() {
     await saveStatusConfig(updatedConfig);
   };
 
+  const exportContactsToExcel = (subs: any[], sheetName: string, filename: string) => {
+    if (!subs.length) {
+      toast({ title: "Nėra kontaktų", description: "Šioje grupėje nėra ką eksportuoti.", variant: "destructive" });
+      return;
+    }
+    const rows = [
+      ["Vardas", "Pavardė", "Telefonas", "El. paštas", "Suma (€)", "Šaltinis", "Statusas", "Data"],
+      ...subs.map(s => {
+        const parts = (s.name || "").trim().split(/\s+/);
+        const first = parts[0] || "";
+        const last = parts.slice(1).join(" ");
+        return [
+          first,
+          last,
+          s.phone || "",
+          s.email || "",
+          s.loan_amount ?? "",
+          s.source || "",
+          statusConfig.find(c => c.value === s.status)?.label || s.status || "",
+          s.created_at ? new Date(s.created_at).toLocaleDateString("lt-LT") : "",
+        ];
+      }),
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [{ wch: 14 }, { wch: 14 }, { wch: 15 }, { wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 18 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31) || "Kontaktai");
+    XLSX.writeFile(wb, filename);
+    toast({ title: "Kontaktai eksportuoti", description: `${subs.length} įrašų → ${filename}` });
+
   const handleMoveColumn = async (columnValue: string, direction: -1 | 1) => {
     const idx = statusConfig.findIndex(s => s.value === columnValue);
     if (idx < 0) return;
