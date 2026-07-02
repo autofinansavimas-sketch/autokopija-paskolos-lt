@@ -912,9 +912,11 @@ export default function Admin() {
     }).length;
 
     const staleCount = submissions.filter(s => {
-      if ((comments[s.id]?.length || 0) > 0) return false;
-      const created = new Date(s.created_at);
-      return (Date.now() - created.getTime()) >= 24 * 60 * 60 * 1000;
+      if (s.status !== 'nusiusta_paraiska_') return false;
+      const sComments = comments[s.id] || [];
+      if (sComments.length === 0) return false;
+      const lastComment = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
+      return (Date.now() - lastComment) >= 24 * 60 * 60 * 1000;
     }).length;
     
     return {
@@ -952,8 +954,11 @@ export default function Admin() {
         } else if (quickFilter === 'withReminders') {
           if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
         } else if (quickFilter === 'stale') {
-          if ((comments[s.id]?.length || 0) > 0) return false;
-          if (Date.now() - created.getTime() < 24 * 60 * 60 * 1000) return false;
+          if (s.status !== 'nusiusta_paraiska_') return false;
+          const sComments = comments[s.id] || [];
+          if (sComments.length === 0) return false;
+          const lastComment = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
+          if (Date.now() - lastComment < 24 * 60 * 60 * 1000) return false;
         } else if (quickFilter === 'noContact') {
           if (s.status !== 'new' || created >= threeDaysAgo) return false;
         }
@@ -1657,11 +1662,15 @@ export default function Admin() {
                       statusSubmissions.map(submission => {
                         const submissionReminders = getRemindersForSubmission(submission.id);
                         const hasReminder = submissionReminders.length > 0;
-                        const commentCount = comments[submission.id]?.length || 0;
+                        const submissionComments = comments[submission.id] || [];
+                        const commentCount = submissionComments.length;
                         const ageMinutes = (Date.now() - new Date(submission.created_at).getTime()) / 60000;
-                        const ageHours = ageMinutes / 60;
+                        const lastCommentMs = commentCount > 0
+                          ? Math.max(...submissionComments.map(c => new Date(c.created_at).getTime()))
+                          : null;
+                        const hoursSinceLastComment = lastCommentMs ? (Date.now() - lastCommentMs) / 3600000 : Infinity;
                         const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
-                        const staleWarn = commentCount === 0 && ageHours >= 24;
+                        const staleWarn = submission.status === 'nusiusta_paraiska_' && commentCount > 0 && hoursSinceLastComment >= 24;
                         
                         return (
                           <Card 
@@ -1674,7 +1683,7 @@ export default function Admin() {
                               slaWarn 
                                 ? 'ring-2 ring-red-500/70 bg-red-50/40 dark:bg-red-950/20 animate-pulse' 
                                 : staleWarn 
-                                  ? 'ring-2 ring-amber-500/70 bg-amber-50/40 dark:bg-amber-950/20 animate-pulse' 
+                                  ? 'ring-2 ring-amber-500/70 bg-amber-50/40 dark:bg-amber-950/20 animate-stale-pulse' 
                                   : hasReminder 
                                     ? 'ring-1 ring-amber-400/50 bg-amber-50/30 dark:bg-amber-950/20' 
                                     : ''
@@ -1694,7 +1703,7 @@ export default function Admin() {
                               {staleWarn && !slaWarn && (
                                 <div className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/50 rounded px-2 py-0.5 -mx-1 -mt-1 mb-1">
                                   <Clock className="h-3 w-3" />
-                                  {Math.floor(ageHours)} val. be komentaro
+                                  {Math.floor(hoursSinceLastComment)} val. be komentaro
                                 </div>
                               )}
                               {/* Header with name and source */}
