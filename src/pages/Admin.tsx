@@ -1688,7 +1688,7 @@ export default function Admin() {
                           : null;
                         const hoursSinceLastComment = lastCommentMs ? (Date.now() - lastCommentMs) / 3600000 : Infinity;
                         const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
-                        const staleWarn = submission.status === 'nusiusta_paraiska_' && commentCount > 0 && hoursSinceLastComment >= 24;
+                        const staleWarn = stalePulseEnabled && submission.status === 'nusiusta_paraiska_' && commentCount > 0 && hoursSinceLastComment >= 24;
                         
                         return (
                           <Card 
