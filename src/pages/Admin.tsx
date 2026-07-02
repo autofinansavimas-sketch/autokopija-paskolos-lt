@@ -171,6 +171,8 @@ const DEFAULT_STATUS_CONFIG = [
   { value: "outsource_completed", label: "Outsource užbaigti", color: "bg-green-500", borderColor: "border-green-500" },
 ];
 
+const INACTIVE_STATUSES = new Set(['completed','cancelled','not_financed','out_neaktualu','nekelia','nekelia_ragelio','outsource_nekelia','outsource_completed','ateityje']);
+
 const AVAILABLE_COLORS = [
   { color: "bg-blue-500", borderColor: "border-blue-500" },
   { color: "bg-yellow-500", borderColor: "border-yellow-500" },
