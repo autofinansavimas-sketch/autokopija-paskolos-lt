@@ -994,7 +994,7 @@ export default function Admin() {
         } else if (quickFilter === 'withReminders') {
           if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
         } else if (quickFilter === 'stale') {
-          if (s.status !== 'nusiusta_paraiska_') return false;
+          if (INACTIVE_STATUSES.has(s.status)) return false;
           const snoozedUntil = snoozeMap[s.id];
           if (snoozedUntil && Date.now() < snoozedUntil) return false;
           const sComments = comments[s.id] || [];
