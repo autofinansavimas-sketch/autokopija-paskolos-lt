@@ -275,6 +275,7 @@ export default function Admin() {
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("kanban");
+  const [myDayOnly, setMyDayOnly] = useState(false);
 
   const [newSubmission, setNewSubmission] = useState({
     name: "",
