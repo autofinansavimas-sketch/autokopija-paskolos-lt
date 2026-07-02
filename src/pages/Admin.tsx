@@ -45,7 +45,8 @@ import {
   AlertTriangle,
   Sparkles,
   Eye,
-  EyeOff
+  EyeOff,
+  Snooze
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
