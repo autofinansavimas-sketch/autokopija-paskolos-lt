@@ -1098,36 +1098,38 @@ export default function Admin() {
     await saveStatusConfig(updatedConfig);
   };
 
-  const exportContactsToExcel = (subs: any[], sheetName: string, filename: string) => {
+  const exportContactsToExcel = (subs: any[], sheetName: string, filename: string, mode: "contacts" | "full" = "contacts") => {
     if (!subs.length) {
-      toast({ title: "Nėra kontaktų", description: "Šioje grupėje nėra ką eksportuoti.", variant: "destructive" });
+      toast({ title: "Nėra įrašų", description: "Nėra ką eksportuoti.", variant: "destructive" });
       return;
     }
+    const header = mode === "contacts"
+      ? ["Vardas", "Pavardė", "Telefonas", "El. paštas", "Suma (€)", "Šaltinis", "Statusas", "Data"]
+      : ["Vardas", "Pavardė", "Telefonas", "El. paštas", "Suma (€)", "Terminas (mėn.)", "Paskirtis", "Šaltinis", "Statusas", "Miestas", "Data"];
     const rows = [
-      ["Vardas", "Pavardė", "Telefonas", "El. paštas", "Suma (€)", "Šaltinis", "Statusas", "Data"],
+      header,
       ...subs.map(s => {
         const parts = (s.name || "").trim().split(/\s+/);
         const first = parts[0] || "";
         const last = parts.slice(1).join(" ");
-        return [
-          first,
-          last,
-          s.phone || "",
-          s.email || "",
-          s.loan_amount ?? "",
-          s.source || "",
-          statusConfig.find(c => c.value === s.status)?.label || s.status || "",
-          s.created_at ? new Date(s.created_at).toLocaleDateString("lt-LT") : "",
-        ];
+        const statusLabel = statusConfig.find(c => c.value === s.status)?.label || s.status || "";
+        const date = s.created_at ? new Date(s.created_at).toLocaleDateString("lt-LT") : "";
+        if (mode === "contacts") {
+          return [first, last, s.phone || "", s.email || "", s.loan_amount ?? "", s.source || "", statusLabel, date];
+        }
+        return [first, last, s.phone || "", s.email || "", s.loan_amount ?? "", s.loan_term ?? "", s.purpose || "", s.source || "", statusLabel, s.city || "", date];
       }),
     ];
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws["!cols"] = [{ wch: 14 }, { wch: 14 }, { wch: 15 }, { wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 18 }, { wch: 12 }];
-    XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31) || "Kontaktai");
+    ws["!cols"] = mode === "contacts"
+      ? [{ wch: 14 }, { wch: 14 }, { wch: 15 }, { wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 18 }, { wch: 12 }]
+      : [{ wch: 14 }, { wch: 14 }, { wch: 15 }, { wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 18 }, { wch: 10 }, { wch: 18 }, { wch: 14 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31) || "Duomenys");
     XLSX.writeFile(wb, filename);
-    toast({ title: "Kontaktai eksportuoti", description: `${subs.length} įrašų → ${filename}` });
+    toast({ title: "Eksportuota", description: `${subs.length} įrašų → ${filename}` });
   };
+
 
 
 
