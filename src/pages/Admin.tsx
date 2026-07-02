@@ -1729,7 +1729,9 @@ export default function Admin() {
                         return (
                           <Card 
                             key={submission.id} 
-                            className={`cursor-grab hover:shadow-md transition-all duration-200 bg-card group border-0 shadow-sm ${
+                            className={`cursor-grab hover:shadow-md transition-all duration-200 bg-card group ${
+                              staleWarn ? 'border-2 border-amber-500/60' : 'border-0'
+                            } shadow-sm ${
                               draggedSubmission === submission.id 
                                 ? 'opacity-50 scale-95 rotate-1 shadow-lg' 
                                 : 'hover:-translate-y-0.5 hover:shadow-md'
@@ -1737,7 +1739,7 @@ export default function Admin() {
                               slaWarn 
                                 ? 'ring-2 ring-red-500/70 bg-red-50/40 dark:bg-red-950/20 animate-pulse' 
                                 : staleWarn 
-                                  ? 'ring-2 ring-amber-500/70 bg-amber-50/40 dark:bg-amber-950/20 animate-stale-pulse' 
+                                  ? 'bg-amber-50/60 dark:bg-amber-950/30 animate-stale-pulse' 
                                   : hasReminder 
                                     ? 'ring-1 ring-amber-400/50 bg-amber-50/30 dark:bg-amber-950/20' 
                                     : ''
