@@ -1755,7 +1755,20 @@ export default function Admin() {
                               {staleWarn && !slaWarn && (
                                 <div className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/50 rounded px-2 py-0.5 -mx-1 -mt-1 mb-1">
                                   <Clock className="h-3 w-3" />
-                                  {Math.floor(hoursSinceLastComment)} val. be komentaro
+                                  <span className="flex-1">24h be komentaro</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 px-1.5 text-[10px] text-amber-800 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      snoozeSubmission(submission.id);
+                                    }}
+                                    title="Snausti 24 val."
+                                  >
+                                    <Moon className="h-3 w-3 mr-1" />
+                                    Snausti
+                                  </Button>
                                 </div>
                               )}
                               {/* Header with name and source */}
