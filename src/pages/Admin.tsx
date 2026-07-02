@@ -43,7 +43,9 @@ import {
   Download,
   Flame,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
