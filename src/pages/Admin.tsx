@@ -1882,6 +1882,15 @@ export default function Admin() {
         </Tabs>
       </main>
 
+      <CommandPalette
+        submissions={submissions as any}
+        onOpenSubmission={(s) => setSelectedSubmission(s as any)}
+        onSwitchTab={setActiveTab}
+        statusLabelFor={(status) => statusConfig.find((c) => c.value === status)?.label || status}
+      />
+
+
+
       {/* Detail Sheet */}
       <Sheet open={!!selectedSubmission} onOpenChange={(open) => !open && setSelectedSubmission(null)}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
