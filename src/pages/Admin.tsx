@@ -951,7 +951,6 @@ export default function Admin() {
       return created < threeDaysAgo;
     }).length;
 
-    const INACTIVE_STATUSES = new Set(['completed','cancelled','not_financed','out_neaktualu','nekelia','outsource_nekelia','outsource_completed','ateityje']);
     const staleCount = submissions.filter(s => {
       if (INACTIVE_STATUSES.has(s.status)) return false;
       const snoozedUntil = snoozeMap[s.id];
