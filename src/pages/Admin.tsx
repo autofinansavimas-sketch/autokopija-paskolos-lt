@@ -1866,6 +1866,9 @@ export default function Admin() {
           </TabsContent>
           
           <TabsContent value="users">
+            <div className="mb-4">
+              <AdminStats submissions={submissions} reminders={reminders} />
+            </div>
             <ClientTools statusConfig={statusConfig} />
             <OperatorTimeStats />
             <UserManagement />
