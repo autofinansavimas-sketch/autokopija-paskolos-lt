@@ -120,6 +120,31 @@ export default function TodayReminders() {
     }
   };
 
+  const handleSnooze = async (reminderId: string, minutes: number | "tomorrow9") => {
+    try {
+      let newDate: Date;
+      if (minutes === "tomorrow9") {
+        newDate = addDays(new Date(), 1);
+        newDate.setHours(9, 0, 0, 0);
+      } else {
+        newDate = addMinutes(new Date(), minutes);
+      }
+      const call_date = format(newDate, "yyyy-MM-dd");
+      const call_time = format(newDate, "HH:mm");
+      await supabase
+        .from("call_reminders")
+        .update({ call_date, call_time })
+        .eq("id", reminderId);
+      setReminders((prev) => prev.filter((r) => r.id !== reminderId || call_date === today));
+      if (call_date !== today) {
+        setReminders((prev) => prev.filter((r) => r.id !== reminderId));
+      }
+    } catch (error) {
+      console.error("Error snoozing reminder:", error);
+    }
+  };
+
+
   const getSmsLink = (phone: string) => {
     const encodedMessage = encodeURIComponent(FOLLOW_UP_MESSAGE);
     const cleanPhone = phone.replace(/[^\d+]/g, "");
