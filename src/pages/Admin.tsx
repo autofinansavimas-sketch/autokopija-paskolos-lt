@@ -1844,6 +1844,30 @@ export default function Admin() {
             <div className="mb-4">
               <AdminStats submissions={submissions} reminders={reminders} />
             </div>
+            <div className="mb-4 p-4 border rounded-lg bg-card">
+              <h3 className="font-semibold mb-1">Duomenų eksportas</h3>
+              <p className="text-sm text-muted-foreground mb-3">Atsisiųsti visas užklausas Excel formatu (be komentarų).</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => exportContactsToExcel(submissions, "Kontaktai", `kontaktai-${new Date().toISOString().slice(0,10)}.xlsx`, "contacts")}
+                >
+                  <Download className="h-4 w-4" />
+                  Tik kontaktai
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => exportContactsToExcel(submissions, "Visi duomenys", `uzklausos-${new Date().toISOString().slice(0,10)}.xlsx`, "full")}
+                >
+                  <Download className="h-4 w-4" />
+                  Viskas be komentarų
+                </Button>
+              </div>
+            </div>
             <div className="mb-4">
               <AdminCharts submissions={submissions} />
             </div>
@@ -1851,6 +1875,7 @@ export default function Admin() {
             <OperatorTimeStats />
             <UserManagement />
           </TabsContent>
+
         </Tabs>
       </main>
 
