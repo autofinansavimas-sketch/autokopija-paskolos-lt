@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { format, addMinutes, addDays } from "date-fns";
 import { lt } from "date-fns/locale";
-import { Bell, Phone, Mail, X, Clock, User, MessageCircle, Trash2 } from "lucide-react";
+import { Bell, Phone, Mail, X, Clock, User, MessageCircle, Trash2, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { syncToMeta } from "@/lib/syncToMeta";
+
 
 interface TodayReminder {
   id: string;
