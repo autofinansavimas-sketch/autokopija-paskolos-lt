@@ -1845,9 +1845,8 @@ export default function Admin() {
               currentUserId={currentUserId} 
             />
           </TabsContent>
-          
 
-          </TabsContent>
+
           
           <TabsContent value="users">
             <div className="mb-4">
