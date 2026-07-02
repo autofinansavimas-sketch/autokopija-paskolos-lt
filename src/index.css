@@ -263,7 +263,7 @@ All colors MUST be HSL.
 }
 
 .animate-stale-pulse {
-  animation: stale-pulse 3s ease-in-out infinite;
+  animation: stale-pulse 5s ease-in-out infinite;
 }
 
 .animate-float {
