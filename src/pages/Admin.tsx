@@ -1127,6 +1127,9 @@ export default function Admin() {
     XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31) || "Kontaktai");
     XLSX.writeFile(wb, filename);
     toast({ title: "Kontaktai eksportuoti", description: `${subs.length} įrašų → ${filename}` });
+  };
+
+
 
   const handleMoveColumn = async (columnValue: string, direction: -1 | 1) => {
     const idx = statusConfig.findIndex(s => s.value === columnValue);
