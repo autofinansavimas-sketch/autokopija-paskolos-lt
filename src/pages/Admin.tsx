@@ -39,8 +39,10 @@ import {
   Check as CheckIcon,
   Palette,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import {
   Select,
   SelectContent,
