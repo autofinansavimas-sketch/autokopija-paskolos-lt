@@ -171,6 +171,8 @@ const DEFAULT_STATUS_CONFIG = [
   { value: "outsource_completed", label: "Outsource užbaigti", color: "bg-green-500", borderColor: "border-green-500" },
 ];
 
+const INACTIVE_STATUSES = new Set(['completed','cancelled','not_financed','out_neaktualu','nekelia','nekelia_ragelio','outsource_nekelia','outsource_completed','ateityje']);
+
 const AVAILABLE_COLORS = [
   { color: "bg-blue-500", borderColor: "border-blue-500" },
   { color: "bg-yellow-500", borderColor: "border-yellow-500" },
@@ -950,7 +952,7 @@ export default function Admin() {
     }).length;
 
     const staleCount = submissions.filter(s => {
-      if (s.status !== 'nusiusta_paraiska_') return false;
+      if (INACTIVE_STATUSES.has(s.status)) return false;
       const snoozedUntil = snoozeMap[s.id];
       if (snoozedUntil && Date.now() < snoozedUntil) return false;
       const sComments = comments[s.id] || [];
@@ -993,7 +995,7 @@ export default function Admin() {
         } else if (quickFilter === 'withReminders') {
           if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
         } else if (quickFilter === 'stale') {
-          if (s.status !== 'nusiusta_paraiska_') return false;
+          if (INACTIVE_STATUSES.has(s.status)) return false;
           const snoozedUntil = snoozeMap[s.id];
           if (snoozedUntil && Date.now() < snoozedUntil) return false;
           const sComments = comments[s.id] || [];
@@ -1722,7 +1724,7 @@ export default function Admin() {
                         const hoursSinceCreated = (Date.now() - new Date(submission.created_at).getTime()) / 3600000;
                         const isSnoozed = snoozeMap[submission.id] && Date.now() < snoozeMap[submission.id];
                         const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
-                        const staleWarn = stalePulseEnabled && !isSnoozed && submission.status === 'nusiusta_paraiska_' && commentCount === 0 && hoursSinceCreated >= 24;
+                        const staleWarn = stalePulseEnabled && !isSnoozed && !INACTIVE_STATUSES.has(submission.status) && commentCount === 0 && hoursSinceCreated >= 24;
                         
                         return (
                           <Card 
