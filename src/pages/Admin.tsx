@@ -1455,6 +1455,16 @@ export default function Admin() {
                   <Sparkles className="h-3.5 w-3.5" />
                   Mano diena {operator ? `(${operator})` : ""}
                 </Button>
+                <Button
+                  variant={stalePulseEnabled ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setStalePulseEnabled(v => !v)}
+                  title={stalePulseEnabled ? "Išjungti mirksėjimo perspėjimą" : "Įjungti mirksėjimo perspėjimą"}
+                >
+                  {stalePulseEnabled ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  Mirksėjimas
+                </Button>
               </div>
               
               {/* Search Bar */}
