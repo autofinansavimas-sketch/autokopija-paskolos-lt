@@ -40,7 +40,10 @@ import {
   Palette,
   ChevronLeft,
   ChevronRight,
-  Download
+  Download,
+  Flame,
+  AlertTriangle,
+  Sparkles
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
