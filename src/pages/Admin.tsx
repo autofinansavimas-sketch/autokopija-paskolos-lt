@@ -276,6 +276,13 @@ export default function Admin() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [stalePulseEnabled, setStalePulseEnabled] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("admin_stale_pulse_enabled") !== "false";
+    } catch {
+      return true;
+    }
+  });
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [myDayOnly, setMyDayOnly] = useState(false);
 
