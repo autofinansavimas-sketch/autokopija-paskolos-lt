@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { format, addMinutes, addDays } from "date-fns";
 import { lt } from "date-fns/locale";
-import { Bell, Phone, Mail, X, Clock, User, MessageCircle, Trash2 } from "lucide-react";
+import { Bell, Phone, Mail, X, Clock, User, MessageCircle, Trash2, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { syncToMeta } from "@/lib/syncToMeta";
+
 
 interface TodayReminder {
   id: string;
@@ -118,6 +120,31 @@ export default function TodayReminders() {
     }
   };
 
+  const handleSnooze = async (reminderId: string, minutes: number | "tomorrow9") => {
+    try {
+      let newDate: Date;
+      if (minutes === "tomorrow9") {
+        newDate = addDays(new Date(), 1);
+        newDate.setHours(9, 0, 0, 0);
+      } else {
+        newDate = addMinutes(new Date(), minutes);
+      }
+      const call_date = format(newDate, "yyyy-MM-dd");
+      const call_time = format(newDate, "HH:mm");
+      await supabase
+        .from("call_reminders")
+        .update({ call_date, call_time })
+        .eq("id", reminderId);
+      setReminders((prev) => prev.filter((r) => r.id !== reminderId || call_date === today));
+      if (call_date !== today) {
+        setReminders((prev) => prev.filter((r) => r.id !== reminderId));
+      }
+    } catch (error) {
+      console.error("Error snoozing reminder:", error);
+    }
+  };
+
+
   const getSmsLink = (phone: string) => {
     const encodedMessage = encodeURIComponent(FOLLOW_UP_MESSAGE);
     const cleanPhone = phone.replace(/[^\d+]/g, "");
@@ -213,6 +240,23 @@ export default function TodayReminders() {
                     </Button>
                   </a>
                 )}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                      title="Atidėti"
+                    >
+                      <Clock className="h-3 w-3" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-40 p-1" align="end">
+                    <button className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-accent" onClick={() => handleSnooze(reminder.id, 60)}>+ 1 val.</button>
+                    <button className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-accent" onClick={() => handleSnooze(reminder.id, 120)}>+ 2 val.</button>
+                    <button className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-accent" onClick={() => handleSnooze(reminder.id, "tomorrow9")}>Rytoj 09:00</button>
+                  </PopoverContent>
+                </Popover>
                 <Button
                   variant="ghost"
                   size="sm"

@@ -40,7 +40,10 @@ import {
   Palette,
   ChevronLeft,
   ChevronRight,
-  Download
+  Download,
+  Flame,
+  AlertTriangle,
+  Sparkles
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -272,6 +275,7 @@ export default function Admin() {
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("kanban");
+  const [myDayOnly, setMyDayOnly] = useState(false);
 
   const [newSubmission, setNewSubmission] = useState({
     name: "",
@@ -945,6 +949,16 @@ export default function Admin() {
         }
       }
       
+      // "Mano diena" filter — cards with a reminder OR any comment tagged with current operator
+      if (myDayOnly && !query) {
+        const hasReminder = reminders.some(r => r.submission_id === s.id && !r.completed);
+        const mine = (comments[s.id] || []).some(c => {
+          const { operator: op } = parseOperatorTag(c.comment);
+          return op === operator;
+        });
+        if (!hasReminder && !mine) return false;
+      }
+
       // Apply search query
       if (!query) return true;
       return (
@@ -1398,6 +1412,16 @@ export default function Admin() {
                   onFilterChange={setQuickFilter}
                   counts={quickFilterCounts}
                 />
+                <Button
+                  variant={myDayOnly ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setMyDayOnly(v => !v)}
+                  title="Rodyti tik mano korteles (su priminimu arba kur aš komentavau)"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Mano diena {operator ? `(${operator})` : ""}
+                </Button>
               </div>
               
               {/* Search Bar */}
@@ -1624,6 +1648,8 @@ export default function Admin() {
                         const submissionReminders = getRemindersForSubmission(submission.id);
                         const hasReminder = submissionReminders.length > 0;
                         const commentCount = comments[submission.id]?.length || 0;
+                        const ageMinutes = (Date.now() - new Date(submission.created_at).getTime()) / 60000;
+                        const slaWarn = submission.status === 'new' && commentCount === 0 && ageMinutes > 15;
                         
                         return (
                           <Card 
@@ -1632,13 +1658,19 @@ export default function Admin() {
                               draggedSubmission === submission.id 
                                 ? 'opacity-50 scale-95 rotate-1 shadow-lg' 
                                 : 'hover:-translate-y-0.5 hover:shadow-md'
-                            } ${hasReminder ? 'ring-1 ring-amber-400/50 bg-amber-50/30 dark:bg-amber-950/20' : ''}`}
+                            } ${slaWarn ? 'ring-2 ring-red-500/70 bg-red-50/40 dark:bg-red-950/20 animate-pulse' : hasReminder ? 'ring-1 ring-amber-400/50 bg-amber-50/30 dark:bg-amber-950/20' : ''}`}
                             draggable
                             onDragStart={(e) => handleDragStart(e, submission.id)}
                             onDragEnd={handleDragEnd}
                             onClick={() => setSelectedSubmission(submission)}
                           >
                             <CardContent className="p-3 space-y-2">
+                              {slaWarn && (
+                                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-950/50 rounded px-2 py-0.5 -mx-1 -mt-1 mb-1">
+                                  <Flame className="h-3 w-3" />
+                                  SLA: {Math.round(ageMinutes)} min be atsakymo
+                                </div>
+                              )}
                               {/* Header with name and source */}
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-1.5 min-w-0">
@@ -1926,6 +1958,40 @@ export default function Admin() {
               </SheetHeader>
 
               <div className="mt-6 space-y-6">
+                {/* Duplicate warning */}
+                {(() => {
+                  const dupes = submissions.filter(s =>
+                    s.id !== selectedSubmission.id &&
+                    ((selectedSubmission.phone && s.phone === selectedSubmission.phone) ||
+                     (selectedSubmission.email && s.email === selectedSubmission.email))
+                  );
+                  if (dupes.length === 0) return null;
+                  return (
+                    <div className="rounded-lg border border-red-300 bg-red-50 dark:bg-red-950/30 p-3">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-red-700 dark:text-red-300">
+                            ⚠️ Šis klientas jau yra sistemoje ({dupes.length})
+                          </p>
+                          <div className="mt-1 space-y-1">
+                            {dupes.slice(0, 3).map(d => (
+                              <button
+                                key={d.id}
+                                onClick={() => setSelectedSubmission(d)}
+                                className="block text-left text-xs text-red-700 dark:text-red-300 hover:underline truncate w-full"
+                              >
+                                • {formatShortDate(d.created_at)} — {statusConfig.find(c => c.value === d.status)?.label || d.status}
+                                {d.name ? ` — ${d.name}` : ""}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Status */}
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Statusas</label>
@@ -1960,7 +2026,14 @@ export default function Admin() {
                         variant="outline"
                         size="sm"
                         className="h-8 px-3 text-primary hover:bg-primary/10"
-                        onClick={() => window.location.href = `tel:${selectedSubmission.phone}`}
+                        onClick={() => {
+                          const now = new Date();
+                          const hh = String(now.getHours()).padStart(2, "0");
+                          const mm = String(now.getMinutes()).padStart(2, "0");
+                          handleAddComment(selectedSubmission.id, `📞 Paskambinta ${hh}:${mm}`);
+                          window.location.href = `tel:${selectedSubmission.phone}`;
+                        }}
+                        title="Skambinti ir automatiškai užfiksuoti komentare"
                       >
                         <Phone className="h-4 w-4 mr-2" />
                         {selectedSubmission.phone}
@@ -2007,30 +2080,68 @@ export default function Admin() {
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                     Greitas pranešimas
                   </h4>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
                       onClick={() => window.location.href = getSmsLink(selectedSubmission.phone)}
                     >
-                      <MessageCircle className="h-4 w-4 mr-2" />
+                      <MessageCircle className="h-4 w-4 mr-1.5" />
                       SMS
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 dark:bg-green-950/30 dark:border-green-800 dark:text-green-300"
+                      onClick={() => {
+                        const cleanPhone = selectedSubmission.phone.replace(/[^\d]/g, "");
+                        const text = encodeURIComponent(`Sveiki, susisiekiame dėl Jūsų užklausos AUTOPASKOLOS.LT`);
+                        window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
+                      }}
+                      title="Atidaryti WhatsApp"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-1.5" />
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => window.location.href = getMailtoLink(selectedSubmission.email)}
                     >
-                      <Mail className="h-4 w-4 mr-2" />
-                      El. paštas
+                      <Mail className="h-4 w-4 mr-1.5" />
+                      Email
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Atidaro programą su paruoštu tekstu apie nesėkmingą susisiekimą
-                  </p>
                 </div>
+
+                {/* Quick Reply Templates */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                    <Zap className="h-3.5 w-3.5" />
+                    Greiti šablonai
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "📞 Neatsiliepė", text: "Neatsiliepė" },
+                      { label: "🔄 Perskambins pats", text: "Perskambins pats" },
+                      { label: "📄 Prašau dokumentų", text: "Prašiau atsiųsti dokumentus" },
+                      { label: "✅ Ruošiame pasiūlymą", text: "Ruošiame pasiūlymą" },
+                      { label: "❌ Nesidomi", text: "Nesidomi" },
+                      { label: "⏳ Ar dar aktualu?", text: "Išsiųstas 'ar dar aktualu?' priminimas" },
+                    ].map((tpl) => (
+                      <Button
+                        key={tpl.label}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs justify-start"
+                        onClick={() => handleAddComment(selectedSubmission.id, tpl.text)}
+                      >
+                        {tpl.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
 
                 {/* Loan Info */}
                 <div className="space-y-3">
