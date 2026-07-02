@@ -1386,6 +1386,16 @@ export default function Admin() {
                   <BarChart3 className="h-3.5 w-3.5" />
                   <span>Grafikai</span>
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 shadow-sm"
+                  onClick={() => exportContactsToExcel(submissions, "Visi kontaktai", `kontaktai-visi-${new Date().toISOString().slice(0,10)}.xlsx`)}
+                  title="Atsisiųsti visų kortelių kontaktus vienoje Excel byloje"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Kontaktai</span>
+                </Button>
                 <QuickFilters 
                   activeFilter={quickFilter}
                   onFilterChange={setQuickFilter}
