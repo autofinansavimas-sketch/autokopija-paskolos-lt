@@ -1344,7 +1344,7 @@ export default function Admin() {
         {/* Today's Reminders Banner */}
         <TodayReminders />
         
-        <Tabs defaultValue="kanban" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-6 gap-1">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <LayoutDashboard className="h-4 w-4" />
