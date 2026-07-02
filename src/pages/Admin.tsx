@@ -1585,6 +1585,15 @@ export default function Admin() {
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => exportContactsToExcel(statusSubmissions, colConfig.label, `kontaktai-${colConfig.value}-${new Date().toISOString().slice(0,10)}.xlsx`)}
+                            title="Atsisiųsti šios kortelės kontaktus"
+                          >
+                            <Download className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
                             title="Pervadinti kortelę"
                           >
