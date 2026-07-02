@@ -1958,6 +1958,40 @@ export default function Admin() {
               </SheetHeader>
 
               <div className="mt-6 space-y-6">
+                {/* Duplicate warning */}
+                {(() => {
+                  const dupes = submissions.filter(s =>
+                    s.id !== selectedSubmission.id &&
+                    ((selectedSubmission.phone && s.phone === selectedSubmission.phone) ||
+                     (selectedSubmission.email && s.email === selectedSubmission.email))
+                  );
+                  if (dupes.length === 0) return null;
+                  return (
+                    <div className="rounded-lg border border-red-300 bg-red-50 dark:bg-red-950/30 p-3">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-red-700 dark:text-red-300">
+                            ⚠️ Šis klientas jau yra sistemoje ({dupes.length})
+                          </p>
+                          <div className="mt-1 space-y-1">
+                            {dupes.slice(0, 3).map(d => (
+                              <button
+                                key={d.id}
+                                onClick={() => setSelectedSubmission(d)}
+                                className="block text-left text-xs text-red-700 dark:text-red-300 hover:underline truncate w-full"
+                              >
+                                • {formatShortDate(d.created_at)} — {statusConfig.find(c => c.value === d.status)?.label || d.status}
+                                {d.name ? ` — ${d.name}` : ""}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Status */}
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Statusas</label>
