@@ -1374,9 +1374,6 @@ export default function Admin() {
           </TabsList>
           
           <TabsContent value="kanban">
-            {/* Stats Overview */}
-            <AdminStats submissions={submissions} reminders={reminders} />
-            
             {/* Charts Toggle & Quick Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2 flex-wrap">
