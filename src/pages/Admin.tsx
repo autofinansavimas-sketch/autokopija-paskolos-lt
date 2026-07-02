@@ -1378,15 +1378,6 @@ export default function Admin() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
-                  variant={showCharts ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 gap-1.5 shadow-sm"
-                  onClick={() => setShowCharts(!showCharts)}
-                >
-                  <BarChart3 className="h-3.5 w-3.5" />
-                  <span>Grafikai</span>
-                </Button>
-                <Button
                   variant="outline"
                   size="sm"
                   className="h-8 gap-1.5 shadow-sm"
