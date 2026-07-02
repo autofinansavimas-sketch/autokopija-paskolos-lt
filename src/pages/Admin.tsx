@@ -284,6 +284,25 @@ export default function Admin() {
       return true;
     }
   });
+  const [snoozeMap, setSnoozeMap] = useState<Record<string, number>>(() => {
+    try {
+      const raw = localStorage.getItem("admin_stale_snoozes");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+  const snoozeSubmission = (id: string) => {
+    const until = Date.now() + 24 * 60 * 60 * 1000;
+    const next = { ...snoozeMap, [id]: until };
+    setSnoozeMap(next);
+    try {
+      localStorage.setItem("admin_stale_snoozes", JSON.stringify(next));
+    } catch {
+      // ignore storage errors
+    }
+    toast({ title: "Snaudžiama 24 val.", description: "Perspėjimas šiai kortelei išjungtas 24 val." });
+  };
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [myDayOnly, setMyDayOnly] = useState(false);
 
