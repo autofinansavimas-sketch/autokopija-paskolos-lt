@@ -16,6 +16,7 @@ interface QuickFiltersProps {
     week: number;
     withReminders: number;
     noContact: number;
+    stale: number;
   };
 }
 
@@ -54,6 +55,13 @@ export default function QuickFilters({
       icon: Filter, 
       count: counts.noContact,
       color: "bg-red-500/10 text-red-600 hover:bg-red-500/20"
+    },
+    { 
+      id: "stale", 
+      label: "Be komentaro 24h+", 
+      icon: AlertTriangle, 
+      count: counts.stale,
+      color: "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20"
     },
   ];
 
