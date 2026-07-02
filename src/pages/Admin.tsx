@@ -1342,8 +1342,23 @@ export default function Admin() {
 
       {/* Main Content with Tabs */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        {/* Birthday banner — only on 2026-07-03 */}
+        {(() => {
+          const now = new Date();
+          const isBirthday = now.getFullYear() === 2026 && now.getMonth() === 6 && now.getDate() === 3;
+          if (!isBirthday) return null;
+          return (
+            <div className="mb-4 rounded-xl border border-pink-300 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 p-4 shadow-lg animate-pulse">
+              <p className="text-center text-base sm:text-lg font-semibold text-white drop-shadow">
+                ❤️🔥 Paulina, su artėjančiu gimtadieniu! Neleisk jokiam debilui užgesinti tavo vidinės ugnies 🔥❤️
+              </p>
+            </div>
+          );
+        })()}
+
         {/* Today's Reminders Banner */}
         <TodayReminders />
+
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-6 gap-1">
