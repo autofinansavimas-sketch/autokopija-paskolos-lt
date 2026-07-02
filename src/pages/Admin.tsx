@@ -2124,9 +2124,9 @@ export default function Admin() {
                     {[
                       { label: "📞 Neatsiliepė", text: "Neatsiliepė" },
                       { label: "🔄 Perskambins pats", text: "Perskambins pats" },
-                      { label: "📄 Prašau dokumentų", text: "Prašiau atsiųsti dokumentus" },
+                      { label: "📄 Laukiu dokumentų", text: "Laukiu dokumentų" },
                       { label: "✅ Ruošiame pasiūlymą", text: "Ruošiame pasiūlymą" },
-                      { label: "❌ Nesidomi", text: "Nesidomi" },
+                      { label: "❌ Neaktualu", text: "Neaktualu" },
                       { label: "⏳ Ar dar aktualu?", text: "Išsiųstas 'ar dar aktualu?' priminimas" },
                     ].map((tpl) => (
                       <Button
