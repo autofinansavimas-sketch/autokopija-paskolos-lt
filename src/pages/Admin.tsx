@@ -953,7 +953,7 @@ export default function Admin() {
           if (!reminders.some(r => r.submission_id === s.id && !r.completed)) return false;
         } else if (quickFilter === 'stale') {
           if ((comments[s.id]?.length || 0) > 0) return false;
-          if (created >= threeDaysAgo && (Date.now() - created.getTime()) < 24 * 60 * 60 * 1000) return false;
+          if (Date.now() - created.getTime() < 24 * 60 * 60 * 1000) return false;
         } else if (quickFilter === 'noContact') {
           if (s.status !== 'new' || created >= threeDaysAgo) return false;
         }
