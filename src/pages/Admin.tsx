@@ -1432,7 +1432,7 @@ export default function Admin() {
 
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-6 gap-1">
+          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-5 gap-1">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Paraiškos</span>
@@ -1647,22 +1647,22 @@ export default function Admin() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                            className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-primary lg:opacity-0 lg:group-hover:opacity-100 transition-opacity disabled:opacity-0"
                             onClick={() => handleMoveColumn(colConfig.value, -1)}
                             disabled={statusConfig.findIndex(s => s.value === colConfig.value) === 0}
                             title="Perkelti į kairę"
                           >
-                            <ChevronLeft className="h-3.5 w-3.5" />
+                            <ChevronLeft className="h-4 w-4 lg:h-3.5 lg:w-3.5" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0"
+                            className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-primary lg:opacity-0 lg:group-hover:opacity-100 transition-opacity disabled:opacity-0"
                             onClick={() => handleMoveColumn(colConfig.value, 1)}
                             disabled={statusConfig.findIndex(s => s.value === colConfig.value) === statusConfig.length - 1}
                             title="Perkelti į dešinę"
                           >
-                            <ChevronRight className="h-3.5 w-3.5" />
+                            <ChevronRight className="h-4 w-4 lg:h-3.5 lg:w-3.5" />
                           </Button>
                           <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
                             {statusSubmissions.length}
@@ -1670,34 +1670,35 @@ export default function Admin() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-primary lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                             onClick={() => exportContactsToExcel(statusSubmissions, colConfig.label, `kontaktai-${colConfig.value}-${new Date().toISOString().slice(0,10)}.xlsx`)}
                             title="Atsisiųsti šios kortelės kontaktus"
                           >
-                            <Download className="h-3 w-3" />
+                            <Download className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-primary lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                             onClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
                             title="Pervadinti kortelę"
                           >
-                            <Pencil className="h-3 w-3" />
+                            <Pencil className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
                           </Button>
                           {statusConfig.length > 1 && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-destructive lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                               onClick={() => handleDeleteColumn(colConfig.value)}
                               title="Ištrinti kortelę"
                             >
-                              <X className="h-3 w-3" />
+                              <X className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
                             </Button>
                           )}
                         </div>
                       )}
+
                     </div>
                   </div>
 
