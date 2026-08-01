@@ -307,6 +307,41 @@ export default function Admin() {
   };
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [myDayOnly, setMyDayOnly] = useState(false);
+  const isMobile = useIsMobile();
+  const MOBILE_PAGE_SIZE = 8;
+  const [expandedLists, setExpandedLists] = useState<Record<string, boolean>>({});
+  const [collapsedColumns, setCollapsedColumns] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("admin_collapsed_columns") || "{}");
+    } catch {
+      return {};
+    }
+  });
+  const toggleColumnCollapse = (value: string) => {
+    setCollapsedColumns((prev) => {
+      const next = { ...prev, [value]: !prev[value] };
+      try {
+        localStorage.setItem("admin_collapsed_columns", JSON.stringify(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
+  const jumpToColumn = (value: string) => {
+    setCollapsedColumns((prev) => {
+      const next = { ...prev, [value]: false };
+      try {
+        localStorage.setItem("admin_collapsed_columns", JSON.stringify(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+    requestAnimationFrame(() => {
+      document.getElementById(`kanban-col-${value}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   const [newSubmission, setNewSubmission] = useState({
     name: "",
