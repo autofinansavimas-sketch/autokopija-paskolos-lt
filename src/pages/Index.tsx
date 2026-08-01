@@ -86,6 +86,7 @@ const Index = () => {
           <HowItWorks />
           <Benefits />
           <Testimonials />
+          <SeoTopics />
           <FAQ />
           <CTA />
         </Suspense>
