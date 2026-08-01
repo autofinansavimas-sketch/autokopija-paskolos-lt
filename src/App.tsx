@@ -29,7 +29,10 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/paskola-automobiliui" element={<PaskolaAutomobiliui />} />
+            <Route path="/paskolu-refinansavimas" element={<PaskoluRefinansavimas />} />
             <Route path="/privatumo-politika" element={<PrivacyPolicy />} />
+
             <Route path="/salygos" element={<Terms />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
