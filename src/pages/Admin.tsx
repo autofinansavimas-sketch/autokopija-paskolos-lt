@@ -104,6 +104,7 @@ import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
 import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/use-operator";
 import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
 import OperatorTimeStats from "@/components/OperatorTimeStats";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Submission {
   id: string;
