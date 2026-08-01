@@ -1613,7 +1613,25 @@ export default function Admin() {
                             <span className="text-muted-foreground">{statusSubmissions.length}</span>
                           </button>
                         ))}
+                        {(() => {
+                          const allCollapsed = visibleColumns.every(c => collapsedColumns[c.colConfig.value]);
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next: Record<string, boolean> = { ...collapsedColumns };
+                                visibleColumns.forEach(c => { next[c.colConfig.value] = !allCollapsed; });
+                                setCollapsedColumns(next);
+                                try { localStorage.setItem("admin_collapsed_columns", JSON.stringify(next)); } catch { /* ignore */ }
+                              }}
+                              className="shrink-0 rounded-full border bg-muted px-3 py-1.5 text-xs font-medium shadow-sm active:scale-95 transition-transform"
+                            >
+                              {allCollapsed ? "Išskleisti visus" : "Suskleisti visus"}
+                            </button>
+                          );
+                        })()}
                       </div>
+
                       <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
                         {visibleColumns.map(({ colConfig, statusSubmissions }) => {
                           const isDropTarget = dragOverColumn === colConfig.value;
