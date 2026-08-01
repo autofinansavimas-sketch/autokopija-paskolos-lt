@@ -104,6 +104,7 @@ import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
 import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/use-operator";
 import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
 import OperatorTimeStats from "@/components/OperatorTimeStats";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Submission {
   id: string;
@@ -307,6 +308,41 @@ export default function Admin() {
   };
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [myDayOnly, setMyDayOnly] = useState(false);
+  const isMobile = useIsMobile();
+  const MOBILE_PAGE_SIZE = 8;
+  const [expandedLists, setExpandedLists] = useState<Record<string, boolean>>({});
+  const [collapsedColumns, setCollapsedColumns] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("admin_collapsed_columns") || "{}");
+    } catch {
+      return {};
+    }
+  });
+  const toggleColumnCollapse = (value: string) => {
+    setCollapsedColumns((prev) => {
+      const next = { ...prev, [value]: !prev[value] };
+      try {
+        localStorage.setItem("admin_collapsed_columns", JSON.stringify(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
+  const jumpToColumn = (value: string) => {
+    setCollapsedColumns((prev) => {
+      const next = { ...prev, [value]: false };
+      try {
+        localStorage.setItem("admin_collapsed_columns", JSON.stringify(next));
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+    requestAnimationFrame(() => {
+      document.getElementById(`kanban-col-${value}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   const [newSubmission, setNewSubmission] = useState({
     name: "",
@@ -1562,19 +1598,60 @@ export default function Admin() {
                         <p className="text-sm">Nieko nerasta pagal „{searchQuery}"</p>
                       </div>
                     ) : (
+                      <>
+                      {/* Mobile quick jump bar */}
+                      <div className="lg:hidden -mx-1 px-1 mb-3 flex gap-1.5 overflow-x-auto scrollbar-hide">
+                        {visibleColumns.map(({ colConfig, statusSubmissions }) => (
+                          <button
+                            key={colConfig.value}
+                            type="button"
+                            onClick={() => jumpToColumn(colConfig.value)}
+                            className="shrink-0 flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-sm active:scale-95 transition-transform"
+                          >
+                            <span className={`w-2 h-2 rounded-full ${colConfig.color}`} />
+                            <span className="max-w-[110px] truncate">{colConfig.label}</span>
+                            <span className="text-muted-foreground">{statusSubmissions.length}</span>
+                          </button>
+                        ))}
+                        {(() => {
+                          const allCollapsed = visibleColumns.every(c => collapsedColumns[c.colConfig.value]);
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next: Record<string, boolean> = { ...collapsedColumns };
+                                visibleColumns.forEach(c => { next[c.colConfig.value] = !allCollapsed; });
+                                setCollapsedColumns(next);
+                                try { localStorage.setItem("admin_collapsed_columns", JSON.stringify(next)); } catch { /* ignore */ }
+                              }}
+                              className="shrink-0 rounded-full border bg-muted px-3 py-1.5 text-xs font-medium shadow-sm active:scale-95 transition-transform"
+                            >
+                              {allCollapsed ? "Išskleisti visus" : "Suskleisti visus"}
+                            </button>
+                          );
+                        })()}
+                      </div>
+
                       <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
                         {visibleColumns.map(({ colConfig, statusSubmissions }) => {
                           const isDropTarget = dragOverColumn === colConfig.value;
+                          const isCollapsed = !!collapsedColumns[colConfig.value] && !isSearching;
+                          const listExpanded = !!expandedLists[colConfig.value];
+                          const visibleCards = isMobile && !listExpanded
+                            ? statusSubmissions.slice(0, MOBILE_PAGE_SIZE)
+                            : statusSubmissions;
                           return (
                 <div 
                   key={colConfig.value} 
-                  className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 ${
+                  id={`kanban-col-${colConfig.value}`}
+                  className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 scroll-mt-20 ${
                     isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5 scale-[1.02]' : 'hover:bg-card/80'
                   }`}
                   onDragOver={(e) => handleDragOver(e, colConfig.value)}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, colConfig.value)}
                 >
+
                   {/* Column Header */}
                   <div className="p-3 border-b">
                     <div className="flex items-center justify-between gap-2">
@@ -1634,13 +1711,18 @@ export default function Admin() {
                         ) : (
                           <button
                             type="button"
+                            onClick={() => { if (isMobile) toggleColumnCollapse(colConfig.value); }}
                             onDoubleClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
-                            className="font-semibold text-sm truncate text-left hover:text-primary transition-colors"
+                            className="flex items-center gap-1.5 font-semibold text-sm truncate text-left hover:text-primary transition-colors"
                             title="Dukart spustelėkite, kad pervadintumėte"
                           >
-                            {colConfig.label}
+                            <ChevronRight
+                              className={`h-4 w-4 lg:hidden shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                            />
+                            <span className="truncate">{colConfig.label}</span>
                           </button>
                         )}
+
                       </div>
                       {editingColumn !== colConfig.value && (
                         <div className="flex items-center gap-1 shrink-0">
@@ -1704,7 +1786,7 @@ export default function Admin() {
 
 
                   {/* Column Cards */}
-                  <div className="p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto">
+                  <div className={`p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto ${isCollapsed ? 'hidden lg:block' : ''}`}>
                     {statusSubmissions.length === 0 ? (
                       <div className={`text-center py-6 lg:py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl mx-1 ${
                         isDropTarget ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
@@ -1712,7 +1794,8 @@ export default function Admin() {
                         {isDropTarget ? '✓ Paleiskite čia' : 'Nėra paraiškų'}
                       </div>
                     ) : (
-                      statusSubmissions.map(submission => {
+                      visibleCards.map(submission => {
+
                         const submissionReminders = getRemindersForSubmission(submission.id);
                         const hasReminder = submissionReminders.length > 0;
                         const submissionComments = comments[submission.id] || [];
@@ -1813,7 +1896,7 @@ export default function Admin() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="h-8 w-8 lg:h-7 lg:w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigator.clipboard.writeText(submission.phone);
@@ -1874,13 +1957,25 @@ export default function Admin() {
                         );
                       })
                     )}
+                    {isMobile && !listExpanded && statusSubmissions.length > MOBILE_PAGE_SIZE && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-9"
+                        onClick={() => setExpandedLists(p => ({ ...p, [colConfig.value]: true }))}
+                      >
+                        Rodyti dar {statusSubmissions.length - MOBILE_PAGE_SIZE}
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
             })}
                       </div>
+                      </>
                     )}
                   </>
+
                 );
               })()
             )}
