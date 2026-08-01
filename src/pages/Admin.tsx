@@ -1598,19 +1598,42 @@ export default function Admin() {
                         <p className="text-sm">Nieko nerasta pagal „{searchQuery}"</p>
                       </div>
                     ) : (
+                      <>
+                      {/* Mobile quick jump bar */}
+                      <div className="lg:hidden -mx-1 px-1 mb-3 flex gap-1.5 overflow-x-auto scrollbar-hide">
+                        {visibleColumns.map(({ colConfig, statusSubmissions }) => (
+                          <button
+                            key={colConfig.value}
+                            type="button"
+                            onClick={() => jumpToColumn(colConfig.value)}
+                            className="shrink-0 flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-sm active:scale-95 transition-transform"
+                          >
+                            <span className={`w-2 h-2 rounded-full ${colConfig.color}`} />
+                            <span className="max-w-[110px] truncate">{colConfig.label}</span>
+                            <span className="text-muted-foreground">{statusSubmissions.length}</span>
+                          </button>
+                        ))}
+                      </div>
                       <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
                         {visibleColumns.map(({ colConfig, statusSubmissions }) => {
                           const isDropTarget = dragOverColumn === colConfig.value;
+                          const isCollapsed = !!collapsedColumns[colConfig.value] && !isSearching;
+                          const listExpanded = !!expandedLists[colConfig.value];
+                          const visibleCards = isMobile && !listExpanded
+                            ? statusSubmissions.slice(0, MOBILE_PAGE_SIZE)
+                            : statusSubmissions;
                           return (
                 <div 
                   key={colConfig.value} 
-                  className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 ${
+                  id={`kanban-col-${colConfig.value}`}
+                  className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 scroll-mt-20 ${
                     isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5 scale-[1.02]' : 'hover:bg-card/80'
                   }`}
                   onDragOver={(e) => handleDragOver(e, colConfig.value)}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, colConfig.value)}
                 >
+
                   {/* Column Header */}
                   <div className="p-3 border-b">
                     <div className="flex items-center justify-between gap-2">
