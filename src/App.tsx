@@ -9,6 +9,9 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
+import PaskolaAutomobiliui from "./pages/PaskolaAutomobiliui";
+import PaskoluRefinansavimas from "./pages/PaskoluRefinansavimas";
+
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
 import { CookieConsent } from "./components/CookieConsent";
