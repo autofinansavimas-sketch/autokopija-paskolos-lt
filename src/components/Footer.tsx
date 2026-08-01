@@ -184,9 +184,16 @@ export const Footer = () => {
               <p className="text-xs md:text-sm text-muted-foreground">
                 © {currentYear} AUTOPASKOLOS.LT
               </p>
+              <Link to="/paskola-automobiliui" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-all duration-300 hover:underline underline-offset-4">
+                Paskola automobiliui
+              </Link>
+              <Link to="/paskolu-refinansavimas" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-all duration-300 hover:underline underline-offset-4">
+                Refinansavimas
+              </Link>
               <Link to="/privatumo-politika" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-all duration-300 hover:underline underline-offset-4">
                 Privatumo politika
               </Link>
+
             </div>
             <div className="flex items-center gap-2 md:gap-3 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-background/50 border border-border/50">
               <span className="text-xs md:text-sm text-muted-foreground">Powered by</span>

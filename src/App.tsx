@@ -9,6 +9,9 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
+import PaskolaAutomobiliui from "./pages/PaskolaAutomobiliui";
+import PaskoluRefinansavimas from "./pages/PaskoluRefinansavimas";
+
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
 import { CookieConsent } from "./components/CookieConsent";
@@ -26,7 +29,10 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/paskola-automobiliui" element={<PaskolaAutomobiliui />} />
+            <Route path="/paskolu-refinansavimas" element={<PaskoluRefinansavimas />} />
             <Route path="/privatumo-politika" element={<PrivacyPolicy />} />
+
             <Route path="/salygos" element={<Terms />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<Admin />} />
