@@ -1878,7 +1878,7 @@ export default function Admin() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="h-8 w-8 lg:h-7 lg:w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigator.clipboard.writeText(submission.phone);
