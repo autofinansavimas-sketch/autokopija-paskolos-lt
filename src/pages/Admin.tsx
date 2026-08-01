@@ -1763,7 +1763,7 @@ export default function Admin() {
 
 
                   {/* Column Cards */}
-                  <div className="p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto">
+                  <div className={`p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto ${isCollapsed ? 'hidden lg:block' : ''}`}>
                     {statusSubmissions.length === 0 ? (
                       <div className={`text-center py-6 lg:py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl mx-1 ${
                         isDropTarget ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
@@ -1771,7 +1771,8 @@ export default function Admin() {
                         {isDropTarget ? '✓ Paleiskite čia' : 'Nėra paraiškų'}
                       </div>
                     ) : (
-                      statusSubmissions.map(submission => {
+                      visibleCards.map(submission => {
+
                         const submissionReminders = getRemindersForSubmission(submission.id);
                         const hasReminder = submissionReminders.length > 0;
                         const submissionComments = comments[submission.id] || [];
