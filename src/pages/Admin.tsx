@@ -1934,13 +1934,25 @@ export default function Admin() {
                         );
                       })
                     )}
+                    {isMobile && !listExpanded && statusSubmissions.length > MOBILE_PAGE_SIZE && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-9"
+                        onClick={() => setExpandedLists(p => ({ ...p, [colConfig.value]: true }))}
+                      >
+                        Rodyti dar {statusSubmissions.length - MOBILE_PAGE_SIZE}
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
             })}
                       </div>
+                      </>
                     )}
                   </>
+
                 );
               })()
             )}
