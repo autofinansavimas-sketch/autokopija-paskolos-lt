@@ -1693,13 +1693,18 @@ export default function Admin() {
                         ) : (
                           <button
                             type="button"
+                            onClick={() => { if (isMobile) toggleColumnCollapse(colConfig.value); }}
                             onDoubleClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
-                            className="font-semibold text-sm truncate text-left hover:text-primary transition-colors"
+                            className="flex items-center gap-1.5 font-semibold text-sm truncate text-left hover:text-primary transition-colors"
                             title="Dukart spustelėkite, kad pervadintumėte"
                           >
-                            {colConfig.label}
+                            <ChevronRight
+                              className={`h-4 w-4 lg:hidden shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                            />
+                            <span className="truncate">{colConfig.label}</span>
                           </button>
                         )}
+
                       </div>
                       {editingColumn !== colConfig.value && (
                         <div className="flex items-center gap-1 shrink-0">
