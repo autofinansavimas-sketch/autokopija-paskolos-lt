@@ -1042,15 +1042,20 @@ export default function Admin() {
         }
       }
       
-      // "Mano diena" filter — cards with a reminder OR any comment tagged with current operator
+      // "Mano diena" filter — only cards that belong to the current operator
       if (myDayOnly && !query) {
+        const sComments = comments[s.id] || [];
+        const tagged = sComments
+          .map(c => parseOperatorTag(c.comment).operator)
+          .filter((op): op is string => !!op);
+        const mine = tagged.some(op => op === operator);
+        const someoneElse = tagged.some(op => op !== operator);
+        // If another operator already worked on this card and I haven't — hide it
+        if (someoneElse && !mine) return false;
         const hasReminder = reminders.some(r => r.submission_id === s.id && !r.completed);
-        const mine = (comments[s.id] || []).some(c => {
-          const { operator: op } = parseOperatorTag(c.comment);
-          return op === operator;
-        });
-        if (!hasReminder && !mine) return false;
+        if (!mine && !hasReminder) return false;
       }
+
 
       // Apply search query
       if (!query) return true;
