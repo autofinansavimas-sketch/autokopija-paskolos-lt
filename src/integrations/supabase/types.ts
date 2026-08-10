@@ -38,6 +38,51 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_tasks: {
+        Row: {
+          assignee: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          created_by_operator: string | null
+          done: boolean
+          due_date: string | null
+          id: string
+          notes: string | null
+          priority: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_operator?: string | null
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_operator?: string | null
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_reminders: {
         Row: {
           call_date: string

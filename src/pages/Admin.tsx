@@ -99,7 +99,9 @@ import QuickFilters from "@/components/QuickFilters";
 import AdminAIChat from "@/components/AdminAIChat";
 import CommandPalette from "@/components/CommandPalette";
 import AdminAutomations from "@/components/AdminAutomations";
-import { Bell, BarChart3, Zap } from "lucide-react";
+import { Bell, BarChart3, Zap, CheckSquare } from "lucide-react";
+import { TodoList } from "@/components/TodoList";
+
 import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
 import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/use-operator";
 import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
@@ -1473,15 +1475,20 @@ export default function Admin() {
 
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-5 gap-1">
+          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-6 gap-1">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Paraiškos</span>
+            </TabsTrigger>
+            <TabsTrigger value="todo" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+              <CheckSquare className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-medium">Darbai</span>
             </TabsTrigger>
             <TabsTrigger value="automations" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <Zap className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Auto</span>
             </TabsTrigger>
+
             <TabsTrigger value="calendar" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Kalendorius</span>
@@ -2071,7 +2078,12 @@ export default function Admin() {
               )}
             </div>
           </TabsContent>
-          
+
+          <TabsContent value="todo">
+            <TodoList />
+          </TabsContent>
+
+
           <TabsContent value="automations">
             <AdminAutomations
               submissions={submissions}
