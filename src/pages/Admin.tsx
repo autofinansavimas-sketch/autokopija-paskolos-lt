@@ -99,7 +99,9 @@ import QuickFilters from "@/components/QuickFilters";
 import AdminAIChat from "@/components/AdminAIChat";
 import CommandPalette from "@/components/CommandPalette";
 import AdminAutomations from "@/components/AdminAutomations";
-import { Bell, BarChart3, Zap } from "lucide-react";
+import { Bell, BarChart3, Zap, CheckSquare } from "lucide-react";
+import { TodoList } from "@/components/TodoList";
+
 import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
 import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/use-operator";
 import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
