@@ -2450,10 +2450,13 @@ export default function Admin() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              {opName && <OperatorBadge name={opName} />}
-                              <span className="text-xs font-medium text-primary">
-                                {comment.user_display_name || comment.user_email || "Nežinomas"}
-                              </span>
+                              {opName ? (
+                                <OperatorBadge name={opName} />
+                              ) : (
+                                <span className="text-xs font-medium text-primary">
+                                  {comment.user_display_name || comment.user_email || "Nežinomas"}
+                                </span>
+                              )}
                               <span className="text-xs text-muted-foreground">
                                 • {formatDate(comment.created_at)}
                               </span>
