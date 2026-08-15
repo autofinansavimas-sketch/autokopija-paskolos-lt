@@ -46,7 +46,9 @@ import {
   Sparkles,
   Eye,
   EyeOff,
-  Moon
+  Moon,
+  PanelTopClose,
+  PanelTopOpen
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
