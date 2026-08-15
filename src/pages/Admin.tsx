@@ -1747,13 +1747,13 @@ export default function Admin() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => { if (isMobile) toggleColumnCollapse(colConfig.value); }}
+                            onClick={() => toggleColumnCollapse(colConfig.value)}
                             onDoubleClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
                             className="flex items-center gap-1.5 font-semibold text-sm truncate text-left hover:text-primary transition-colors"
-                            title="Dukart spustelėkite, kad pervadintumėte"
+                            title="Spustelėkite sutraukti/išskleisti, dukart – pervadinti"
                           >
                             <ChevronRight
-                              className={`h-4 w-4 lg:hidden shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
                             />
                             <span className="truncate">{colConfig.label}</span>
                           </button>
