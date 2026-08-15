@@ -697,28 +697,66 @@ export default function ClientTools({ statusConfig }: Props) {
     else setMsgSelected(new Set(msgRecipients.map((s) => s.id)));
   };
 
+  // ===== Sequential send queue (works on iOS/Safari) =====
+  const isIOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const [queueMode, setQueueMode] = useState<"sms" | "email" | null>(null);
+  const [queueIds, setQueueIds] = useState<string[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
+  const [queueSent, setQueueSent] = useState<Set<string>>(new Set());
+
+  const queueList = useMemo(
+    () => queueIds.map((id) => submissions.find((s) => s.id === id)).filter(Boolean) as SubmissionLite[],
+    [queueIds, submissions]
+  );
+  const queueCurrent = queueList[queueIndex];
+
+  const smsHref = (s: SubmissionLite) => {
+    const phone = s.phone.replace(/[^\d+]/g, "");
+    const body = encodeURIComponent(renderMessage(s));
+    // iOS needs "&body=", Android/others "?body="
+    return isIOS ? `sms:${phone}&body=${body}` : `sms:${phone}?body=${body}`;
+  };
+
+  const mailHref = (s: SubmissionLite) =>
+    `mailto:${s.email}?subject=${encodeURIComponent("AutoPaskolos")}&body=${encodeURIComponent(renderMessage(s))}`;
+
+  const startQueue = (mode: "sms" | "email", list: SubmissionLite[]) => {
+    setQueueMode(mode);
+    setQueueIds(list.map((s) => s.id));
+    setQueueIndex(0);
+    setQueueSent(new Set());
+  };
+
+  const markSentAndNext = () => {
+    if (queueCurrent) setQueueSent((prev) => new Set(prev).add(queueCurrent.id));
+    if (queueIndex + 1 >= queueList.length) {
+      toast({ title: "Baigta", description: `Peržiūrėta ${queueList.length} žinučių` });
+      setQueueMode(null);
+    } else {
+      setQueueIndex(queueIndex + 1);
+    }
+  };
+
+  const skipQueue = () => {
+    if (queueIndex + 1 >= queueList.length) {
+      setQueueMode(null);
+    } else setQueueIndex(queueIndex + 1);
+  };
+
   const sendBulkSMS = () => {
     if (msgChosen.length === 0) return;
-    // If message contains personalization, send one-by-one (open sequentially)
-    const personalized = /\{vardas\}/i.test(msgText);
-    if (personalized && msgChosen.length > 1) {
-      toast({
-        title: "Asmeniniai SMS",
-        description: `Bus atidaryta ${msgChosen.length} SMS langų po vieną — paspauskite „Siųsti" kiekvienam.`,
-      });
-      msgChosen.forEach((s, idx) => {
-        setTimeout(() => {
-          const body = encodeURIComponent(renderMessage(s));
-          const phone = s.phone.replace(/\s+/g, "");
-          window.location.href = `sms:${phone}?body=${body}`;
-        }, idx * 800);
-      });
-      return;
+    if (msgChosen.length === 1 || !isIOS) {
+      const personalized = /\{vardas\}/i.test(msgText);
+      if (!personalized && msgChosen.length > 1) {
+        // Same text for everyone — one group-capable link (Android/desktop)
+        const phones = msgChosen.map((s) => s.phone.replace(/[^\d+]/g, "")).join(",");
+        const body = encodeURIComponent(msgText);
+        window.location.href = `sms:${phones}?body=${body}`;
+        return;
+      }
     }
-    // Same message to all — comma-separated numbers
-    const phones = msgChosen.map((s) => s.phone.replace(/\s+/g, "")).join(",");
-    const body = encodeURIComponent(msgText.replace(/\{vardas\}/gi, "kliente"));
-    window.location.href = `sms:${phones}?body=${body}`;
+    // iOS or personalized text → step-by-step queue
+    startQueue("sms", msgChosen);
   };
 
   const sendBulkEmail = () => {
@@ -729,22 +767,14 @@ export default function ClientTools({ statusConfig }: Props) {
     }
     const personalized = /\{vardas\}/i.test(msgText);
     if (personalized && withEmail.length > 1) {
-      toast({
-        title: "Asmeniniai laiškai",
-        description: `Bus atidaryta ${withEmail.length} laiškų po vieną.`,
-      });
-      withEmail.forEach((s, idx) => {
-        setTimeout(() => {
-          const body = encodeURIComponent(renderMessage(s));
-          window.location.href = `mailto:${s.email}?subject=AutoPaskolos&body=${body}`;
-        }, idx * 800);
-      });
+      startQueue("email", withEmail);
       return;
     }
     const bcc = withEmail.map((s) => s.email).join(",");
     const body = encodeURIComponent(msgText.replace(/\{vardas\}/gi, "kliente"));
     window.location.href = `mailto:?bcc=${bcc}&subject=AutoPaskolos&body=${body}`;
   };
+
 
   const copyPhones = async () => {
     const phones = msgChosen.map((s) => s.phone).join(", ");
@@ -1189,9 +1219,52 @@ export default function ClientTools({ statusConfig }: Props) {
             </Button>
           </div>
 
+
+          {queueMode && queueCurrent && (
+            <div className="border rounded-lg p-3 space-y-3 bg-primary/5 border-primary/30">
+              <div className="flex items-center justify-between gap-2">
+                <Badge variant="default">
+                  {queueIndex + 1} / {queueList.length} · {queueMode === "sms" ? "SMS" : "El. paštas"}
+                </Badge>
+                <Button size="sm" variant="ghost" onClick={() => setQueueMode(null)}>Baigti</Button>
+              </div>
+              <div className="text-sm">
+                <div className="font-medium">{queueCurrent.name || "Klientas"}</div>
+                <div className="text-muted-foreground tabular-nums">
+                  {queueMode === "sms" ? queueCurrent.phone : queueCurrent.email}
+                </div>
+              </div>
+              <div className="text-xs bg-card border rounded p-2 whitespace-pre-wrap">{renderMessage(queueCurrent)}</div>
+              <div className="flex flex-wrap gap-2">
+                <a href={queueMode === "sms" ? smsHref(queueCurrent) : mailHref(queueCurrent)} onClick={() => setTimeout(markSentAndNext, 600)}>
+                  <Button size="sm">
+                    {queueMode === "sms" ? <MessageSquare className="h-4 w-4 mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
+                    Atidaryti ir siųsti
+                  </Button>
+                </a>
+                <Button size="sm" variant="outline" onClick={markSentAndNext}>Toliau →</Button>
+                <Button size="sm" variant="ghost" onClick={skipQueue}>Praleisti</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(renderMessage(queueCurrent));
+                    toast({ title: "Tekstas nukopijuotas" });
+                  }}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Kopijuoti tekstą
+                </Button>
+              </div>
+              {queueSent.size > 0 && (
+                <div className="text-xs text-muted-foreground">Išsiųsta: {queueSent.size}</div>
+              )}
+            </div>
+          )}
+
           <div className="text-xs text-muted-foreground bg-muted/40 p-2 rounded border">
-            💡 SMS atidaro telefono žinučių programą su jau įrašytais numeriais. El. paštas atidaro Jūsų pašto programą su BCC laukeliu (gavėjai nemato vienas kito).
+            💡 Telefone (iPhone) SMS siunčiamos po vieną — atsidaro žinučių programa su paruoštu tekstu, o grįžus paspauskite „Toliau". Kompiuteryje/Android tas pats tekstas visiems išsiunčiamas vienu langu. El. paštas naudoja BCC (gavėjai nemato vienas kito).
           </div>
+
         </CardContent>
       </Card>
     </div>
