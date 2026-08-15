@@ -46,7 +46,9 @@ import {
   Sparkles,
   Eye,
   EyeOff,
-  Moon
+  Moon,
+  PanelTopClose,
+  PanelTopOpen
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -344,6 +346,18 @@ export default function Admin() {
     requestAnimationFrame(() => {
       document.getElementById(`kanban-col-${value}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  };
+  const areAllColumnsCollapsed = () => statusConfig.every((c) => collapsedColumns[c.value]);
+  const toggleAllColumns = () => {
+    const collapse = !areAllColumnsCollapsed();
+    const next: Record<string, boolean> = {};
+    statusConfig.forEach((c) => { next[c.value] = collapse; });
+    setCollapsedColumns(next);
+    try {
+      localStorage.setItem("admin_collapsed_columns", JSON.stringify(next));
+    } catch {
+      // ignore storage errors
+    }
   };
 
   const [newSubmission, setNewSubmission] = useState({
@@ -1537,6 +1551,16 @@ export default function Admin() {
                   {stalePulseEnabled ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                   Mirksėjimas
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={toggleAllColumns}
+                  title={areAllColumnsCollapsed() ? "Išskleisti visas kolonėles" : "Sutraukti visas kolonėles"}
+                >
+                  {areAllColumnsCollapsed() ? <PanelTopOpen className="h-3.5 w-3.5" /> : <PanelTopClose className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{areAllColumnsCollapsed() ? "Išskleisti visus" : "Sutraukti visus"}</span>
+                </Button>
               </div>
               
               {/* Search Bar */}
@@ -1723,13 +1747,13 @@ export default function Admin() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => { if (isMobile) toggleColumnCollapse(colConfig.value); }}
+                            onClick={() => toggleColumnCollapse(colConfig.value)}
                             onDoubleClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
                             className="flex items-center gap-1.5 font-semibold text-sm truncate text-left hover:text-primary transition-colors"
-                            title="Dukart spustelėkite, kad pervadintumėte"
+                            title="Spustelėkite sutraukti/išskleisti, dukart – pervadinti"
                           >
                             <ChevronRight
-                              className={`h-4 w-4 lg:hidden shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
                             />
                             <span className="truncate">{colConfig.label}</span>
                           </button>
@@ -1798,7 +1822,7 @@ export default function Admin() {
 
 
                   {/* Column Cards */}
-                  <div className={`p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto ${isCollapsed ? 'hidden lg:block' : ''}`}>
+                  <div className={`p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto ${isCollapsed ? 'hidden' : ''}`}>
                     {statusSubmissions.length === 0 ? (
                       <div className={`text-center py-6 lg:py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl mx-1 ${
                         isDropTarget ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
