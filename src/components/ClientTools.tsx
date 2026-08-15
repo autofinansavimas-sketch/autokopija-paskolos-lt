@@ -1219,9 +1219,52 @@ export default function ClientTools({ statusConfig }: Props) {
             </Button>
           </div>
 
+
+          {queueMode && queueCurrent && (
+            <div className="border rounded-lg p-3 space-y-3 bg-primary/5 border-primary/30">
+              <div className="flex items-center justify-between gap-2">
+                <Badge variant="default">
+                  {queueIndex + 1} / {queueList.length} · {queueMode === "sms" ? "SMS" : "El. paštas"}
+                </Badge>
+                <Button size="sm" variant="ghost" onClick={() => setQueueMode(null)}>Baigti</Button>
+              </div>
+              <div className="text-sm">
+                <div className="font-medium">{queueCurrent.name || "Klientas"}</div>
+                <div className="text-muted-foreground tabular-nums">
+                  {queueMode === "sms" ? queueCurrent.phone : queueCurrent.email}
+                </div>
+              </div>
+              <div className="text-xs bg-card border rounded p-2 whitespace-pre-wrap">{renderMessage(queueCurrent)}</div>
+              <div className="flex flex-wrap gap-2">
+                <a href={queueMode === "sms" ? smsHref(queueCurrent) : mailHref(queueCurrent)} onClick={() => setTimeout(markSentAndNext, 600)}>
+                  <Button size="sm">
+                    {queueMode === "sms" ? <MessageSquare className="h-4 w-4 mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
+                    Atidaryti ir siųsti
+                  </Button>
+                </a>
+                <Button size="sm" variant="outline" onClick={markSentAndNext}>Toliau →</Button>
+                <Button size="sm" variant="ghost" onClick={skipQueue}>Praleisti</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(renderMessage(queueCurrent));
+                    toast({ title: "Tekstas nukopijuotas" });
+                  }}
+                >
+                  <Copy className="h-4 w-4 mr-1" /> Kopijuoti tekstą
+                </Button>
+              </div>
+              {queueSent.size > 0 && (
+                <div className="text-xs text-muted-foreground">Išsiųsta: {queueSent.size}</div>
+              )}
+            </div>
+          )}
+
           <div className="text-xs text-muted-foreground bg-muted/40 p-2 rounded border">
-            💡 SMS atidaro telefono žinučių programą su jau įrašytais numeriais. El. paštas atidaro Jūsų pašto programą su BCC laukeliu (gavėjai nemato vienas kito).
+            💡 Telefone (iPhone) SMS siunčiamos po vieną — atsidaro žinučių programa su paruoštu tekstu, o grįžus paspauskite „Toliau". Kompiuteryje/Android tas pats tekstas visiems išsiunčiamas vienu langu. El. paštas naudoja BCC (gavėjai nemato vienas kito).
           </div>
+
         </CardContent>
       </Card>
     </div>
