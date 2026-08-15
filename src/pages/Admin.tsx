@@ -347,6 +347,18 @@ export default function Admin() {
       document.getElementById(`kanban-col-${value}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
+  const areAllColumnsCollapsed = () => statusConfig.every((c) => collapsedColumns[c.value]);
+  const toggleAllColumns = () => {
+    const collapse = !areAllColumnsCollapsed();
+    const next: Record<string, boolean> = {};
+    statusConfig.forEach((c) => { next[c.value] = collapse; });
+    setCollapsedColumns(next);
+    try {
+      localStorage.setItem("admin_collapsed_columns", JSON.stringify(next));
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   const [newSubmission, setNewSubmission] = useState({
     name: "",
