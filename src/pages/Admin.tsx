@@ -1551,6 +1551,16 @@ export default function Admin() {
                   {stalePulseEnabled ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                   Mirksėjimas
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={toggleAllColumns}
+                  title={areAllColumnsCollapsed() ? "Išskleisti visas kolonėles" : "Sutraukti visas kolonėles"}
+                >
+                  {areAllColumnsCollapsed() ? <PanelTopOpen className="h-3.5 w-3.5" /> : <PanelTopClose className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{areAllColumnsCollapsed() ? "Išskleisti visus" : "Sutraukti visus"}</span>
+                </Button>
               </div>
               
               {/* Search Bar */}
