@@ -1822,7 +1822,7 @@ export default function Admin() {
 
 
                   {/* Column Cards */}
-                  <div className={`p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto ${isCollapsed ? 'hidden lg:block' : ''}`}>
+                  <div className={`p-2 space-y-2 lg:max-h-[calc(100vh-240px)] overflow-y-auto ${isCollapsed ? 'hidden' : ''}`}>
                     {statusSubmissions.length === 0 ? (
                       <div className={`text-center py-6 lg:py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl mx-1 ${
                         isDropTarget ? 'border-primary bg-primary/5' : 'border-muted-foreground/20'
