@@ -697,28 +697,66 @@ export default function ClientTools({ statusConfig }: Props) {
     else setMsgSelected(new Set(msgRecipients.map((s) => s.id)));
   };
 
+  // ===== Sequential send queue (works on iOS/Safari) =====
+  const isIOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const [queueMode, setQueueMode] = useState<"sms" | "email" | null>(null);
+  const [queueIds, setQueueIds] = useState<string[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
+  const [queueSent, setQueueSent] = useState<Set<string>>(new Set());
+
+  const queueList = useMemo(
+    () => queueIds.map((id) => submissions.find((s) => s.id === id)).filter(Boolean) as SubmissionLite[],
+    [queueIds, submissions]
+  );
+  const queueCurrent = queueList[queueIndex];
+
+  const smsHref = (s: SubmissionLite) => {
+    const phone = s.phone.replace(/[^\d+]/g, "");
+    const body = encodeURIComponent(renderMessage(s));
+    // iOS needs "&body=", Android/others "?body="
+    return isIOS ? `sms:${phone}&body=${body}` : `sms:${phone}?body=${body}`;
+  };
+
+  const mailHref = (s: SubmissionLite) =>
+    `mailto:${s.email}?subject=${encodeURIComponent("AutoPaskolos")}&body=${encodeURIComponent(renderMessage(s))}`;
+
+  const startQueue = (mode: "sms" | "email", list: SubmissionLite[]) => {
+    setQueueMode(mode);
+    setQueueIds(list.map((s) => s.id));
+    setQueueIndex(0);
+    setQueueSent(new Set());
+  };
+
+  const markSentAndNext = () => {
+    if (queueCurrent) setQueueSent((prev) => new Set(prev).add(queueCurrent.id));
+    if (queueIndex + 1 >= queueList.length) {
+      toast({ title: "Baigta", description: `Peržiūrėta ${queueList.length} žinučių` });
+      setQueueMode(null);
+    } else {
+      setQueueIndex(queueIndex + 1);
+    }
+  };
+
+  const skipQueue = () => {
+    if (queueIndex + 1 >= queueList.length) {
+      setQueueMode(null);
+    } else setQueueIndex(queueIndex + 1);
+  };
+
   const sendBulkSMS = () => {
     if (msgChosen.length === 0) return;
-    // If message contains personalization, send one-by-one (open sequentially)
-    const personalized = /\{vardas\}/i.test(msgText);
-    if (personalized && msgChosen.length > 1) {
-      toast({
-        title: "Asmeniniai SMS",
-        description: `Bus atidaryta ${msgChosen.length} SMS langų po vieną — paspauskite „Siųsti" kiekvienam.`,
-      });
-      msgChosen.forEach((s, idx) => {
-        setTimeout(() => {
-          const body = encodeURIComponent(renderMessage(s));
-          const phone = s.phone.replace(/\s+/g, "");
-          window.location.href = `sms:${phone}?body=${body}`;
-        }, idx * 800);
-      });
-      return;
+    if (msgChosen.length === 1 || !isIOS) {
+      const personalized = /\{vardas\}/i.test(msgText);
+      if (!personalized && msgChosen.length > 1) {
+        // Same text for everyone — one group-capable link (Android/desktop)
+        const phones = msgChosen.map((s) => s.phone.replace(/[^\d+]/g, "")).join(",");
+        const body = encodeURIComponent(msgText);
+        window.location.href = `sms:${phones}?body=${body}`;
+        return;
+      }
     }
-    // Same message to all — comma-separated numbers
-    const phones = msgChosen.map((s) => s.phone.replace(/\s+/g, "")).join(",");
-    const body = encodeURIComponent(msgText.replace(/\{vardas\}/gi, "kliente"));
-    window.location.href = `sms:${phones}?body=${body}`;
+    // iOS or personalized text → step-by-step queue
+    startQueue("sms", msgChosen);
   };
 
   const sendBulkEmail = () => {
@@ -729,22 +767,14 @@ export default function ClientTools({ statusConfig }: Props) {
     }
     const personalized = /\{vardas\}/i.test(msgText);
     if (personalized && withEmail.length > 1) {
-      toast({
-        title: "Asmeniniai laiškai",
-        description: `Bus atidaryta ${withEmail.length} laiškų po vieną.`,
-      });
-      withEmail.forEach((s, idx) => {
-        setTimeout(() => {
-          const body = encodeURIComponent(renderMessage(s));
-          window.location.href = `mailto:${s.email}?subject=AutoPaskolos&body=${body}`;
-        }, idx * 800);
-      });
+      startQueue("email", withEmail);
       return;
     }
     const bcc = withEmail.map((s) => s.email).join(",");
     const body = encodeURIComponent(msgText.replace(/\{vardas\}/gi, "kliente"));
     window.location.href = `mailto:?bcc=${bcc}&subject=AutoPaskolos&body=${body}`;
   };
+
 
   const copyPhones = async () => {
     const phones = msgChosen.map((s) => s.phone).join(", ");
