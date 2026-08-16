@@ -698,7 +698,10 @@ export default function ClientTools({ statusConfig }: Props) {
   };
 
   // ===== Sequential send queue (works on iOS/Safari) =====
-  const isIOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isIOS = typeof navigator !== "undefined" && (
+    /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
   const [queueMode, setQueueMode] = useState<"sms" | "email" | null>(null);
   const [queueIds, setQueueIds] = useState<string[]>([]);
   const [queueIndex, setQueueIndex] = useState(0);
@@ -710,8 +713,14 @@ export default function ClientTools({ statusConfig }: Props) {
   );
   const queueCurrent = queueList[queueIndex];
 
+  const smsPhone = (phone: string) => {
+    const digits = normalizePhone(phone);
+    return /^\d{8,15}$/.test(digits) ? `+${digits}` : null;
+  };
+
   const smsHref = (s: SubmissionLite) => {
-    const phone = s.phone.replace(/[^\d+]/g, "");
+    const phone = smsPhone(s.phone);
+    if (!phone) return null;
     const body = encodeURIComponent(renderMessage(s));
     // iOS needs "&body=", Android/others "?body="
     return isIOS ? `sms:${phone}&body=${body}` : `sms:${phone}?body=${body}`;
@@ -721,8 +730,17 @@ export default function ClientTools({ statusConfig }: Props) {
     `mailto:${s.email}?subject=${encodeURIComponent("AutoPaskolos")}&body=${encodeURIComponent(renderMessage(s))}`;
 
   const startQueue = (mode: "sms" | "email", list: SubmissionLite[]) => {
+    const validList = mode === "sms" ? list.filter((s) => smsPhone(s.phone)) : list;
+    const invalidCount = list.length - validList.length;
+    if (validList.length === 0) {
+      toast({ title: "Nėra tinkamų numerių", description: "Patikrinkite pažymėtų klientų telefono numerius", variant: "destructive" });
+      return;
+    }
+    if (invalidCount > 0) {
+      toast({ title: `Praleista: ${invalidCount}`, description: "Kontaktai su netinkamais telefono numeriais nebus atidaromi" });
+    }
     setQueueMode(mode);
-    setQueueIds(list.map((s) => s.id));
+    setQueueIds(validList.map((s) => s.id));
     setQueueIndex(0);
     setQueueSent(new Set());
   };
@@ -746,8 +764,8 @@ export default function ClientTools({ statusConfig }: Props) {
   // ===== Group message (one Messages thread with all recipients) =====
   const groupSmsHref = (list: SubmissionLite[], text: string) => {
     const phones = list
-      .map((s) => s.phone.replace(/[^\d+]/g, ""))
-      .filter(Boolean)
+      .map((s) => smsPhone(s.phone))
+      .filter((phone): phone is string => Boolean(phone))
       .join(",");
     const body = encodeURIComponent(text);
     // iOS Messages supports the sms:/open?addresses= form for group threads
@@ -764,7 +782,15 @@ export default function ClientTools({ statusConfig }: Props) {
       });
       return;
     }
-    const href = groupSmsHref(msgChosen, msgText);
+    const validRecipients = msgChosen.filter((s) => smsPhone(s.phone));
+    if (validRecipients.length === 0) {
+      toast({ title: "Nėra tinkamų numerių", description: "Patikrinkite pažymėtų klientų telefono numerius", variant: "destructive" });
+      return;
+    }
+    if (validRecipients.length < msgChosen.length) {
+      toast({ title: `Praleista: ${msgChosen.length - validRecipients.length}`, description: "Kontaktai su netinkamais telefono numeriais neįtraukti" });
+    }
+    const href = groupSmsHref(validRecipients, msgText);
     if (href.length > 1800) {
       toast({
         title: "Per daug gavėjų vienai grupei",
@@ -782,7 +808,11 @@ export default function ClientTools({ statusConfig }: Props) {
       const personalized = /\{vardas\}/i.test(msgText);
       if (!personalized && msgChosen.length > 1) {
         // Same text for everyone — one group-capable link (Android/desktop)
-        const phones = msgChosen.map((s) => s.phone.replace(/[^\d+]/g, "")).join(",");
+        const phones = msgChosen.map((s) => smsPhone(s.phone)).filter(Boolean).join(",");
+        if (!phones) {
+          toast({ title: "Nėra tinkamų numerių", variant: "destructive" });
+          return;
+        }
         const body = encodeURIComponent(msgText);
         window.location.href = `sms:${phones}?body=${body}`;
         return;
@@ -1272,13 +1302,13 @@ export default function ClientTools({ statusConfig }: Props) {
               </div>
               <div className="text-xs bg-card border rounded p-2 whitespace-pre-wrap">{renderMessage(queueCurrent)}</div>
               <div className="flex flex-wrap gap-2">
-                <a href={queueMode === "sms" ? smsHref(queueCurrent) : mailHref(queueCurrent)} onClick={() => setTimeout(markSentAndNext, 600)}>
+                <a href={(queueMode === "sms" ? smsHref(queueCurrent) : mailHref(queueCurrent)) || undefined}>
                   <Button size="sm">
                     {queueMode === "sms" ? <MessageSquare className="h-4 w-4 mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
                     Atidaryti ir siųsti
                   </Button>
                 </a>
-                <Button size="sm" variant="outline" onClick={markSentAndNext}>Toliau →</Button>
+                <Button size="sm" variant="outline" onClick={markSentAndNext}>Išsiųsta, toliau →</Button>
                 <Button size="sm" variant="ghost" onClick={skipQueue}>Praleisti</Button>
                 <Button
                   size="sm"
