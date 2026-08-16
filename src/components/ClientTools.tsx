@@ -743,6 +743,39 @@ export default function ClientTools({ statusConfig }: Props) {
     } else setQueueIndex(queueIndex + 1);
   };
 
+  // ===== Group message (one Messages thread with all recipients) =====
+  const groupSmsHref = (list: SubmissionLite[], text: string) => {
+    const phones = list
+      .map((s) => s.phone.replace(/[^\d+]/g, ""))
+      .filter(Boolean)
+      .join(",");
+    const body = encodeURIComponent(text);
+    // iOS Messages supports the sms:/open?addresses= form for group threads
+    return isIOS ? `sms:/open?addresses=${phones}&body=${body}` : `sms:${phones}?body=${body}`;
+  };
+
+  const sendGroupSMS = () => {
+    if (msgChosen.length === 0) return;
+    if (/\{vardas\}/i.test(msgText)) {
+      toast({
+        title: "Grupinei žinutei netinka {vardas}",
+        description: "Pašalinkite {vardas} arba naudokite SMS po vieną",
+        variant: "destructive",
+      });
+      return;
+    }
+    const href = groupSmsHref(msgChosen, msgText);
+    if (href.length > 1800) {
+      toast({
+        title: "Per daug gavėjų vienai grupei",
+        description: "Pažymėkite mažiau kontaktų (rekomenduojama iki ~25) arba trumpinkite tekstą",
+        variant: "destructive",
+      });
+      return;
+    }
+    window.location.href = href;
+  };
+
   const sendBulkSMS = () => {
     if (msgChosen.length === 0) return;
     if (msgChosen.length === 1 || !isIOS) {
@@ -1204,9 +1237,12 @@ export default function ClientTools({ statusConfig }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Button onClick={sendBulkSMS} disabled={msgChosen.length === 0}>
-              <MessageSquare className="h-4 w-4 mr-1" /> SMS ({msgChosen.length})
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <Button onClick={sendGroupSMS} disabled={msgChosen.length === 0}>
+              <Users className="h-4 w-4 mr-1" /> Grupinė žinutė ({msgChosen.length})
+            </Button>
+            <Button onClick={sendBulkSMS} disabled={msgChosen.length === 0} variant="outline">
+              <MessageSquare className="h-4 w-4 mr-1" /> SMS po vieną
             </Button>
             <Button onClick={sendBulkEmail} disabled={msgChosen.length === 0} variant="outline">
               <Mail className="h-4 w-4 mr-1" /> El. paštu
