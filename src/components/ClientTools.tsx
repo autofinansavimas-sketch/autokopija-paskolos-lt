@@ -1302,13 +1302,13 @@ export default function ClientTools({ statusConfig }: Props) {
               </div>
               <div className="text-xs bg-card border rounded p-2 whitespace-pre-wrap">{renderMessage(queueCurrent)}</div>
               <div className="flex flex-wrap gap-2">
-                <a href={queueMode === "sms" ? smsHref(queueCurrent) : mailHref(queueCurrent)} onClick={() => setTimeout(markSentAndNext, 600)}>
+                <a href={(queueMode === "sms" ? smsHref(queueCurrent) : mailHref(queueCurrent)) || undefined}>
                   <Button size="sm">
                     {queueMode === "sms" ? <MessageSquare className="h-4 w-4 mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
                     Atidaryti ir siųsti
                   </Button>
                 </a>
-                <Button size="sm" variant="outline" onClick={markSentAndNext}>Toliau →</Button>
+                <Button size="sm" variant="outline" onClick={markSentAndNext}>Išsiųsta, toliau →</Button>
                 <Button size="sm" variant="ghost" onClick={skipQueue}>Praleisti</Button>
                 <Button
                   size="sm"
