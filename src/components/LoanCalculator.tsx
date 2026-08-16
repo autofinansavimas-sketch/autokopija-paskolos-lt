@@ -86,7 +86,7 @@ export const LoanCalculator = () => {
                   <div className="md:hidden grid grid-cols-2 gap-2" role="radiogroup">
                     {loanTypes.map((type) => {
                       const Icon = type.icon;
-                      const isCarLoan = type.id === "car";
+                      const isPromo = type.id === "consumer" || type.id === "refinance";
                       return (
                         <button
                           key={type.id}
@@ -106,7 +106,7 @@ export const LoanCalculator = () => {
                             <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow flex-shrink-0`}>
                               <Icon className="h-5 w-5 text-white" />
                             </div>
-                            {isCarLoan && (
+                            {isPromo && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[8px] font-bold text-primary-foreground uppercase tracking-wide shadow-sm">Akcija</span>
                             )}
                           </div>
@@ -149,7 +149,7 @@ export const LoanCalculator = () => {
                           <div className="font-bold text-base mb-1 relative z-10">{type.name}</div>
                           <div className="text-sm text-muted-foreground relative z-10 flex items-center gap-2">
                             Nuo <span className="font-semibold text-primary">{type.displayRate}%</span> metinių palūkanų
-                            {type.id === "car" && (
+                            {(type.id === "consumer" || type.id === "refinance") && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground uppercase tracking-wide">Akcija</span>
                             )}
                           </div>
