@@ -4,6 +4,8 @@ const topics = [
   {
     title: "Vartojimo paskola",
     text: "Vartojimo paskola iki 30 000 € be užstato – automobiliui, remontui, mokslams ar netikėtoms išlaidoms. Fiksuotos palūkanos, aiškus grafikas.",
+    to: "/vartojimo-paskola",
+    linkLabel: "Vartojimo paskola",
   },
   {
     title: "Autopaskola ir paskola automobiliui",
@@ -16,18 +18,32 @@ const topics = [
     text: "Lyginame ir lizingo pasiūlymus – tinka naujesniems automobiliams. Parodome, kada lizingas pigiau už paskolą ir kada ne.",
   },
   {
-    title: "Kreditas ir kreditai",
-    text: "Kreditas gyventojams, kredito linijos ir kredito kortelių pakeitimas viena paskola su mažesnėmis palūkanomis.",
+    title: "Kreditas ir kreditai internetu",
+    text: "Kreditas gyventojams, kredito linijos ir kredito kortelių pakeitimas viena paskola su mažesnėmis palūkanomis. Palyginame ir kreditus internetu.",
   },
   {
     title: "Greitas kreditas alternatyva",
-    text: "Greitas kreditas dažnai kainuoja daugiausia. Parodome pigesnę alternatyvą su tokiu pat greitu sprendimu – per 30 minučių.",
+    text: "Greitas kreditas ir greitieji kreditai dažnai kainuoja daugiausia. Parodome pigesnę alternatyvą su tokiu pat greitu sprendimu – per 30 minučių.",
+  },
+  {
+    title: "Paskola be užstato",
+    text: "Paskola be užstato ir be pradinio įnašo – nereikia įkeisti turto ar mokėti didelės pradinės įmokos. Tinka įvairioms reikmėms.",
   },
   {
     title: "Paskolų refinansavimas",
     text: "Sujunkite paskolas, lizingus ir kredito korteles į vieną įmoką – mažiau datų, mažesnės palūkanos.",
     to: "/paskolu-refinansavimas",
     linkLabel: "Paskolų refinansavimas",
+  },
+  {
+    title: "Paskolos internetu",
+    text: "Paskolos internetu leidžia pateikti paraišką neišeinant iš namų. Užpildykite formą – per 30 minučių gausite 3 geriausius pasiūlymus.",
+  },
+  {
+    title: "Kreditas automobiliui",
+    text: "Kreditas automobiliui gali būti pigesnis nei lizingas, kai automobilis perkamas savo vardu. Palyginame bankų ir kreditorių pasiūlymus.",
+    to: "/paskola-automobiliui",
+    linkLabel: "Kreditas automobiliui",
   },
 ];
 
@@ -39,8 +55,8 @@ export const SeoTopics = () => {
           Paskolos, kreditai ir lizingas – viskas vienoje vietoje
         </h2>
         <p className="text-muted-foreground max-w-3xl mb-8">
-          AUTOPASKOLOS.LT lygina paskolų, autopaskolų, kreditų ir lizingo pasiūlymus iš daugiau nei
-          20 Lietuvos bankų bei kreditorių. Užpildote vieną paraišką – gaunate 3 geriausius
+          AUTOPASKOLOS.LT lygina paskolų, autopaskolų, kreditų, greitųjų kreditų ir lizingo pasiūlymus
+          iš daugiau nei 20 Lietuvos bankų bei kreditorių. Užpildote vieną paraišką – gaunate 3 geriausius
           pasiūlymus be įsipareigojimų.
         </p>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
