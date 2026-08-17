@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { MapPin, X } from "lucide-react";
+import { Flame, X } from "lucide-react";
 
-const BANNER_DISMISS_KEY = "announcement-banner-dismissed";
-// Show until May 2, 2026
-const BANNER_EXPIRY = new Date("2026-05-02T00:00:00").getTime();
+const BANNER_DISMISS_KEY = "promo-banner-dismissed";
+// Show until Dec 31, 2026
+const BANNER_EXPIRY = new Date("2026-12-31T23:59:59").getTime();
 
 export const AnnouncementBanner = () => {
   const [dismissed, setDismissed] = useState(() => {
@@ -16,17 +16,9 @@ export const AnnouncementBanner = () => {
   return (
     <div className="bg-primary text-primary-foreground text-[11px] sm:text-sm py-1.5 sm:py-2 px-3 sm:px-4 relative z-[60]">
       <div className="container mx-auto flex items-center justify-center gap-2 pr-8">
-        <MapPin className="h-3.5 w-3.5 shrink-0" />
-        <span>
-          Persikėlėme! Naujas adresas —{" "}
-          <a
-            href="https://maps.app.goo.gl/3HSKiXHLQmBC99eK8"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 font-semibold hover:opacity-80 transition-opacity"
-          >
-            Palemono g. 173, Kaunas
-          </a>
+        <Flame className="h-3.5 w-3.5 shrink-0" />
+        <span className="font-semibold">
+          NUOLAIDOS PALŪKANOMS — gauk geriausią pasiūlymą vos per 30 min!
         </span>
       </div>
       <button
