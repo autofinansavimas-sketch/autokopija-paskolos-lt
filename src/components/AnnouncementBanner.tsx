@@ -18,7 +18,7 @@ export const AnnouncementBanner = () => {
       <div className="container mx-auto flex items-center justify-center gap-2 pr-8">
         <Flame className="h-3.5 w-3.5 shrink-0" />
         <span className="font-semibold">
-          NUOLAIDOS PALŪKANOMS — gauk geriausią pasiūlymą vos per 30 min!
+          🔥 Itin karštos nuolaidos palūkanoms — gauk geriausią pasiūlymą vos per 30 min!
         </span>
       </div>
       <button
