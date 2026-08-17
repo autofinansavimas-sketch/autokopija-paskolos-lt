@@ -73,7 +73,7 @@ const VartojimoPaskola = () => {
             <span aria-current="page">Vartojimo paskola</span>
           </nav>
           <h1 className="text-3xl md:text-5xl font-bold mb-4">
-            Vartojimo paskola – pinigai bet kokiai reikmbei
+            Vartojimo paskola – pinigai bet kokiai reikmei
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-3xl">
             Vartojimo paskola yra vienas lanksčiausių būdų pasiskolinti nuo 1 000 € iki 30 000 € be
