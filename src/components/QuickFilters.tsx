@@ -17,6 +17,7 @@ interface QuickFiltersProps {
     withReminders: number;
     noContact: number;
     stale: number;
+    recentComments: number;
   };
 }
 
