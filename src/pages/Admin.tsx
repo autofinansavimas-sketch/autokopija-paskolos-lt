@@ -1094,6 +1094,13 @@ export default function Admin() {
         normalizeSearchText(s.phone).includes(query) ||
         normalizeSearchText(s.loan_type).includes(query)
       );
+    }).sort((a, b) => {
+      if (quickFilter !== 'recentComments' || query) return 0;
+      const lastOf = (id: string) => {
+        const c = comments[id] || [];
+        return c.length ? Math.max(...c.map(x => new Date(x.created_at).getTime())) : 0;
+      };
+      return lastOf(b.id) - lastOf(a.id);
     });
   };
 
