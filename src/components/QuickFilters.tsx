@@ -64,7 +64,15 @@ export default function QuickFilters({
       count: counts.stale,
       color: "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20"
     },
+    { 
+      id: "recentComments", 
+      label: "Naujausi komentarai", 
+      icon: MessageSquare, 
+      count: counts.recentComments,
+      color: "bg-violet-500/10 text-violet-600 hover:bg-violet-500/20"
+    },
   ];
+
 
   const activeFilterData = filters.find(f => f.id === activeFilter);
 
