@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Filter, X, TrendingUp, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, Filter, X, TrendingUp, AlertTriangle, MessageSquare } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -17,6 +17,7 @@ interface QuickFiltersProps {
     withReminders: number;
     noContact: number;
     stale: number;
+    recentComments: number;
   };
 }
 
@@ -63,7 +64,15 @@ export default function QuickFilters({
       count: counts.stale,
       color: "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20"
     },
+    { 
+      id: "recentComments", 
+      label: "Naujausi komentarai", 
+      icon: MessageSquare, 
+      count: counts.recentComments,
+      color: "bg-violet-500/10 text-violet-600 hover:bg-violet-500/20"
+    },
   ];
+
 
   const activeFilterData = filters.find(f => f.id === activeFilter);
 

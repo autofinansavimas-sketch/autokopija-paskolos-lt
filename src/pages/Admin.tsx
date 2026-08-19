@@ -1012,14 +1012,22 @@ export default function Admin() {
       return (Date.now() - new Date(s.created_at).getTime()) >= 24 * 60 * 60 * 1000;
     }).length;
     
+    const recentCommentsCount = submissions.filter(s => {
+      const sComments = comments[s.id] || [];
+      if (sComments.length === 0) return false;
+      const last = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
+      return Date.now() - last <= 24 * 60 * 60 * 1000;
+    }).length;
+
     return {
       today: todayCount,
       week: weekCount,
       withReminders: withRemindersCount,
       noContact: noContactCount,
       stale: staleCount,
+      recentComments: recentCommentsCount,
     };
-  }, [submissions, reminders, snoozeMap]);
+  }, [submissions, reminders, snoozeMap, comments]);
 
   const getSubmissionsByStatus = (status: string) => {
     const query = normalizeSearchText(searchQuery.trim());
@@ -1055,6 +1063,11 @@ export default function Admin() {
           if (Date.now() - new Date(s.created_at).getTime() < 24 * 60 * 60 * 1000) return false;
         } else if (quickFilter === 'noContact') {
           if (s.status !== 'new' || created >= threeDaysAgo) return false;
+        } else if (quickFilter === 'recentComments') {
+          const sComments = comments[s.id] || [];
+          if (sComments.length === 0) return false;
+          const last = Math.max(...sComments.map(c => new Date(c.created_at).getTime()));
+          if (Date.now() - last > 24 * 60 * 60 * 1000) return false;
         }
       }
       
@@ -1081,6 +1094,13 @@ export default function Admin() {
         normalizeSearchText(s.phone).includes(query) ||
         normalizeSearchText(s.loan_type).includes(query)
       );
+    }).sort((a, b) => {
+      if (quickFilter !== 'recentComments' || query) return 0;
+      const lastOf = (id: string) => {
+        const c = comments[id] || [];
+        return c.length ? Math.max(...c.map(x => new Date(x.created_at).getTime())) : 0;
+      };
+      return lastOf(b.id) - lastOf(a.id);
     });
   };
 
