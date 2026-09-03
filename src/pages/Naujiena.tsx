@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowLeft, ArrowRight, Calculator } from "lucide-react";
 import { articles, getArticle, formatArticleDate } from "@/data/articles";
+import { getArticleImage } from "@/data/articleImages";
 import NotFound from "./NotFound";
 
 const Footer = lazy(() => import("@/components/Footer").then((m) => ({ default: m.Footer })));
