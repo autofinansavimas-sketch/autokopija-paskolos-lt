@@ -39,7 +39,7 @@ const Naujiena = () => {
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Pradžia", item: "https://autopaskolos.lt/" },
-        { "@type": "ListItem", position: 2, name: "Naujienos", item: "https://autopaskolos.lt/naujienos" },
+        { "@type": "ListItem", position: 2, name: "Naudinga žinoti", item: "https://autopaskolos.lt/naujienos" },
         { "@type": "ListItem", position: 3, name: article.title, item: url },
       ],
     },
@@ -70,7 +70,7 @@ const Naujiena = () => {
           <nav aria-label="Naršymo kelias" className="text-sm text-muted-foreground mb-4">
             <Link to="/" className="hover:text-primary">Pradžia</Link>
             <span className="mx-2">/</span>
-            <Link to="/naujienos" className="hover:text-primary">Naujienos</Link>
+            <Link to="/naujienos" className="hover:text-primary">Naudinga žinoti</Link>
           </nav>
 
           <div className="flex items-center gap-2 mb-4">
@@ -180,7 +180,7 @@ const Naujiena = () => {
           <div className="mt-10">
             <Link to="/naujienos" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Visos naujienos
+              Visa naudinga informacija
             </Link>
           </div>
         </article>
