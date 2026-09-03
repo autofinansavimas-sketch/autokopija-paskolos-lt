@@ -16,6 +16,7 @@ const url = "https://autopaskolos.lt/naujienos";
 
 const Naujienos = () => {
   const sorted = [...articles].sort((a, b) => b.date.localeCompare(a.date));
+  const [featured, ...rest] = sorted;
 
   const jsonLd = {
     "@context": "https://schema.org",
