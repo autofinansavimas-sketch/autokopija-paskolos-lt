@@ -101,6 +101,7 @@ export const Footer = () => {
                 <li><a href="#kaip-veikia" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-colors">Kaip tai veikia</a></li>
                 <li><a href="#duk" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-colors">DUK</a></li>
                 <li><a href="#skaiciuokle" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-colors">Skaičiuoklė</a></li>
+                <li><Link to="/naujienos" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-colors">Naujienos</Link></li>
                 <li><a href="#contact" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-colors">Kontaktai</a></li>
               </ul>
             </nav>

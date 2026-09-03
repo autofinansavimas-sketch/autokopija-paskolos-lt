@@ -14,6 +14,7 @@ export const Header = () => {
     { href: "#skaiciuokle", label: "Skaičiuoklė" },
     { href: "#atsiliepimai", label: "Atsiliepimai" },
     { href: "#duk", label: "DUK" },
+    { href: "/naujienos", label: "Naujienos" },
   ];
 
   const handleNavClick = () => {
