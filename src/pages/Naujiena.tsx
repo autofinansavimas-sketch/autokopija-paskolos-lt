@@ -84,7 +84,20 @@ const Naujiena = () => {
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold mb-5 leading-tight">{article.title}</h1>
-          <p className="text-base md:text-lg text-muted-foreground mb-8 leading-relaxed">{article.intro}</p>
+
+          <figure className="mb-8 -mx-4 md:mx-0">
+            <img
+              src={getArticleImage(article.slug)}
+              alt={article.title}
+              width={1280}
+              height={720}
+              className="w-full aspect-[16/9] object-cover md:rounded-2xl shadow-lg"
+            />
+          </figure>
+
+          <p className="text-lg md:text-xl text-foreground/80 mb-8 leading-relaxed border-l-2 border-primary pl-4">
+            {article.intro}
+          </p>
 
           <div className="space-y-8">
             {article.sections.map((s) => (
