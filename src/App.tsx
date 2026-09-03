@@ -12,6 +12,8 @@ import Terms from "./pages/Terms";
 import PaskolaAutomobiliui from "./pages/PaskolaAutomobiliui";
 import PaskoluRefinansavimas from "./pages/PaskoluRefinansavimas";
 import VartojimoPaskola from "./pages/VartojimoPaskola";
+import Naujienos from "./pages/Naujienos";
+import Naujiena from "./pages/Naujiena";
 
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
