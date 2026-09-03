@@ -25,7 +25,7 @@ const Naujienos = () => {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Pradžia", item: "https://autopaskolos.lt/" },
-          { "@type": "ListItem", position: 2, name: "Naujienos", item: url },
+          { "@type": "ListItem", position: 2, name: "Naudinga žinoti", item: url },
         ],
       },
       {
@@ -43,7 +43,7 @@ const Naujienos = () => {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Naujienos ir naudingi patarimai apie paskolas | Autopaskolos.lt"
+        title="Naudinga žinoti: patarimai apie paskolas ir lizingą | Autopaskolos.lt"
         description="Straipsniai apie paskolas automobiliui, vartojimo paskolas, refinansavimą ir palūkanas. Praktiniai patarimai, kaip pasiskolinti pigiau ir saugiau."
         canonical={url}
       />
@@ -56,9 +56,9 @@ const Naujienos = () => {
           <nav aria-label="Naršymo kelias" className="text-sm text-muted-foreground mb-4">
             <Link to="/" className="hover:text-primary">Pradžia</Link>
             <span className="mx-2">/</span>
-            <span aria-current="page">Naujienos</span>
+            <span aria-current="page">Naudinga žinoti</span>
           </nav>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">Naujienos ir patarimai</h1>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">Naudinga žinoti</h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-3xl">
             Praktiniai straipsniai apie paskolas automobiliui, vartojimo paskolas, kreditus ir
             refinansavimą. Rašome apie tai, ko klausia mūsų klientai kasdien – be smulkaus šrifto.
