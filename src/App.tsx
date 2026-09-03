@@ -35,6 +35,8 @@ const App = () => {
             <Route path="/paskola-automobiliui" element={<PaskolaAutomobiliui />} />
             <Route path="/paskolu-refinansavimas" element={<PaskoluRefinansavimas />} />
             <Route path="/vartojimo-paskola" element={<VartojimoPaskola />} />
+            <Route path="/naujienos" element={<Naujienos />} />
+            <Route path="/naujienos/:slug" element={<Naujiena />} />
             <Route path="/privatumo-politika" element={<PrivacyPolicy />} />
 
             <Route path="/salygos" element={<Terms />} />
