@@ -150,15 +150,27 @@ const Naujiena = () => {
 
           <section className="mt-12">
             <h2 className="text-2xl font-semibold mb-4">Kiti straipsniai</h2>
-            <ul className="space-y-3">
+            <ul className="grid gap-4 sm:grid-cols-3">
               {related.map((a) => (
                 <li key={a.slug}>
                   <Link
                     to={`/naujienos/${a.slug}`}
-                    className="flex items-center justify-between gap-3 p-4 rounded-xl border border-border/60 hover:border-primary/40 transition-colors"
+                    className="group block overflow-hidden rounded-xl border border-border/60 hover:border-primary/40 hover:shadow-lg transition-all duration-300"
                   >
-                    <span className="text-sm md:text-base font-medium">{a.title}</span>
-                    <ArrowRight className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+                    <div className="aspect-[16/9] overflow-hidden">
+                      <img
+                        src={getArticleImage(a.slug)}
+                        alt={a.title}
+                        width={1280}
+                        height={720}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-3 flex items-start justify-between gap-2">
+                      <span className="text-sm font-medium leading-snug group-hover:text-primary transition-colors">{a.title}</span>
+                      <ArrowRight className="h-4 w-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                    </div>
                   </Link>
                 </li>
               ))}
