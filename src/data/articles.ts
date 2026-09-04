@@ -256,6 +256,69 @@ export const articles: Article[] = [
       },
     ],
   },
+  {
+    slug: "kaip-pagerinti-kredito-istorija",
+    title: "Kaip pagerinti kredito istoriją prieš paskolą",
+    metaTitle: "Kaip pagerinti kredito istoriją prieš paskolą | Autopaskolos.lt",
+    metaDescription:
+      "Praktiniai žingsniai, kaip pagerinti kredito istoriją prieš paraišką: įsiskolinimai, kredito limitai, pajamų įrodymas ir realus paskolos sumos pasirinkimas.",
+    excerpt:
+      "Ką galima pataisyti per 1–3 mėnesius, kad kreditorius pasiūlytų mažesnes palūkanas ir didesnę sumą.",
+    date: "2026-09-02",
+    category: "Naudinga žinoti",
+    readMinutes: 4,
+    intro:
+      "Kredito istorija – tai Jūsų mokėjimų disciplinos įrašas. Ji nėra amžina: dalį rodiklių galima pagerinti per kelis mėnesius, o tai tiesiogiai atsispindi pasiūlytose palūkanose ir patvirtintoje sumoje.",
+    sections: [
+      {
+        heading: "1. Uždarykite vėlavimus ir įsiskolinimus",
+        paragraphs: [
+          "Pirmiausia sutvarkykite tai, kas rodoma kaip aktyvus įsiskolinimas – net nedidelė nesumokėta suma gali blokuoti sprendimą. Sumokėję paprašykite kreditoriaus patvirtinimo, kad įrašas uždarytas.",
+        ],
+        bullets: [
+          "Patikrinkite visus aktyvius įsiskolinimus ir jų likučius.",
+          "Sumokėkite smulkius įsiskolinimus pirmiausia.",
+          "Išsaugokite mokėjimo patvirtinimus – jų gali paprašyti kreditorius.",
+        ],
+      },
+      {
+        heading: "2. Sumažinkite nenaudojamus limitus",
+        paragraphs: [
+          "Kredito kortelės limitas ir sąskaitos kreditas vertinami kaip potenciali skola, net jei jų nenaudojate. Nenaudojamų limitų uždarymas dažnai padidina galimą paskolos sumą.",
+        ],
+      },
+      {
+        heading: "3. Rodykite stabilias pajamas",
+        bullets: [
+          "3–6 mėnesiai reguliarių pajamų į tą pačią sąskaitą atrodo geriausiai.",
+          "Venkite, kad sąskaitos likutis prieš atlyginimą būtų nulinis.",
+          "Papildomas pajamas (nuoma, individuali veikla) pasiruoškite pagrįsti dokumentais.",
+        ],
+      },
+      {
+        heading: "4. Neteikite daug paraiškų iš karto",
+        paragraphs: [
+          "Daug atskirų paraiškų per kelias dienas atrodo kaip skubus pinigų trūkumas. Efektyviau užpildyti vieną paraišką ir leisti ją palyginti tarp kelių kreditorių.",
+        ],
+      },
+      {
+        heading: "5. Prašykite realios sumos",
+        paragraphs: [
+          "Maksimali galima suma padidina riziką kreditoriaus akyse ir kainuoja daugiau. Suma, kuri realiai atitinka Jūsų tikslą ir pajamas, patvirtinama greičiau ir geresnėmis palūkanomis.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Per kiek laiko pagerėja kredito istorija?",
+        a: "Uždarius įsiskolinimus įrašai atnaujinami per kelias savaites, o stabilios mokėjimų disciplinos poveikis geriausiai matomas po 3–6 mėnesių.",
+      },
+      {
+        q: "Ar galima gauti paskolą su bloga kredito istorija?",
+        a: "Kai kuriais atvejais taip – sąlygos būna prastesnės. Užpildę vieną paraišką pamatysite, kurie kreditoriai realiai gali pasiūlyti finansavimą Jūsų situacijoje.",
+      },
+    ],
+  },
 ];
 
 export const getArticle = (slug?: string) => articles.find((a) => a.slug === slug);

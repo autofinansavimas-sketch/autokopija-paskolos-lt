@@ -7,7 +7,7 @@ import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight } from "lucide-react";
-import { articles, formatArticleDate } from "@/data/articles";
+import { articles } from "@/data/articles";
 import { getArticleImage } from "@/data/articleImages";
 
 const Footer = lazy(() => import("@/components/Footer").then((m) => ({ default: m.Footer })));
@@ -98,9 +98,6 @@ const Naujienos = () => {
                   {featured.excerpt}
                 </p>
                 <div className="flex items-center gap-3">
-                  <time dateTime={featured.date} className="text-xs text-muted-foreground">
-                    {formatArticleDate(featured.date)}
-                  </time>
                   <span className="text-sm text-primary inline-flex items-center gap-1">
                     Skaityti <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                   </span>
@@ -140,10 +137,7 @@ const Naujienos = () => {
                     </Link>
                   </h2>
                   <p className="text-sm text-muted-foreground mb-4 flex-1">{a.excerpt}</p>
-                  <div className="flex items-center justify-between">
-                    <time dateTime={a.date} className="text-xs text-muted-foreground">
-                      {formatArticleDate(a.date)}
-                    </time>
+                  <div className="flex items-center justify-end">
                     <Link
                       to={`/naujienos/${a.slug}`}
                       className="text-sm text-primary inline-flex items-center gap-1 hover:underline"
