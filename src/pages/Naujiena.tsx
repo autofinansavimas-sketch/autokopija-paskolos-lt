@@ -7,7 +7,7 @@ import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowLeft, ArrowRight, Calculator } from "lucide-react";
-import { articles, getArticle, formatArticleDate } from "@/data/articles";
+import { articles, getArticle } from "@/data/articles";
 import { getArticleImage } from "@/data/articleImages";
 import NotFound from "./NotFound";
 
@@ -79,9 +79,6 @@ const Naujiena = () => {
               <Clock className="h-3 w-3" aria-hidden="true" />
               {article.readMinutes} min. skaitymo
             </span>
-            <time dateTime={article.date} className="text-xs text-muted-foreground">
-              {formatArticleDate(article.date)}
-            </time>
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold mb-5 leading-tight">{article.title}</h1>
