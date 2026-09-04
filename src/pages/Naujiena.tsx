@@ -21,16 +21,25 @@ const Naujiena = () => {
 
   const url = `https://autopaskolos.lt/naujienos/${article.slug}`;
   const related = articles.filter((a) => a.slug !== article.slug).slice(0, 3);
+  const imageSrc = getArticleImage(article.slug);
+  const absoluteImage = imageSrc.startsWith("http")
+    ? imageSrc
+    : `https://autopaskolos.lt${imageSrc}`;
 
   const graph: Record<string, unknown>[] = [
     {
       "@type": "Article",
       headline: article.title,
       description: article.metaDescription,
+      image: [absoluteImage],
+      url,
       datePublished: article.date,
       dateModified: article.date,
       articleSection: article.category,
       inLanguage: "lt-LT",
+      wordCount: [article.intro, ...article.sections.flatMap((s) => [...(s.paragraphs ?? []), ...(s.bullets ?? [])])]
+        .join(" ")
+        .split(/\s+/).length,
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
       author: { "@type": "Organization", name: "AUTOPASKOLOS.LT" },
       publisher: { "@type": "Organization", name: "AUTOPASKOLOS.LT" },
@@ -58,7 +67,13 @@ const Naujiena = () => {
 
   return (
     <div className="min-h-screen">
-      <SEOHead title={article.metaTitle} description={article.metaDescription} canonical={url} />
+      <SEOHead
+        title={article.metaTitle}
+        description={article.metaDescription}
+        canonical={url}
+        ogType="article"
+        ogImage={absoluteImage}
+      />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify({ "@context": "https://schema.org", "@graph": graph })}
