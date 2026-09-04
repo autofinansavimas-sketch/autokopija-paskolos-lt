@@ -7,6 +7,8 @@ interface SEOHeadProps {
   noindex?: boolean;
   ogTitle?: string;
   ogDescription?: string;
+  ogType?: string;
+  ogImage?: string;
 }
 
 const defaults = {
@@ -22,6 +24,8 @@ export const SEOHead = ({
   noindex = false,
   ogTitle,
   ogDescription,
+  ogType = "website",
+  ogImage,
 }: SEOHeadProps) => {
   const finalOgTitle = ogTitle ?? title;
   const finalOgDescription = ogDescription ?? description;
@@ -31,11 +35,15 @@ export const SEOHead = ({
       <meta name="description" content={description} />
       {canonical && <link rel="canonical" href={canonical} />}
       {noindex && <meta name="robots" content="noindex, nofollow" />}
+      <meta property="og:type" content={ogType} />
       <meta property="og:title" content={finalOgTitle} />
       <meta property="og:description" content={finalOgDescription} />
       {canonical && <meta property="og:url" content={canonical} />}
+      {ogImage && <meta property="og:image" content={ogImage} />}
+      <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={finalOgTitle} />
       <meta name="twitter:description" content={finalOgDescription} />
+      {ogImage && <meta name="twitter:image" content={ogImage} />}
     </Helmet>
   );
 };
