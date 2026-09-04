@@ -65,6 +65,7 @@ const FAQ = lazy(() => import("@/components/FAQ").then(m => ({ default: m.FAQ })
 const CTA = lazy(() => import("@/components/CTA").then(m => ({ default: m.CTA })));
 const Footer = lazy(() => import("@/components/Footer").then(m => ({ default: m.Footer })));
 const SeoTopics = lazy(() => import("@/components/SeoTopics").then(m => ({ default: m.SeoTopics })));
+const LatestArticles = lazy(() => import("@/components/LatestArticles").then(m => ({ default: m.LatestArticles })));
 
 const SectionFallback = () => <div className="py-16" />;
 
@@ -87,6 +88,7 @@ const Index = () => {
           <Benefits />
           <Testimonials />
           <SeoTopics />
+          <LatestArticles />
           <FAQ />
           <CTA />
         </Suspense>
