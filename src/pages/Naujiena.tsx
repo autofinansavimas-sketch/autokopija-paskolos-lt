@@ -67,7 +67,13 @@ const Naujiena = () => {
 
   return (
     <div className="min-h-screen">
-      <SEOHead title={article.metaTitle} description={article.metaDescription} canonical={url} />
+      <SEOHead
+        title={article.metaTitle}
+        description={article.metaDescription}
+        canonical={url}
+        ogType="article"
+        ogImage={absoluteImage}
+      />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify({ "@context": "https://schema.org", "@graph": graph })}
