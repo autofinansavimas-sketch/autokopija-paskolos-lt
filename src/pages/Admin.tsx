@@ -29,6 +29,7 @@ import {
   GripVertical,
   Users,
   Copy,
+  Share2,
   LayoutDashboard,
   Search,
   Clock,
@@ -106,6 +107,7 @@ import { TodoList } from "@/components/TodoList";
 
 import { OperatorPicker, OperatorBadge } from "@/components/OperatorPicker";
 import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/use-operator";
+import QuickAddClient from "@/components/QuickAddClient";
 import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
 import OperatorTimeStats from "@/components/OperatorTimeStats";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -856,6 +858,34 @@ export default function Admin() {
     }
   };
 
+  const shareSubmission = async (submission: Submission) => {
+    const statusName = statusConfig.find((c) => c.value === submission.status)?.label || submission.status || "-";
+    const cs = comments[submission.id] || [];
+    const last = cs.length > 0 ? cs[cs.length - 1] : null;
+    const lines = [
+      `Klientas: ${submission.name || "Nežinomas"}`,
+      `Tel.: ${submission.phone || "-"}`,
+      submission.email && !submission.email.includes("no-email") ? `El. paštas: ${submission.email}` : "",
+      submission.amount ? `Suma: ${submission.amount}€` : "",
+      submission.loan_type ? `Tipas: ${submission.loan_type}` : "",
+      submission.loan_period ? `Terminas: ${submission.loan_period}` : "",
+      `Statusas: ${statusName}`,
+      `Komentarų: ${cs.length}`,
+      last ? `Paskutinis komentaras: ${parseOperatorTag(last.comment).body}${parseOperatorTag(last.comment).operator ? ` (${parseOperatorTag(last.comment).operator})` : ""}` : "",
+    ].filter(Boolean);
+    const text = lines.join("\n");
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: submission.name || "Klientas", text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Nukopijuota", description: "Kliento info paruošta įklijuoti" });
+    } catch {
+      /* user cancelled share */
+    }
+  };
+
   const handleAddComment = async (submissionId: string, text?: string) => {
     const rawText = (text ?? newComments[submissionId] ?? "").trim();
     if (!rawText || !currentUserId) return;
@@ -1543,6 +1573,11 @@ export default function Admin() {
           </TabsList>
           
           <TabsContent value="kanban">
+            <QuickAddClient
+              statusConfig={statusConfig}
+              currentUserId={currentUserId}
+              onCreated={() => { void fetchSubmissions(); }}
+            />
             {/* Charts Toggle & Quick Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1960,6 +1995,18 @@ export default function Admin() {
                                   }}
                                 >
                                   <Copy className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 lg:h-7 lg:w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                  title="Dalintis kliento info ir statusu"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    void shareSubmission(submission);
+                                  }}
+                                >
+                                  <Share2 className="h-3 w-3" />
                                 </Button>
                               </div>
 
