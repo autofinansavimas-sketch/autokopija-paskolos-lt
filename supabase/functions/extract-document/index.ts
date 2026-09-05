@@ -32,6 +32,11 @@ Taisyklės:
 - Sumą tik skaičius (be € ir tarpų), pvz "13000".
 - Jei lauko nematai – palik tuščią eilutę "".
 - "loan_type" reikšmes mapink: "CAR LOAN"→"Autopaskola", "CAR LEASING"→"Lizingas", "Įprasta"→"Įprasta paskola".
+- Sutrumpinimus sumoms konvertuok: "15k"/"15 tūkst."→"15000", "5,5k"→"5500".
+- Laisvame pokalbio tekste (pvz. "Aistė, nori 15k. DU rašo 3000, bet įsipareigojimai 1000. Pabandysi susisiekti? +37060805545"):
+  name="Aistė", amount="15000", phone="+37060805545",
+  notes="Pajamos (DU): 3000 €. Įsipareigojimai: 1000 €. Prašo susisiekti."
+- Pajamas ir įsipareigojimus VISADA įrašyk į "notes" (jie neturi atskiro lauko).
 - NEPRIDĖK jokio paaiškinimo, tik JSON.`;
 
 async function callAI(messages: unknown[], apiKey: string) {
