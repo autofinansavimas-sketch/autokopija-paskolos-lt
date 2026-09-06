@@ -403,8 +403,9 @@ const KiekGaliuPasiskolinti = () => {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         loanType="Autopaskola"
-        loanAmount={String(best?.approved || needed)}
-        loanPeriod={`${months} men.`}
+        loanAmount={Math.round(best?.approved || needed)}
+        loanPeriod={months}
+
       />
     </div>
   );
