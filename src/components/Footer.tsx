@@ -191,6 +191,10 @@ export const Footer = () => {
               <Link to="/paskolu-refinansavimas" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-all duration-300 hover:underline underline-offset-4">
                 Refinansavimas
               </Link>
+              <Link to="/kiek-galiu-pasiskolinti" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-all duration-300 hover:underline underline-offset-4">
+                Kiek galiu pasiskolinti
+              </Link>
+
               <Link to="/privatumo-politika" className="text-xs md:text-sm text-muted-foreground hover:text-primary transition-all duration-300 hover:underline underline-offset-4">
                 Privatumo politika
               </Link>

@@ -8,6 +8,12 @@ const topics = [
     linkLabel: "Vartojimo paskola",
   },
   {
+    title: "Kiek galiu pasiskolinti?",
+    text: "Nemokama skaičiuoklė: įvedus pajamas, įsipareigojimus ir automobilio kainą iškart parodo maksimalią paskolos sumą, mėnesinę įmoką ir orientacinius bankų pasiūlymus.",
+    to: "/kiek-galiu-pasiskolinti",
+    linkLabel: "Kiek galiu pasiskolinti",
+  },
+  {
     title: "Autopaskola ir paskola automobiliui",
     text: "Autopaskola be pradinio įnašo: automobilis registruojamas Jūsų vardu, todėl galite jį laisvai perleisti ar perparduoti.",
     to: "/paskola-automobiliui",

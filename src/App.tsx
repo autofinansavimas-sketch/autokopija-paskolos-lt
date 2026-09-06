@@ -12,6 +12,7 @@ import Terms from "./pages/Terms";
 import PaskolaAutomobiliui from "./pages/PaskolaAutomobiliui";
 import PaskoluRefinansavimas from "./pages/PaskoluRefinansavimas";
 import VartojimoPaskola from "./pages/VartojimoPaskola";
+import KiekGaliuPasiskolinti from "./pages/KiekGaliuPasiskolinti";
 import Naujienos from "./pages/Naujienos";
 import Naujiena from "./pages/Naujiena";
 
@@ -35,6 +36,7 @@ const App = () => {
             <Route path="/paskola-automobiliui" element={<PaskolaAutomobiliui />} />
             <Route path="/paskolu-refinansavimas" element={<PaskoluRefinansavimas />} />
             <Route path="/vartojimo-paskola" element={<VartojimoPaskola />} />
+            <Route path="/kiek-galiu-pasiskolinti" element={<KiekGaliuPasiskolinti />} />
             <Route path="/naujienos" element={<Naujienos />} />
             <Route path="/naujienos/:slug" element={<Naujiena />} />
             <Route path="/privatumo-politika" element={<PrivacyPolicy />} />
