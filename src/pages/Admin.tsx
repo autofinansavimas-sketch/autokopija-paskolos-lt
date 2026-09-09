@@ -649,6 +649,24 @@ export default function Admin() {
     };
   }, [reminders]);
 
+  // Facebook leads (Meta webhook: lead forms + comments under posts/ads)
+  const facebookLeads = useMemo(
+    () =>
+      submissions.filter(
+        (s) => s.source === "facebook" || s.source === "facebook_comment"
+      ),
+    [submissions]
+  );
+
+  const brandInitials = (submission: Submission) => {
+    const brand = submission.brand
+      || (submission.page_id ? FB_PAGE_BRANDS[submission.page_id] : undefined);
+    if (brand === "autokopers") return "AK";
+    if (brand === "autopaskolos") return "AP";
+    return submission.source === "autokopers" ? "AK" : "AP";
+  };
+
+
   // Generate SMS link with follow-up message
   const getSmsLink = (phone: string) => {
     const encodedMessage = encodeURIComponent(FOLLOW_UP_MESSAGE);
