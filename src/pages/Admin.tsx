@@ -164,6 +164,9 @@ const STATUS_CONFIG_ROW_ID = "global";
 const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
 
+// Optional page_id -> brand map (webhook already stores brand; this is a safety net for old rows)
+const FB_PAGE_BRANDS: Record<string, "autopaskolos" | "autokopers"> = {};
+
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
   { value: "contacted", label: "Susisiekta", color: "bg-yellow-500", borderColor: "border-yellow-500" },
