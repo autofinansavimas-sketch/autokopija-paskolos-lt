@@ -122,6 +122,8 @@ interface Submission {
   loan_period: string | null;
   status: string;
   source?: string | null;
+  page_id?: string | null;
+  brand?: string | null;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
