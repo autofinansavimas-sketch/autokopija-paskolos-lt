@@ -130,6 +130,7 @@ export type Database = {
       contact_submissions: {
         Row: {
           amount: string | null
+          brand: string | null
           created_at: string
           deleted_at: string | null
           email: string
@@ -138,6 +139,7 @@ export type Database = {
           loan_period: string | null
           loan_type: string | null
           name: string | null
+          page_id: string | null
           phone: string
           source: string | null
           status: string | null
@@ -145,6 +147,7 @@ export type Database = {
         }
         Insert: {
           amount?: string | null
+          brand?: string | null
           created_at?: string
           deleted_at?: string | null
           email: string
@@ -153,6 +156,7 @@ export type Database = {
           loan_period?: string | null
           loan_type?: string | null
           name?: string | null
+          page_id?: string | null
           phone: string
           source?: string | null
           status?: string | null
@@ -160,6 +164,7 @@ export type Database = {
         }
         Update: {
           amount?: string | null
+          brand?: string | null
           created_at?: string
           deleted_at?: string | null
           email?: string
@@ -168,6 +173,7 @@ export type Database = {
           loan_period?: string | null
           loan_type?: string | null
           name?: string | null
+          page_id?: string | null
           phone?: string
           source?: string | null
           status?: string | null

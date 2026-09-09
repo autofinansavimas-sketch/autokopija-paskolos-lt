@@ -49,7 +49,8 @@ import {
   EyeOff,
   Moon,
   PanelTopClose,
-  PanelTopOpen
+  PanelTopOpen,
+  Facebook
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -122,6 +123,8 @@ interface Submission {
   loan_period: string | null;
   status: string;
   source?: string | null;
+  page_id?: string | null;
+  brand?: string | null;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -158,8 +161,11 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
 
 const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
-const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at,deleted_at";
+const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
+
+// Optional page_id -> brand map (webhook already stores brand; this is a safety net for old rows)
+const FB_PAGE_BRANDS: Record<string, "autopaskolos" | "autokopers"> = {};
 
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
@@ -645,6 +651,24 @@ export default function Admin() {
       return reminders.filter(r => r.submission_id === submissionId);
     };
   }, [reminders]);
+
+  // Facebook leads (Meta webhook: lead forms + comments under posts/ads)
+  const facebookLeads = useMemo(
+    () =>
+      submissions.filter(
+        (s) => s.source === "facebook" || s.source === "facebook_comment"
+      ),
+    [submissions]
+  );
+
+  const brandInitials = (submission: Submission) => {
+    const brand = submission.brand
+      || (submission.page_id ? FB_PAGE_BRANDS[submission.page_id] : undefined);
+    if (brand === "autokopers") return "AK";
+    if (brand === "autopaskolos") return "AP";
+    return submission.source === "autokopers" ? "AK" : "AP";
+  };
+
 
   // Generate SMS link with follow-up message
   const getSmsLink = (phone: string) => {
@@ -1539,7 +1563,7 @@ export default function Admin() {
 
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-6 gap-1">
+          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-7 gap-1">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Paraiškos</span>
@@ -1556,6 +1580,15 @@ export default function Admin() {
             <TabsTrigger value="calendar" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Kalendorius</span>
+            </TabsTrigger>
+            <TabsTrigger value="facebook" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all relative">
+              <Facebook className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-medium">Facebook</span>
+              {facebookLeads.length > 0 && (
+                <Badge variant="secondary" className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px]">
+                  {facebookLeads.length}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="trash" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all relative">
               <Archive className="h-4 w-4" />
@@ -2084,6 +2117,124 @@ export default function Admin() {
             )}
           </TabsContent>
           
+          {/* Facebook Leads Tab */}
+          <TabsContent value="facebook">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Lead'ai, atėję per Facebook (paraiškų formos ir komentarai po įrašais/reklamomis) iš abiejų puslapių.
+              </p>
+
+              {facebookLeads.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Facebook className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Facebook lead'ų kol kas nėra</p>
+                </div>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {facebookLeads.map((submission) => {
+                    const leadComments = comments[submission.id] || [];
+                    return (
+                      <Card key={submission.id}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-medium break-words">{submission.name || "Nežinomas"}</span>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${brandInitials(submission) === "AK" ? "border-orange-500 text-orange-600" : "border-blue-500 text-blue-600"}`}
+                                title={submission.page_id ? `Page ID: ${submission.page_id}` : undefined}
+                              >
+                                {brandInitials(submission)}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {submission.source === "facebook_comment" ? "Komentaras" : "Lead forma"}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            {submission.phone && submission.phone !== "N/A" && (
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-3 w-3" />
+                                <a href={`tel:${submission.phone}`} className="hover:underline">{submission.phone}</a>
+                              </div>
+                            )}
+                            {submission.email && submission.email !== "nera@fb.com" && (
+                              <div className="flex items-center gap-2 break-all">
+                                <Mail className="h-3 w-3 shrink-0" />
+                                {submission.email}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3 w-3" />
+                              {formatDate(submission.created_at)}
+                            </div>
+                          </div>
+
+                          <Select
+                            value={submission.status}
+                            onValueChange={(value) => handleStatusChange(submission.id, value)}
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statusConfig.map((s) => (
+                                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          {leadComments.length > 0 && (
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                              {leadComments.map((comment) => {
+                                const { operator: opName, body } = parseOperatorTag(comment.comment);
+                                return (
+                                  <div key={comment.id} className="bg-muted/50 rounded-md p-2">
+                                    <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
+                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                      {opName && <OperatorBadge name={opName} />}
+                                      <span className="text-[11px] text-muted-foreground">
+                                        {formatShortDate(comment.created_at)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <Textarea
+                              value={newComments[submission.id] || ""}
+                              onChange={(e) =>
+                                setNewComments((prev) => ({ ...prev, [submission.id]: e.target.value }))
+                              }
+                              placeholder="Komentaras..."
+                              className="min-h-[38px] text-base"
+                              rows={1}
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddComment(submission.id)}
+                              disabled={submittingComment === submission.id || !(newComments[submission.id] || "").trim()}
+                            >
+                              {submittingComment === submission.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
           {/* Trash Tab */}
           <TabsContent value="trash">
             <div className="space-y-4">
