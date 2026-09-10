@@ -673,14 +673,6 @@ export default function Admin() {
     [facebookLeads]
   );
 
-  const brandInitials = (submission: Submission) => {
-    const brand = submission.brand
-      || (submission.page_id ? FB_PAGE_BRANDS[submission.page_id] : undefined);
-    if (brand === "autokopers") return "AK";
-    if (brand === "autopaskolos") return "AP";
-    return submission.source === "autokopers" ? "AK" : "AP";
-  };
-
 
   // Generate SMS link with follow-up message
   const getSmsLink = (phone: string) => {
