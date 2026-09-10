@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.notify_meta_private_reply() FROM PUBLIC, anon, authenticated;
