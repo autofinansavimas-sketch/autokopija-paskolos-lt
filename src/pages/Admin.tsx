@@ -164,9 +164,6 @@ const STATUS_CONFIG_ROW_ID = "global";
 const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
 
-// Optional page_id -> brand map (webhook already stores brand; this is a safety net for old rows)
-const FB_PAGE_BRANDS: Record<string, "autopaskolos" | "autokopers"> = {};
-
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
   { value: "contacted", label: "Susisiekta", color: "bg-yellow-500", borderColor: "border-yellow-500" },
@@ -661,13 +658,20 @@ export default function Admin() {
     [submissions]
   );
 
-  const brandInitials = (submission: Submission) => {
-    const brand = submission.brand
-      || (submission.page_id ? FB_PAGE_BRANDS[submission.page_id] : undefined);
-    if (brand === "autokopers") return "AK";
-    if (brand === "autopaskolos") return "AP";
-    return submission.source === "autokopers" ? "AK" : "AP";
-  };
+  const autokopersLeads = useMemo(
+    () => facebookLeads.filter((s) => s.brand === "autokopers"),
+    [facebookLeads]
+  );
+
+  const autopaskolosLeads = useMemo(
+    () =>
+      facebookLeads.filter(
+        (s) =>
+          s.brand === "autopaskolos" ||
+          (!s.brand && s.source === "facebook")
+      ),
+    [facebookLeads]
+  );
 
 
   // Generate SMS link with follow-up message
@@ -1355,6 +1359,132 @@ export default function Admin() {
       description: "Rodomi numatytieji stulpeliai visuose kompiuteriuose.",
     });
   };
+
+  const renderFacebookColumn = (
+    title: string,
+    leads: Submission[],
+    colorClass: string,
+    borderClass: string
+  ) => (
+    <Card className="flex flex-col h-full">
+      <div className={`px-4 py-3 border-b ${borderClass} bg-muted/30`}>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${colorClass}`} />
+            {title}
+          </h3>
+          <Badge variant="secondary" className="text-xs">
+            {leads.length}
+          </Badge>
+        </div>
+      </div>
+      <CardContent className="p-3 flex-1 space-y-3 overflow-y-auto max-h-[calc(100vh-260px)]">
+        {leads.length === 0 ? (
+          <div className="text-center py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
+            Lead'ų kol kas nėra
+          </div>
+        ) : (
+          leads.map((submission) => {
+            const leadComments = comments[submission.id] || [];
+            return (
+              <Card key={submission.id} className="border-0 shadow-sm">
+                <CardContent className="p-3 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-medium text-sm break-words">
+                      {submission.name || "Nežinomas"}
+                    </span>
+                    <Badge variant="secondary" className="text-[10px] shrink-0">
+                      {submission.source === "facebook_comment" ? "Komentaras" : "Lead forma"}
+                    </Badge>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    {submission.phone && submission.phone !== "N/A" && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-3 w-3 shrink-0" />
+                        <a href={`tel:${submission.phone}`} className="hover:underline">
+                          {submission.phone}
+                        </a>
+                      </div>
+                    )}
+                    {submission.email && submission.email !== "nera@fb.com" && (
+                      <div className="flex items-center gap-2 break-all">
+                        <Mail className="h-3 w-3 shrink-0" />
+                        {submission.email}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-3 w-3 shrink-0" />
+                      {formatDate(submission.created_at)}
+                    </div>
+                  </div>
+
+                  <Select
+                    value={submission.status}
+                    onValueChange={(value) => handleStatusChange(submission.id, value)}
+                  >
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusConfig.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {leadComments.length > 0 && (
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {leadComments.map((comment) => {
+                        const { operator: opName, body } = parseOperatorTag(comment.comment);
+                        return (
+                          <div key={comment.id} className="bg-muted/50 rounded-md p-2">
+                            <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              {opName && <OperatorBadge name={opName} />}
+                              <span className="text-[11px] text-muted-foreground">
+                                {formatShortDate(comment.created_at)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Textarea
+                      value={newComments[submission.id] || ""}
+                      onChange={(e) =>
+                        setNewComments((prev) => ({ ...prev, [submission.id]: e.target.value }))
+                      }
+                      placeholder="Komentaras..."
+                      className="min-h-[36px] text-base"
+                      rows={1}
+                    />
+                    <Button
+                      size="sm"
+                      className="shrink-0"
+                      onClick={() => handleAddComment(submission.id)}
+                      disabled={submittingComment === submission.id || !(newComments[submission.id] || "").trim()}
+                    >
+                      {submittingComment === submission.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
@@ -2121,7 +2251,7 @@ export default function Admin() {
           <TabsContent value="facebook">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Lead'ai, atėję per Facebook (paraiškų formos ir komentarai po įrašais/reklamomis) iš abiejų puslapių.
+                Lead'ai, atėję per Facebook (paraiškų formos ir komentarai po įrašais/reklamomis).
               </p>
 
               {facebookLeads.length === 0 ? (
@@ -2130,106 +2260,19 @@ export default function Admin() {
                   <p>Facebook lead'ų kol kas nėra</p>
                 </div>
               ) : (
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {facebookLeads.map((submission) => {
-                    const leadComments = comments[submission.id] || [];
-                    return (
-                      <Card key={submission.id}>
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <span className="font-medium break-words">{submission.name || "Nežinomas"}</span>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${brandInitials(submission) === "AK" ? "border-orange-500 text-orange-600" : "border-blue-500 text-blue-600"}`}
-                                title={submission.page_id ? `Page ID: ${submission.page_id}` : undefined}
-                              >
-                                {brandInitials(submission)}
-                              </Badge>
-                              <Badge variant="secondary" className="text-xs">
-                                {submission.source === "facebook_comment" ? "Komentaras" : "Lead forma"}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            {submission.phone && submission.phone !== "N/A" && (
-                              <div className="flex items-center gap-2">
-                                <Phone className="h-3 w-3" />
-                                <a href={`tel:${submission.phone}`} className="hover:underline">{submission.phone}</a>
-                              </div>
-                            )}
-                            {submission.email && submission.email !== "nera@fb.com" && (
-                              <div className="flex items-center gap-2 break-all">
-                                <Mail className="h-3 w-3 shrink-0" />
-                                {submission.email}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-3 w-3" />
-                              {formatDate(submission.created_at)}
-                            </div>
-                          </div>
-
-                          <Select
-                            value={submission.status}
-                            onValueChange={(value) => handleStatusChange(submission.id, value)}
-                          >
-                            <SelectTrigger className="h-9">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {statusConfig.map((s) => (
-                                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          {leadComments.length > 0 && (
-                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                              {leadComments.map((comment) => {
-                                const { operator: opName, body } = parseOperatorTag(comment.comment);
-                                return (
-                                  <div key={comment.id} className="bg-muted/50 rounded-md p-2">
-                                    <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
-                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                      {opName && <OperatorBadge name={opName} />}
-                                      <span className="text-[11px] text-muted-foreground">
-                                        {formatShortDate(comment.created_at)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-
-                          <div className="flex gap-2">
-                            <Textarea
-                              value={newComments[submission.id] || ""}
-                              onChange={(e) =>
-                                setNewComments((prev) => ({ ...prev, [submission.id]: e.target.value }))
-                              }
-                              placeholder="Komentaras..."
-                              className="min-h-[38px] text-base"
-                              rows={1}
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddComment(submission.id)}
-                              disabled={submittingComment === submission.id || !(newComments[submission.id] || "").trim()}
-                            >
-                              {submittingComment === submission.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Send className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {renderFacebookColumn(
+                    "Autokopers",
+                    autokopersLeads,
+                    "bg-orange-500",
+                    "border-orange-200 dark:border-orange-900"
+                  )}
+                  {renderFacebookColumn(
+                    "Autopaskolos",
+                    autopaskolosLeads,
+                    "bg-blue-500",
+                    "border-blue-200 dark:border-blue-900"
+                  )}
                 </div>
               )}
             </div>
