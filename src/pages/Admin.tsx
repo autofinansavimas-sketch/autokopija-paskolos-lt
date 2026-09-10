@@ -2262,7 +2262,7 @@ export default function Admin() {
           <TabsContent value="facebook">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Lead'ai, atėję per Facebook (paraiškų formos ir komentarai po įrašais/reklamomis) iš abiejų puslapių.
+                Lead'ai, atėję per Facebook (paraiškų formos ir komentarai po įrašais/reklamomis).
               </p>
 
               {facebookLeads.length === 0 ? (
@@ -2271,106 +2271,19 @@ export default function Admin() {
                   <p>Facebook lead'ų kol kas nėra</p>
                 </div>
               ) : (
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {facebookLeads.map((submission) => {
-                    const leadComments = comments[submission.id] || [];
-                    return (
-                      <Card key={submission.id}>
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <span className="font-medium break-words">{submission.name || "Nežinomas"}</span>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${brandInitials(submission) === "AK" ? "border-orange-500 text-orange-600" : "border-blue-500 text-blue-600"}`}
-                                title={submission.page_id ? `Page ID: ${submission.page_id}` : undefined}
-                              >
-                                {brandInitials(submission)}
-                              </Badge>
-                              <Badge variant="secondary" className="text-xs">
-                                {submission.source === "facebook_comment" ? "Komentaras" : "Lead forma"}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            {submission.phone && submission.phone !== "N/A" && (
-                              <div className="flex items-center gap-2">
-                                <Phone className="h-3 w-3" />
-                                <a href={`tel:${submission.phone}`} className="hover:underline">{submission.phone}</a>
-                              </div>
-                            )}
-                            {submission.email && submission.email !== "nera@fb.com" && (
-                              <div className="flex items-center gap-2 break-all">
-                                <Mail className="h-3 w-3 shrink-0" />
-                                {submission.email}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-3 w-3" />
-                              {formatDate(submission.created_at)}
-                            </div>
-                          </div>
-
-                          <Select
-                            value={submission.status}
-                            onValueChange={(value) => handleStatusChange(submission.id, value)}
-                          >
-                            <SelectTrigger className="h-9">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {statusConfig.map((s) => (
-                                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          {leadComments.length > 0 && (
-                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                              {leadComments.map((comment) => {
-                                const { operator: opName, body } = parseOperatorTag(comment.comment);
-                                return (
-                                  <div key={comment.id} className="bg-muted/50 rounded-md p-2">
-                                    <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
-                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                      {opName && <OperatorBadge name={opName} />}
-                                      <span className="text-[11px] text-muted-foreground">
-                                        {formatShortDate(comment.created_at)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-
-                          <div className="flex gap-2">
-                            <Textarea
-                              value={newComments[submission.id] || ""}
-                              onChange={(e) =>
-                                setNewComments((prev) => ({ ...prev, [submission.id]: e.target.value }))
-                              }
-                              placeholder="Komentaras..."
-                              className="min-h-[38px] text-base"
-                              rows={1}
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddComment(submission.id)}
-                              disabled={submittingComment === submission.id || !(newComments[submission.id] || "").trim()}
-                            >
-                              {submittingComment === submission.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Send className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {renderFacebookColumn(
+                    "Autokopers",
+                    autokopersLeads,
+                    "bg-orange-500",
+                    "border-orange-200 dark:border-orange-900"
+                  )}
+                  {renderFacebookColumn(
+                    "Autopaskolos",
+                    autopaskolosLeads,
+                    "bg-blue-500",
+                    "border-blue-200 dark:border-blue-900"
+                  )}
                 </div>
               )}
             </div>
