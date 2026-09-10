@@ -661,6 +661,21 @@ export default function Admin() {
     [submissions]
   );
 
+  const autokopersLeads = useMemo(
+    () => facebookLeads.filter((s) => s.brand === "autokopers"),
+    [facebookLeads]
+  );
+
+  const autopaskolosLeads = useMemo(
+    () =>
+      facebookLeads.filter(
+        (s) =>
+          s.brand === "autopaskolos" ||
+          (!s.brand && s.source === "facebook")
+      ),
+    [facebookLeads]
+  );
+
   const brandInitials = (submission: Submission) => {
     const brand = submission.brand
       || (submission.page_id ? FB_PAGE_BRANDS[submission.page_id] : undefined);
