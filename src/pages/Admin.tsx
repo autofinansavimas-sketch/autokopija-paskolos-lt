@@ -1432,7 +1432,7 @@ export default function Admin() {
       <CardContent className="p-3 flex-1 space-y-3 overflow-y-auto max-h-[calc(100vh-260px)]">
         {leads.length === 0 ? (
           <div className="text-center py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
-            Lead'ų kol kas nėra
+            Įrašų kol kas nėra
           </div>
         ) : (
           leads.map((submission) => {
