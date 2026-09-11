@@ -2391,7 +2391,7 @@ export default function Admin() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
                   {renderFacebookColumn(
-                    "Autokopers",
+                    "Auto Kopers LT",
                     autokopersLeads,
                     "bg-orange-500",
                     "border-orange-200 dark:border-orange-900"
