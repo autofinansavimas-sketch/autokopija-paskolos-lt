@@ -1131,6 +1131,7 @@ export default function Admin() {
 
     const staleCount = submissions.filter(s => {
       if (INACTIVE_STATUSES.has(s.status)) return false;
+      if (s.status === 'new' && isFacebookRecord(s)) return false;
       const snoozedUntil = snoozeMap[s.id];
       if (snoozedUntil && Date.now() < snoozedUntil) return false;
       const sComments = comments[s.id] || [];
