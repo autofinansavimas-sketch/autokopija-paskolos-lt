@@ -802,6 +802,42 @@ export default function Admin() {
     }
   };
 
+  // Masinis Facebook lead'ų perkėlimas į šiukšliadėžę
+  const handleBulkDelete = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    setFbBulkDeleting(true);
+    try {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from("contact_submissions")
+        .update({ deleted_at: now })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      const moved = submissions.filter((s) => ids.includes(s.id));
+      setSubmissions((prev) => prev.filter((s) => !ids.includes(s.id)));
+      setDeletedSubmissions((prev) => [
+        ...moved.map((s) => ({ ...s, deleted_at: now })),
+        ...prev,
+      ]);
+      setFbSelected([]);
+
+      toast({
+        title: `Perkelta į šiukšliadėžę (${ids.length})`,
+        description: "Įrašus galima atkurti šiukšliadėžės skirtuke",
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko perkelti įrašų",
+        variant: "destructive",
+      });
+    } finally {
+      setFbBulkDeleting(false);
+    }
+  };
+
   // Soft delete - move to trash
   const handleDeleteSubmission = async (submissionId: string) => {
     try {
