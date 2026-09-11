@@ -2290,11 +2290,13 @@ export default function Admin() {
             )}
           </TabsContent>
           
-          {/* Visi klientai Tab */}
-          <TabsContent value="all-clients">
+          {/* Facebook Leads Tab – visi lead'ai (Facebook + seni įrašai) */}
+          <TabsContent value="facebook">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Visi klientai — seni ir nauji, iš visų šaltinių. Statusai ir komentarai tie patys, kaip kitose skiltyse.
+                Visi lead'ai vienoje vietoje: Facebook paraiškų formos, komentarai po įrašais/reklamomis
+                ir visi seni įrašai. Kiekvienoje kortelėje matomas tikras šaltinis ir kilmė
+                ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
               </p>
 
               <div className="grid gap-2 sm:grid-cols-3">
@@ -2315,7 +2317,7 @@ export default function Admin() {
                     <SelectItem value="all">Visi šaltiniai</SelectItem>
                     {availableSources.map((src) => (
                       <SelectItem key={src} value={src}>
-                        {getSourceLabel({ source: src } as Submission)}
+                        {getSourceLabel({ source: src })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -2335,60 +2337,22 @@ export default function Admin() {
                 </Select>
               </div>
 
-              {allClients.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <UsersRound className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Pagal šiuos filtrus klientų nerasta</p>
-                </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                  {renderClientColumn(
-                    "Auto Kopers LT",
-                    allKopersClients,
-                    "bg-orange-500",
-                    "border-orange-200 dark:border-orange-900"
-                  )}
-                  {renderClientColumn(
-                    "Autopaskolos",
-                    allAutopaskolosClients,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Facebook Leads Tab */}
-          <TabsContent value="facebook">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Lead'ai, atėję per Facebook (paraiškų formos ir komentarai po įrašais/reklamomis).
-              </p>
-
-              {facebookLeads.length === 0 ? (
+              {leadCards.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Facebook className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Facebook lead'ų kol kas nėra</p>
+                  <p>Pagal šiuos filtrus lead'ų nerasta</p>
                 </div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                  {renderClientColumn(
-                    "Auto Kopers LT",
-                    autokopersLeads,
-                    "bg-orange-500",
-                    "border-orange-200 dark:border-orange-900"
-                  )}
-                  {renderClientColumn(
-                    "Autopaskolos",
-                    autopaskolosLeads,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
-                </div>
+                renderClientColumn(
+                  "Visi lead'ai",
+                  leadCards,
+                  "bg-blue-500",
+                  "border-blue-200 dark:border-blue-900"
+                )
               )}
             </div>
           </TabsContent>
+
 
           {/* Trash Tab */}
           <TabsContent value="trash">
