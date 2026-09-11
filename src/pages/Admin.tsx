@@ -653,35 +653,8 @@ export default function Admin() {
     };
   }, [reminders]);
 
-  // Facebook leads (Meta webhook: lead forms + comments under posts/ads)
-  const facebookLeads = useMemo(
-    () =>
-      submissions.filter(
-        (s) => s.source === "facebook" || s.source === "facebook_comment"
-      ),
-    [submissions]
-  );
-
-  const autokopersLeads = useMemo(
-    () => facebookLeads.filter((s) => s.brand === "autokopers"),
-    [facebookLeads]
-  );
-
-  const autopaskolosLeads = useMemo(
-    () =>
-      facebookLeads.filter(
-        (s) =>
-          s.brand === "autopaskolos" ||
-          (!s.brand && s.source === "facebook")
-      ),
-    [facebookLeads]
-  );
-
-  // ===== Visi klientai (all historical + future records) =====
-  const isKopersRecord = (s: Submission) =>
-    s.brand === "autokopers" || s.source === "autokopers";
-
-  const getSourceLabel = (s: Submission) => {
+  // ===== Lead'ai: Facebook (Meta webhook) + visi seni įrašai toje pačioje kortelėje =====
+  const getSourceLabel = (s: Partial<Submission>) => {
     switch (s.source) {
       case "facebook_comment":
         return "FB komentaras";
@@ -694,14 +667,34 @@ export default function Admin() {
       case "import":
         return "Importuota";
       default:
-        return s.source || "Kita";
+        return s.source || "Kilmė nenurodyta";
     }
   };
 
-  const allClients = useMemo(() => {
+  // Tikra Meta kilmė – tik jei duomenų bazėje realiai yra brand/page_id/fb_lead_id
+  const getOriginLabel = (s: Submission) => {
+    const isMeta = s.source === "facebook" || s.source === "facebook_comment";
+    if (isMeta) {
+      if (s.brand === "autokopers") return "Meta: Auto Kopers LT";
+      if (s.brand === "autopaskolos") return "Meta: Autopaskolos";
+      if (s.page_id) return `Meta puslapis ${s.page_id}`;
+    }
+    return "Kilmė nenurodyta";
+  };
+
+  const facebookLeads = useMemo(
+    () =>
+      submissions.filter(
+        (s) => s.source === "facebook" || s.source === "facebook_comment"
+      ),
+    [submissions]
+  );
+
+  // Visi lead'ai (seni ir nauji) – rodomi Facebook skiltyje ta pačia kortele
+  const leadCards = useMemo(() => {
     const q = leadSearch.trim().toLowerCase();
     return submissions.filter((s) => {
-      if (leadSourceFilter !== "all" && s.source !== leadSourceFilter) return false;
+      if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
       if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
       if (!q) return true;
       return [s.name, s.phone, s.email, s.amount, s.loan_type]
@@ -709,16 +702,6 @@ export default function Admin() {
         .some((v) => String(v).toLowerCase().includes(q));
     });
   }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
-
-  const allKopersClients = useMemo(
-    () => allClients.filter(isKopersRecord),
-    [allClients]
-  );
-
-  const allAutopaskolosClients = useMemo(
-    () => allClients.filter((s) => !isKopersRecord(s)),
-    [allClients]
-  );
 
   const availableSources = useMemo(
     () => Array.from(new Set(submissions.map((s) => s.source).filter(Boolean))) as string[],
