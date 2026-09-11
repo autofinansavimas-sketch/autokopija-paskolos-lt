@@ -1677,7 +1677,31 @@ export default function Admin() {
                           <Badge variant="outline" className="text-[10px] font-normal">
                             {getOriginLabel(submission)}
                           </Badge>
+                          {submission.fb_platform && (
+                            <Badge variant="outline" className="text-[10px] font-normal capitalize">
+                              {submission.fb_platform}
+                            </Badge>
+                          )}
                         </div>
+
+                        {(submission.fb_campaign_name || submission.fb_ad_name || submission.fb_form_name) ? (
+                          <div className="rounded-md bg-muted/50 p-2 text-[11px] space-y-0.5">
+                            {submission.fb_campaign_name && (
+                              <div><span className="text-muted-foreground">Kampanija: </span>{submission.fb_campaign_name}</div>
+                            )}
+                            {submission.fb_ad_name && (
+                              <div><span className="text-muted-foreground">Reklama: </span>{submission.fb_ad_name}</div>
+                            )}
+                            {submission.fb_form_name && (
+                              <div><span className="text-muted-foreground">Forma: </span>{submission.fb_form_name}</div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-muted-foreground">
+                            Reklamos duomenų nėra – atnaujinkite juos per „Facebook ryšys“ → „Importuoti senesnius“.
+                          </p>
+                        )}
+
 
                         <div className="text-sm text-muted-foreground space-y-1">
                           {submission.email && submission.email !== "nera@fb.com" && (
