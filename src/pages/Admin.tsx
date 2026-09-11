@@ -332,6 +332,18 @@ export default function Admin() {
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
   const [fbVisibleCount, setFbVisibleCount] = useState(20);
+  const [fbView, setFbView] = useState<"cards" | "list">(() => {
+    try {
+      return (localStorage.getItem("admin_fb_view") as "cards" | "list") || "cards";
+    } catch {
+      return "cards";
+    }
+  });
+  const setFbViewPersisted = (v: "cards" | "list") => {
+    setFbView(v);
+    try { localStorage.setItem("admin_fb_view", v); } catch { /* ignore */ }
+  };
+
   const [fbBulkDeleting, setFbBulkDeleting] = useState(false);
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
@@ -1494,7 +1506,156 @@ export default function Admin() {
     });
   };
 
+  const renderLeadKanban = (leads: Submission[]) => {
+    const columns = statusConfig.map((colConfig) => ({
+      colConfig,
+      items: leads.filter((s) => s.status === colConfig.value),
+    }));
+
+    return (
+      <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
+        {columns.map(({ colConfig, items }) => {
+          const isDropTarget = dragOverColumn === colConfig.value;
+          return (
+            <div
+              key={colConfig.value}
+              className={`flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 ${
+                isDropTarget ? "ring-2 ring-primary ring-offset-2 bg-primary/5" : "hover:bg-card/80"
+              }`}
+              onDragOver={(e) => handleDragOver(e, colConfig.value)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, colConfig.value)}
+            >
+              <div className="p-3 border-b flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`w-3 h-3 rounded-full shrink-0 ${colConfig.color}`} />
+                  <span className="font-semibold text-sm truncate">{colConfig.label}</span>
+                </div>
+                <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
+                  {items.length}
+                </Badge>
+              </div>
+
+              <div className="p-2 space-y-2 lg:max-h-[calc(100vh-300px)] overflow-y-auto">
+                {items.length === 0 ? (
+                  <div
+                    className={`text-center py-6 lg:py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl mx-1 ${
+                      isDropTarget ? "border-primary bg-primary/5" : "border-muted-foreground/20"
+                    }`}
+                  >
+                    {isDropTarget ? "✓ Paleiskite čia" : "Nėra lead'ų"}
+                  </div>
+                ) : (
+                  items.map((submission) => {
+                    const leadComments = comments[submission.id] || [];
+                    const hasPhone = !!submission.phone && submission.phone !== "N/A";
+                    return (
+                      <Card
+                        key={submission.id}
+                        className={`cursor-grab border-0 shadow-sm bg-card group transition-all duration-200 ${
+                          draggedSubmission === submission.id
+                            ? "opacity-50 scale-95 rotate-1 shadow-lg"
+                            : "hover:-translate-y-0.5 hover:shadow-md"
+                        }`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, submission.id)}
+                        onDragEnd={handleDragEnd}
+                        onClick={() => setSelectedSubmission(submission)}
+                      >
+                        <CardContent className="p-3 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <GripVertical className="h-3.5 w-3.5 text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors shrink-0" />
+                              <span className="font-semibold text-sm truncate">
+                                {submission.name || "Nežinomas"}
+                              </span>
+                            </div>
+                            {submission.fb_platform && (
+                              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 shrink-0 capitalize">
+                                {submission.fb_platform}
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {hasPhone ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs font-medium text-primary hover:bg-primary/10 -ml-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.location.href = `tel:${submission.phone}`;
+                                }}
+                              >
+                                <Phone className="h-3.5 w-3.5 mr-1.5" />
+                                {submission.phone}
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">be numerio</span>
+                            )}
+                            {hasPhone && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 lg:h-7 lg:w-7 p-0 text-muted-foreground hover:text-primary lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(submission.phone);
+                                  toast({ title: "Nukopijuota!", description: submission.phone });
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+
+                          {submission.fb_campaign_name && (
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {submission.fb_campaign_name}
+                            </p>
+                          )}
+
+                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                            <span className="text-[10px] text-muted-foreground">
+                              {formatShortDate(submission.created_at)}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              {leadComments.length > 0 && (
+                                <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                                  <MessageSquare className="h-3 w-3" />
+                                  <span className="font-medium">{leadComments.length}</span>
+                                </div>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSubmission(submission.id);
+                                }}
+                                title="Perkelti į šiukšliadėžę"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderClientColumn = (
+
     title: string,
     leads: Submission[],
     colorClass: string,
@@ -2640,6 +2801,25 @@ export default function Admin() {
                 </Select>
               </div>
 
+              <div className="flex items-center gap-1.5">
+                <Button
+                  size="sm"
+                  variant={fbView === "cards" ? "default" : "outline"}
+                  className="h-8 text-xs"
+                  onClick={() => setFbViewPersisted("cards")}
+                >
+                  Kortelės
+                </Button>
+                <Button
+                  size="sm"
+                  variant={fbView === "list" ? "default" : "outline"}
+                  className="h-8 text-xs"
+                  onClick={() => setFbViewPersisted("list")}
+                >
+                  Sąrašas
+                </Button>
+              </div>
+
               <Tabs value={fbBrandTab} onValueChange={setFbBrandTab}>
                 <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-2 gap-1">
                   <TabsTrigger value="autokopers" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
@@ -2651,23 +2831,28 @@ export default function Admin() {
                 </TabsList>
 
                 <TabsContent value="autokopers" className="mt-4">
-                  {renderClientColumn(
-                    "Auto Kopers LT",
-                    kopersLeadCards,
-                    "bg-orange-500",
-                    "border-orange-200 dark:border-orange-900"
-                  )}
+                  {fbView === "cards"
+                    ? renderLeadKanban(kopersLeadCards)
+                    : renderClientColumn(
+                        "Auto Kopers LT",
+                        kopersLeadCards,
+                        "bg-orange-500",
+                        "border-orange-200 dark:border-orange-900"
+                      )}
                 </TabsContent>
 
                 <TabsContent value="autopaskolos" className="mt-4">
-                  {renderClientColumn(
-                    "Autopaskolos.lt",
-                    autopaskolosLeadCards,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
+                  {fbView === "cards"
+                    ? renderLeadKanban(autopaskolosLeadCards)
+                    : renderClientColumn(
+                        "Autopaskolos.lt",
+                        autopaskolosLeadCards,
+                        "bg-blue-500",
+                        "border-blue-200 dark:border-blue-900"
+                      )}
                 </TabsContent>
               </Tabs>
+
             </div>
           </TabsContent>
 
