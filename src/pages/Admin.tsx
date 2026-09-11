@@ -1522,7 +1522,7 @@ export default function Admin() {
 
     return (
       <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
-        {columns.map(({ colConfig, items }) => {
+        {columns.map(({ colConfig, items, total }) => {
           const isDropTarget = dragOverColumn === colConfig.value;
           return (
             <div
