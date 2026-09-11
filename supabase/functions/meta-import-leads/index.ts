@@ -77,15 +77,20 @@ serve(async (req: Request) => {
     };
     try {
       const forms = await fetchAll(
-        `https://graph.facebook.com/v21.0/${page.pageId}/leadgen_forms?limit=50&access_token=${encodeURIComponent(page.token)}`
+        `https://graph.facebook.com/v21.0/${page.pageId}/leadgen_forms?fields=id,name&limit=50&access_token=${encodeURIComponent(page.token)}`
       );
       const leads: any[] = [];
       for (const form of forms) {
         const formLeads = await fetchAll(
-          `https://graph.facebook.com/v21.0/${form.id}/leads?fields=id,created_time,field_data&limit=100&access_token=${encodeURIComponent(page.token)}`
+          `https://graph.facebook.com/v21.0/${form.id}/leads?fields=id,created_time,field_data,form_id,ad_id,ad_name,adset_name,campaign_name,platform&limit=100&access_token=${encodeURIComponent(page.token)}`
         );
+        for (const l of formLeads) {
+          l.__formId = String(form.id);
+          l.__formName = form.name ?? null;
+        }
         leads.push(...formLeads);
       }
+
       entry.total = leads.length;
 
       const ids = leads.map((l) => String(l.id));
