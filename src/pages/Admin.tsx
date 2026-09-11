@@ -1183,15 +1183,18 @@ export default function Admin() {
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     
     const todayCount = submissions.filter(s => {
+      if (isFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       created.setHours(0, 0, 0, 0);
       return created.getTime() === today.getTime();
     }).length;
     
     const weekCount = submissions.filter(s => {
+      if (isFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       return created >= weekAgo;
     }).length;
+    
     
     const withRemindersCount = submissions.filter(s => 
       reminders.some(r => r.submission_id === s.id && !r.completed)
