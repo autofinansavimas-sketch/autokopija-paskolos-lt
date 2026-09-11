@@ -2309,6 +2309,10 @@ export default function Admin() {
                 po įrašais/reklamomis ir seni įrašai ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
               </p>
 
+              <MetaHealthPanel />
+
+
+
               <div className="grid gap-2 sm:grid-cols-3">
                 <div className="relative sm:col-span-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
