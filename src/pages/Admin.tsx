@@ -330,7 +330,7 @@ export default function Admin() {
   const [leadCampaignFilter, setLeadCampaignFilter] = useState<string>("all");
 
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
-  const [fbBrandTab, setFbBrandTab] = useState<string>("autokopers");
+  const [fbBrandTab, setFbBrandTab] = useState<string>("all");
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
   const [fbVisibleCount, setFbVisibleCount] = useState(20);
@@ -2649,12 +2649,14 @@ export default function Admin() {
                                 <Badge 
                                   variant="outline" 
                                   className={`text-[9px] px-1.5 py-0 h-4 shrink-0 font-bold ${
-                                    submission.source === "autokopers" 
+                                    submission.source === "autokopers" || brandOf(submission) === "autokopers"
                                       ? "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800" 
                                       : "bg-primary/10 text-primary border-primary/20"
                                   }`}
                                 >
-                                  {submission.source === "autokopers" ? "AK" : "AP"}
+                                  {isFacebookRecord(submission)
+                                    ? brandOf(submission) === "autokopers" ? "FB · AK" : "FB · AP"
+                                    : submission.source === "autokopers" ? "AK" : "AP"}
                                 </Badge>
                               </div>
                               
