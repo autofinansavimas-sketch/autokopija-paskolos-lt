@@ -1411,7 +1411,7 @@ export default function Admin() {
     });
   };
 
-  const renderFacebookColumn = (
+  const renderClientColumn = (
     title: string,
     leads: Submission[],
     colorClass: string,
@@ -2359,17 +2359,17 @@ export default function Admin() {
                 </div>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
-                  {renderFacebookColumn(
-                    "Autopaskolos",
-                    allAutopaskolosClients,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
-                  {renderFacebookColumn(
+                  {renderClientColumn(
                     "Auto Kopers LT",
                     allKopersClients,
                     "bg-orange-500",
                     "border-orange-200 dark:border-orange-900"
+                  )}
+                  {renderClientColumn(
+                    "Autopaskolos",
+                    allAutopaskolosClients,
+                    "bg-blue-500",
+                    "border-blue-200 dark:border-blue-900"
                   )}
                 </div>
               )}
@@ -2390,13 +2390,13 @@ export default function Admin() {
                 </div>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
-                  {renderFacebookColumn(
+                  {renderClientColumn(
                     "Auto Kopers LT",
                     autokopersLeads,
                     "bg-orange-500",
                     "border-orange-200 dark:border-orange-900"
                   )}
-                  {renderFacebookColumn(
+                  {renderClientColumn(
                     "Autopaskolos",
                     autopaskolosLeads,
                     "bg-blue-500",
