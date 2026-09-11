@@ -67,12 +67,14 @@ serve(async (req: Request) => {
         .from("contact_submissions")
         .select("id", { count: "exact", head: true })
         .eq("source", "facebook")
-        .eq("brand", cfg.brand);
+        .eq("page_id", page.pageId)
+        .not("fb_lead_id", "is", null);
       const { count: commentCount } = await admin
         .from("contact_submissions")
         .select("id", { count: "exact", head: true })
         .eq("source", "facebook_comment")
-        .eq("brand", cfg.brand);
+        .eq("page_id", page.pageId)
+        .like("fb_lead_id", "fb_comment_%");
       base.leadCount = leadCount ?? 0;
       base.commentCount = commentCount ?? 0;
 
@@ -80,7 +82,8 @@ serve(async (req: Request) => {
         .from("contact_submissions")
         .select("created_at")
         .in("source", ["facebook", "facebook_comment"])
-        .eq("brand", cfg.brand)
+        .eq("page_id", page.pageId)
+        .not("fb_lead_id", "is", null)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();

@@ -126,6 +126,7 @@ interface Submission {
   source?: string | null;
   page_id?: string | null;
   brand?: string | null;
+  fb_lead_id?: string | null;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -162,7 +163,7 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
 
 const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
-const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,created_at,updated_at,deleted_at";
+const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
 
 const DEFAULT_STATUS_CONFIG = [
@@ -552,17 +553,27 @@ export default function Admin() {
 
       // Load once and split in the browser. This avoids intermittent PostgREST 400s from
       // schema-cache/filter edge cases while keeping deleted cards out of the board.
-      const submissionsResult = await supabase
-        .from("contact_submissions")
-        .select(SUBMISSION_SELECT)
-        .order("created_at", { ascending: false });
+      const loadAllSubmissions = async (select: string) => {
+        const rows: Submission[] = [];
+        const pageSize = 1000;
+        for (let from = 0; ; from += pageSize) {
+          const result = await supabase
+            .from("contact_submissions")
+            .select(select)
+            .order("created_at", { ascending: false })
+            .range(from, from + pageSize - 1);
+          if (result.error) return { data: rows, error: result.error };
+          const page = (result.data || []) as unknown as Submission[];
+          rows.push(...page);
+          if (page.length < pageSize) return { data: rows, error: null };
+        }
+      };
+
+      const submissionsResult = await loadAllSubmissions(SUBMISSION_SELECT);
 
       if (submissionsResult.error) {
         // Last-resort fallback for browsers hitting an old API schema that does not know deleted_at yet.
-        const legacyResult = await supabase
-          .from("contact_submissions")
-          .select(LEGACY_SUBMISSION_SELECT)
-          .order("created_at", { ascending: false });
+        const legacyResult = await loadAllSubmissions(LEGACY_SUBMISSION_SELECT);
 
         if (legacyResult.error) throw legacyResult.error;
 
@@ -683,11 +694,18 @@ export default function Admin() {
     return "Kilmė nenurodyta";
   };
 
+  const hasRealMetaId = (s: Submission) => {
+    const id = s.fb_lead_id?.trim() ?? "";
+    return /^\d+$/.test(id) || /^fb_comment_\d+$/.test(id);
+  };
+
+  const isFacebookRecord = (s: Submission) =>
+    (s.source === "facebook" || s.source === "facebook_comment") &&
+    hasRealMetaId(s) &&
+    Boolean(s.page_id);
+
   const facebookLeads = useMemo(
-    () =>
-      submissions.filter(
-        (s) => s.source === "facebook" || s.source === "facebook_comment"
-      ),
+    () => submissions.filter(isFacebookRecord),
     [submissions]
   );
 
@@ -695,8 +713,7 @@ export default function Admin() {
   const leadCards = useMemo(() => {
     const q = leadSearch.trim().toLowerCase();
     return submissions.filter((s) => {
-      const isMetaLead = s.source === "facebook" || s.source === "facebook_comment";
-      if (!isMetaLead) return false;
+      if (!isFacebookRecord(s)) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
       if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
       if (!q) return true;
@@ -706,7 +723,7 @@ export default function Admin() {
     });
   }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
 
-  const isKopersRecord = (s: Submission) => s.brand === "autokopers";
+  const isKopersRecord = (s: Submission) => s.page_id === "106074400938363";
 
   const kopersLeadCards = useMemo(
     () => leadCards.filter(isKopersRecord),
@@ -714,7 +731,7 @@ export default function Admin() {
   );
 
   const autopaskolosLeadCards = useMemo(
-    () => leadCards.filter((s) => !isKopersRecord(s)),
+    () => leadCards.filter((s) => s.page_id === "873404112522750"),
     [leadCards]
   );
 
@@ -2307,11 +2324,10 @@ export default function Admin() {
           <TabsContent value="facebook">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Pasirinkite prekės ženklą. Rodomi visi lead'ai — Facebook paraiškų formos, komentarai
-                po įrašais/reklamomis ir seni įrašai ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
+                Rodomi tik Meta Lead Ads įrašai su tikru Facebook identifikatoriumi ({facebookLeads.length}).
               </p>
 
-              <MetaHealthPanel />
+              <MetaHealthPanel onImportComplete={() => fetchSubmissions()} />
 
 
 
