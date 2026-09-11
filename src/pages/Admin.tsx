@@ -2307,6 +2307,75 @@ export default function Admin() {
             )}
           </TabsContent>
           
+          {/* Visi klientai Tab */}
+          <TabsContent value="all-clients">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Visi klientai — seni ir nauji, iš visų šaltinių. Statusai ir komentarai tie patys, kaip kitose skiltyse.
+              </p>
+
+              <div className="grid gap-2 sm:grid-cols-3">
+                <div className="relative sm:col-span-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={allSearch}
+                    onChange={(e) => setAllSearch(e.target.value)}
+                    placeholder="Vardas, telefonas, el. paštas..."
+                    className="pl-8 h-9 text-base"
+                  />
+                </div>
+                <Select value={allSourceFilter} onValueChange={setAllSourceFilter}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Šaltinis" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Visi šaltiniai</SelectItem>
+                    {availableSources.map((src) => (
+                      <SelectItem key={src} value={src}>
+                        {getSourceLabel({ source: src } as Submission)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={allStatusFilter} onValueChange={setAllStatusFilter}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Statusas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Visi statusai</SelectItem>
+                    {statusConfig.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {allClients.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <UsersRound className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Pagal šiuos filtrus klientų nerasta</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {renderFacebookColumn(
+                    "Autopaskolos",
+                    allAutopaskolosClients,
+                    "bg-blue-500",
+                    "border-blue-200 dark:border-blue-900"
+                  )}
+                  {renderFacebookColumn(
+                    "Auto Kopers LT",
+                    allKopersClients,
+                    "bg-orange-500",
+                    "border-orange-200 dark:border-orange-900"
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
           {/* Facebook Leads Tab */}
           <TabsContent value="facebook">
             <div className="space-y-4">
