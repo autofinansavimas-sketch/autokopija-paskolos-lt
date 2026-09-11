@@ -168,7 +168,7 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
 
 const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
-const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,created_at,updated_at,deleted_at";
+const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,fb_form_name,fb_campaign_name,fb_ad_name,fb_platform,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
 
 const DEFAULT_STATUS_CONFIG = [
