@@ -317,9 +317,9 @@ export default function Admin() {
     toast({ title: "Snaudžiama 24 val.", description: "Perspėjimas šiai kortelei išjungtas 24 val." });
   };
   const [activeTab, setActiveTab] = useState<string>("kanban");
-  const [allSearch, setAllSearch] = useState("");
-  const [allSourceFilter, setAllSourceFilter] = useState<string>("all");
-  const [allStatusFilter, setAllStatusFilter] = useState<string>("all");
+  const [leadSearch, setAllSearch] = useState("");
+  const [leadSourceFilter, setAllSourceFilter] = useState<string>("all");
+  const [leadStatusFilter, setAllStatusFilter] = useState<string>("all");
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
@@ -699,16 +699,16 @@ export default function Admin() {
   };
 
   const allClients = useMemo(() => {
-    const q = allSearch.trim().toLowerCase();
+    const q = leadSearch.trim().toLowerCase();
     return submissions.filter((s) => {
-      if (allSourceFilter !== "all" && s.source !== allSourceFilter) return false;
-      if (allStatusFilter !== "all" && s.status !== allStatusFilter) return false;
+      if (leadSourceFilter !== "all" && s.source !== leadSourceFilter) return false;
+      if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
       if (!q) return true;
       return [s.name, s.phone, s.email, s.amount, s.loan_type]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, allSearch, allSourceFilter, allStatusFilter]);
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
 
   const allKopersClients = useMemo(
     () => allClients.filter(isKopersRecord),
@@ -2318,13 +2318,13 @@ export default function Admin() {
                 <div className="relative sm:col-span-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    value={allSearch}
+                    value={leadSearch}
                     onChange={(e) => setAllSearch(e.target.value)}
                     placeholder="Vardas, telefonas, el. paštas..."
                     className="pl-8 h-9 text-base"
                   />
                 </div>
-                <Select value={allSourceFilter} onValueChange={setAllSourceFilter}>
+                <Select value={leadSourceFilter} onValueChange={setAllSourceFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Šaltinis" />
                   </SelectTrigger>
@@ -2337,7 +2337,7 @@ export default function Admin() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={allStatusFilter} onValueChange={setAllStatusFilter}>
+                <Select value={leadStatusFilter} onValueChange={setAllStatusFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Statusas" />
                   </SelectTrigger>
