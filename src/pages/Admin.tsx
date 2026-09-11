@@ -1654,6 +1654,21 @@ export default function Admin() {
                     );
                   })
                 )}
+                {total > items.length && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() =>
+                      setFbColumnLimits((prev) => ({
+                        ...prev,
+                        [colConfig.value]: (prev[colConfig.value] ?? 20) + 20,
+                      }))
+                    }
+                  >
+                    Rodyti daugiau ({total - items.length})
+                  </Button>
+                )}
               </div>
             </div>
           );
