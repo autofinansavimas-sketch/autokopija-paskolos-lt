@@ -125,26 +125,32 @@ serve(async (req: Request) => {
           const phone = pickPhone(fields);
           const email = pickEmail(fields);
           const name = pickName(fields);
-          const patch: Record<string, string> = {};
-          if (phone) patch.phone = phone;
-          if (email) patch.email = email;
-          if (name) patch.name = name;
-          if (!Object.keys(patch).length) continue;
           const { data: rows } = await admin
             .from("contact_submissions")
-            .select("id, phone, email, name")
+            .select("id, phone, email, name, fb_form_id, fb_campaign_name")
             .eq("fb_lead_id", String(lead.id));
           for (const row of rows ?? []) {
-            const upd: Record<string, string> = {};
+            const upd: Record<string, string | null> = {};
             if (phone && (!row.phone || row.phone === "N/A")) upd.phone = phone;
             if (email && (!row.email || row.email === "nera@fb.com")) upd.email = email;
             if (name && !row.name) upd.name = name;
+            if (!row.fb_form_id) {
+              upd.fb_form_id = lead.__formId ?? (lead.form_id ? String(lead.form_id) : null);
+              upd.fb_form_name = lead.__formName ?? null;
+              upd.fb_platform = lead.platform ?? null;
+            }
+            if (!row.fb_campaign_name) {
+              upd.fb_campaign_name = lead.campaign_name ?? null;
+              upd.fb_ad_name = lead.ad_name ?? null;
+            }
+            for (const k of Object.keys(upd)) if (upd[k] == null) delete upd[k];
             if (!Object.keys(upd).length) continue;
             const { error } = await admin.from("contact_submissions").update(upd).eq("id", row.id);
             if (error) entry.failed++;
             else entry.updated++;
           }
         }
+
         await logEvent(admin, {
           page_id: page.pageId, brand: page.brand, event_type: "import_backfill",
           status: "info", message: `Atnaujinta kontaktų: ${entry.updated}`,
