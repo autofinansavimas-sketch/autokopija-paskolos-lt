@@ -127,6 +127,11 @@ interface Submission {
   page_id?: string | null;
   brand?: string | null;
   fb_lead_id?: string | null;
+  fb_form_name?: string | null;
+  fb_campaign_name?: string | null;
+  fb_ad_name?: string | null;
+  fb_platform?: string | null;
+
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
