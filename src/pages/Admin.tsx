@@ -727,12 +727,27 @@ export default function Admin() {
       if (!isFacebookRecord(s)) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
       if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
+      if (leadCampaignFilter !== "all" && (s.fb_campaign_name || "") !== leadCampaignFilter) return false;
       if (!q) return true;
-      return [s.name, s.phone, s.email, s.amount, s.loan_type]
+      return [s.name, s.phone, s.email, s.amount, s.loan_type, s.fb_campaign_name, s.fb_ad_name, s.fb_form_name]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter]);
+
+  const availableCampaigns = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          submissions
+            .filter(isFacebookRecord)
+            .map((s) => s.fb_campaign_name)
+            .filter((v): v is string => Boolean(v && v.trim()))
+        )
+      ).sort(),
+    [submissions]
+  );
+
 
   const isKopersRecord = (s: Submission) => s.page_id === "106074400938363";
 
