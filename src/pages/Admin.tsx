@@ -332,6 +332,7 @@ export default function Admin() {
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
   const [fbVisibleCount, setFbVisibleCount] = useState(20);
+  const [fbColumnLimits, setFbColumnLimits] = useState<Record<string, number>>({});
   const [fbView, setFbView] = useState<"cards" | "list">(() => {
     try {
       return (localStorage.getItem("admin_fb_view") as "cards" | "list") || "cards";
