@@ -702,6 +702,21 @@ export default function Admin() {
     });
   }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
 
+  const isKopersRecord = (s: Submission) =>
+    s.brand === "autokopers" || s.source === "autokopers";
+
+  const kopersLeadCards = useMemo(
+    () => leadCards.filter(isKopersRecord),
+    [leadCards]
+  );
+
+  const autopaskolosLeadCards = useMemo(
+    () => leadCards.filter((s) => !isKopersRecord(s)),
+    [leadCards]
+  );
+
+
+
   const availableSources = useMemo(
     () => Array.from(new Set(submissions.map((s) => s.source).filter(Boolean))) as string[],
     [submissions]
