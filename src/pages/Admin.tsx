@@ -100,6 +100,7 @@ import TodayReminders from "@/components/TodayReminders";
 import AdminStats from "@/components/AdminStats";
 import AdminCharts from "@/components/AdminCharts";
 import QuickFilters from "@/components/QuickFilters";
+import { MetaHealthPanel } from "@/components/MetaHealthPanel";
 import AdminAIChat from "@/components/AdminAIChat";
 import CommandPalette from "@/components/CommandPalette";
 import AdminAutomations from "@/components/AdminAutomations";
