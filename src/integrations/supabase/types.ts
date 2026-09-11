@@ -181,6 +181,42 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_event_log: {
+        Row: {
+          brand: string | null
+          created_at: string
+          event_type: string
+          fb_lead_id: string | null
+          id: string
+          message: string | null
+          page_id: string | null
+          status: string
+          submission_id: string | null
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          event_type: string
+          fb_lead_id?: string | null
+          id?: string
+          message?: string | null
+          page_id?: string | null
+          status: string
+          submission_id?: string | null
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          event_type?: string
+          fb_lead_id?: string | null
+          id?: string
+          message?: string | null
+          page_id?: string | null
+          status?: string
+          submission_id?: string | null
+        }
+        Relationships: []
+      }
       operator_time: {
         Row: {
           created_at: string

@@ -100,6 +100,7 @@ import TodayReminders from "@/components/TodayReminders";
 import AdminStats from "@/components/AdminStats";
 import AdminCharts from "@/components/AdminCharts";
 import QuickFilters from "@/components/QuickFilters";
+import { MetaHealthPanel } from "@/components/MetaHealthPanel";
 import AdminAIChat from "@/components/AdminAIChat";
 import CommandPalette from "@/components/CommandPalette";
 import AdminAutomations from "@/components/AdminAutomations";
@@ -2308,6 +2309,10 @@ export default function Admin() {
                 Pasirinkite prekės ženklą. Rodomi visi lead'ai — Facebook paraiškų formos, komentarai
                 po įrašais/reklamomis ir seni įrašai ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
               </p>
+
+              <MetaHealthPanel />
+
+
 
               <div className="grid gap-2 sm:grid-cols-3">
                 <div className="relative sm:col-span-1">

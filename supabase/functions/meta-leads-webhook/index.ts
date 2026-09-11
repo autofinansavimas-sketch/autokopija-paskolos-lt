@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logEvent, humanMetaError } from "../_shared/metaPages.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -109,12 +110,19 @@ serve(async (req: Request) => {
   try {
     const bodyText = await req.text();
 
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
     // Verify signature
     const signature = req.headers.get("x-hub-signature-256");
     if (signature) {
       const valid = await verifySignature(bodyText, signature);
       if (!valid) {
         console.error("Invalid webhook signature");
+        await logEvent(supabase, {
+          event_type: "webhook_validation",
+          status: "error",
+          message: "Neteisingas Facebook užklausos parašas – užklausa atmesta.",
+        });
         return new Response("Invalid signature", { status: 403 });
       }
     }
@@ -122,17 +130,26 @@ serve(async (req: Request) => {
     const body = JSON.parse(bodyText);
     console.log("Received Meta webhook:", JSON.stringify(body));
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
     // Process each entry
     for (const entry of body.entry || []) {
       const pageId = entry.id ? String(entry.id) : null;
       const page = resolvePage(pageId);
 
+      await logEvent(supabase, {
+        page_id: pageId,
+        brand: page?.brand ?? null,
+        event_type: "webhook_received",
+        status: page ? "success" : "error",
+        message: page
+          ? `Gauta ${entry.changes?.length ?? 0} pakeitimų iš Facebook puslapio`
+          : `Nėra sukonfigūruoto prieigos rakto Facebook puslapiui ${pageId} – praleista.`,
+      });
+
       if (!page) {
         console.error(`No page access token configured for page_id ${pageId} — skipping entry`);
         continue;
       }
+
 
       for (const change of entry.changes || []) {
         try {
@@ -149,11 +166,25 @@ serve(async (req: Request) => {
 
             if (existing) {
               console.log(`Lead ${leadgenId} already exists, skipping`);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_dedup",
+                status: "skipped", message: "Toks Facebook lead'as jau yra sistemoje.", fb_lead_id: String(leadgenId),
+              });
               continue;
             }
 
             // Fetch full lead data from Meta
-            const leadData = await fetchLeadData(leadgenId, page.token);
+            let leadData: any;
+            try {
+              leadData = await fetchLeadData(leadgenId, page.token);
+            } catch (fetchErr) {
+              const msg = humanMetaError(fetchErr instanceof Error ? fetchErr.message : fetchErr);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_fetch",
+                status: "error", message: msg, fb_lead_id: String(leadgenId),
+              });
+              throw fetchErr;
+            }
             const fields = leadData.field_data || [];
 
             const name = getField(fields, "full_name") || getField(fields, "first_name");
@@ -177,8 +208,17 @@ serve(async (req: Request) => {
 
             if (error) {
               console.error("Error inserting lead:", error);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_insert",
+                status: "error", message: error.message, fb_lead_id: String(leadgenId),
+              });
             } else {
               console.log(`Lead ${leadgenId} imported as submission ${inserted.id}`);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_insert",
+                status: "success", message: "Naujas Facebook lead'as įrašytas.",
+                fb_lead_id: String(leadgenId), submission_id: inserted.id,
+              });
             }
             continue;
           }
@@ -201,6 +241,10 @@ serve(async (req: Request) => {
 
             if (existing) {
               console.log(`Comment ${commentId} already imported, skipping`);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "comment_dedup",
+                status: "skipped", message: "Toks Facebook komentaras jau yra sistemoje.", fb_lead_id: dedupId,
+              });
               continue;
             }
 
@@ -224,6 +268,10 @@ serve(async (req: Request) => {
 
             if (error || !inserted) {
               console.error("Error inserting FB comment lead:", error);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "comment_insert",
+                status: "error", message: error?.message ?? "Nepavyko įrašyti komentaro lead'o.", fb_lead_id: dedupId,
+              });
               continue;
             }
 
@@ -239,12 +287,23 @@ serve(async (req: Request) => {
             }
 
             console.log(`FB comment ${commentId} imported as submission ${inserted.id}`);
+            await logEvent(supabase, {
+              page_id: pageId, brand: page.brand, event_type: "comment_insert",
+              status: "success", message: "Naujas Facebook komentaras įrašytas.",
+              fb_lead_id: dedupId, submission_id: inserted.id,
+            });
           }
         } catch (changeError) {
           console.error("Error processing change, continuing:", changeError);
+          await logEvent(supabase, {
+            page_id: pageId, brand: page.brand, event_type: "webhook_change",
+            status: "error",
+            message: humanMetaError(changeError instanceof Error ? changeError.message : changeError),
+          });
         }
       }
     }
+
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
