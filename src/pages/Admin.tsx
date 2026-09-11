@@ -51,7 +51,6 @@ import {
   PanelTopClose,
   PanelTopOpen,
   Facebook,
-  UsersRound
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -317,9 +316,9 @@ export default function Admin() {
     toast({ title: "Snaudžiama 24 val.", description: "Perspėjimas šiai kortelei išjungtas 24 val." });
   };
   const [activeTab, setActiveTab] = useState<string>("kanban");
-  const [allSearch, setAllSearch] = useState("");
-  const [allSourceFilter, setAllSourceFilter] = useState<string>("all");
-  const [allStatusFilter, setAllStatusFilter] = useState<string>("all");
+  const [leadSearch, setLeadSearch] = useState("");
+  const [leadSourceFilter, setLeadSourceFilter] = useState<string>("all");
+  const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
@@ -653,35 +652,8 @@ export default function Admin() {
     };
   }, [reminders]);
 
-  // Facebook leads (Meta webhook: lead forms + comments under posts/ads)
-  const facebookLeads = useMemo(
-    () =>
-      submissions.filter(
-        (s) => s.source === "facebook" || s.source === "facebook_comment"
-      ),
-    [submissions]
-  );
-
-  const autokopersLeads = useMemo(
-    () => facebookLeads.filter((s) => s.brand === "autokopers"),
-    [facebookLeads]
-  );
-
-  const autopaskolosLeads = useMemo(
-    () =>
-      facebookLeads.filter(
-        (s) =>
-          s.brand === "autopaskolos" ||
-          (!s.brand && s.source === "facebook")
-      ),
-    [facebookLeads]
-  );
-
-  // ===== Visi klientai (all historical + future records) =====
-  const isKopersRecord = (s: Submission) =>
-    s.brand === "autokopers" || s.source === "autokopers";
-
-  const getSourceLabel = (s: Submission) => {
+  // ===== Lead'ai: Facebook (Meta webhook) + visi seni įrašai toje pačioje kortelėje =====
+  const getSourceLabel = (s: Partial<Submission>) => {
     switch (s.source) {
       case "facebook_comment":
         return "FB komentaras";
@@ -694,31 +666,41 @@ export default function Admin() {
       case "import":
         return "Importuota";
       default:
-        return s.source || "Kita";
+        return s.source || "Kilmė nenurodyta";
     }
   };
 
-  const allClients = useMemo(() => {
-    const q = allSearch.trim().toLowerCase();
+  // Tikra Meta kilmė – tik jei duomenų bazėje realiai yra brand/page_id/fb_lead_id
+  const getOriginLabel = (s: Submission) => {
+    const isMeta = s.source === "facebook" || s.source === "facebook_comment";
+    if (isMeta) {
+      if (s.brand === "autokopers") return "Meta: Auto Kopers LT";
+      if (s.brand === "autopaskolos") return "Meta: Autopaskolos";
+      if (s.page_id) return `Meta puslapis ${s.page_id}`;
+    }
+    return "Kilmė nenurodyta";
+  };
+
+  const facebookLeads = useMemo(
+    () =>
+      submissions.filter(
+        (s) => s.source === "facebook" || s.source === "facebook_comment"
+      ),
+    [submissions]
+  );
+
+  // Visi lead'ai (seni ir nauji) – rodomi Facebook skiltyje ta pačia kortele
+  const leadCards = useMemo(() => {
+    const q = leadSearch.trim().toLowerCase();
     return submissions.filter((s) => {
-      if (allSourceFilter !== "all" && s.source !== allSourceFilter) return false;
-      if (allStatusFilter !== "all" && s.status !== allStatusFilter) return false;
+      if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
+      if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
       if (!q) return true;
       return [s.name, s.phone, s.email, s.amount, s.loan_type]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, allSearch, allSourceFilter, allStatusFilter]);
-
-  const allKopersClients = useMemo(
-    () => allClients.filter(isKopersRecord),
-    [allClients]
-  );
-
-  const allAutopaskolosClients = useMemo(
-    () => allClients.filter((s) => !isKopersRecord(s)),
-    [allClients]
-  );
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
 
   const availableSources = useMemo(
     () => Array.from(new Set(submissions.map((s) => s.source).filter(Boolean))) as string[],
@@ -1444,9 +1426,14 @@ export default function Admin() {
                     <span className="font-medium text-sm break-words">
                       {submission.name || "Nežinomas"}
                     </span>
-                    <Badge variant="secondary" className="text-[10px] shrink-0">
-                      {getSourceLabel(submission)}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge variant="secondary" className="text-[10px]">
+                        {getSourceLabel(submission)}
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px] font-normal">
+                        {getOriginLabel(submission)}
+                      </Badge>
+                    </div>
                   </div>
 
                   <div className="text-sm text-muted-foreground space-y-1">
@@ -1744,7 +1731,7 @@ export default function Admin() {
 
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-4 sm:grid-cols-8 gap-1">
+          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-4 sm:grid-cols-7 gap-1">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Paraiškos</span>
@@ -1761,15 +1748,6 @@ export default function Admin() {
             <TabsTrigger value="calendar" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Kalendorius</span>
-            </TabsTrigger>
-            <TabsTrigger value="all-clients" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all relative">
-              <UsersRound className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs font-medium">Visi klientai</span>
-              {submissions.length > 0 && (
-                <Badge variant="secondary" className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px]">
-                  {submissions.length}
-                </Badge>
-              )}
             </TabsTrigger>
             <TabsTrigger value="facebook" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all relative">
               <Facebook className="h-4 w-4" />
@@ -2307,24 +2285,26 @@ export default function Admin() {
             )}
           </TabsContent>
           
-          {/* Visi klientai Tab */}
-          <TabsContent value="all-clients">
+          {/* Facebook Leads Tab – visi lead'ai (Facebook + seni įrašai) */}
+          <TabsContent value="facebook">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Visi klientai — seni ir nauji, iš visų šaltinių. Statusai ir komentarai tie patys, kaip kitose skiltyse.
+                Visi lead'ai vienoje vietoje: Facebook paraiškų formos, komentarai po įrašais/reklamomis
+                ir visi seni įrašai. Kiekvienoje kortelėje matomas tikras šaltinis ir kilmė
+                ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
               </p>
 
               <div className="grid gap-2 sm:grid-cols-3">
                 <div className="relative sm:col-span-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    value={allSearch}
-                    onChange={(e) => setAllSearch(e.target.value)}
+                    value={leadSearch}
+                    onChange={(e) => setLeadSearch(e.target.value)}
                     placeholder="Vardas, telefonas, el. paštas..."
                     className="pl-8 h-9 text-base"
                   />
                 </div>
-                <Select value={allSourceFilter} onValueChange={setAllSourceFilter}>
+                <Select value={leadSourceFilter} onValueChange={setLeadSourceFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Šaltinis" />
                   </SelectTrigger>
@@ -2332,12 +2312,12 @@ export default function Admin() {
                     <SelectItem value="all">Visi šaltiniai</SelectItem>
                     {availableSources.map((src) => (
                       <SelectItem key={src} value={src}>
-                        {getSourceLabel({ source: src } as Submission)}
+                        {getSourceLabel({ source: src })}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={allStatusFilter} onValueChange={setAllStatusFilter}>
+                <Select value={leadStatusFilter} onValueChange={setLeadStatusFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Statusas" />
                   </SelectTrigger>
@@ -2352,60 +2332,22 @@ export default function Admin() {
                 </Select>
               </div>
 
-              {allClients.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <UsersRound className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Pagal šiuos filtrus klientų nerasta</p>
-                </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                  {renderClientColumn(
-                    "Auto Kopers LT",
-                    allKopersClients,
-                    "bg-orange-500",
-                    "border-orange-200 dark:border-orange-900"
-                  )}
-                  {renderClientColumn(
-                    "Autopaskolos",
-                    allAutopaskolosClients,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Facebook Leads Tab */}
-          <TabsContent value="facebook">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Lead'ai, atėję per Facebook (paraiškų formos ir komentarai po įrašais/reklamomis).
-              </p>
-
-              {facebookLeads.length === 0 ? (
+              {leadCards.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Facebook className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Facebook lead'ų kol kas nėra</p>
+                  <p>Pagal šiuos filtrus lead'ų nerasta</p>
                 </div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                  {renderClientColumn(
-                    "Auto Kopers LT",
-                    autokopersLeads,
-                    "bg-orange-500",
-                    "border-orange-200 dark:border-orange-900"
-                  )}
-                  {renderClientColumn(
-                    "Autopaskolos",
-                    autopaskolosLeads,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
-                </div>
+                renderClientColumn(
+                  "Visi lead'ai",
+                  leadCards,
+                  "bg-blue-500",
+                  "border-blue-200 dark:border-blue-900"
+                )
               )}
             </div>
           </TabsContent>
+
 
           {/* Trash Tab */}
           <TabsContent value="trash">
