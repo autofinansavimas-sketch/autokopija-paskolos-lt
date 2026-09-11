@@ -170,6 +170,8 @@ const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
 const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,fb_form_name,fb_campaign_name,fb_ad_name,fb_platform,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
+// Nuo šios datos nauji Facebook lead'ai keliauja ir į bendras paraiškas
+const FB_SHARED_FROM = new Date("2026-09-11T00:00:00Z").getTime();
 
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
