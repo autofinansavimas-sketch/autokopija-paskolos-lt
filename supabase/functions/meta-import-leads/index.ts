@@ -4,6 +4,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildPageRegistry, humanMetaError, logEvent } from "../_shared/metaPages.ts";
+import { pickName, pickEmail, pickPhone, fieldNames } from "../_shared/leadFields.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -53,7 +54,7 @@ serve(async (req: Request) => {
   try {
     body = await req.json();
   } catch { /* default */ }
-  const mode = body?.mode === "import" ? "import" : "preview";
+  const mode = body?.mode === "import" ? "import" : body?.mode === "backfill" ? "backfill" : "preview";
   const brandFilter = typeof body?.brand === "string" ? body.brand : null;
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -111,15 +112,49 @@ serve(async (req: Request) => {
         message: `Facebook rado ${entry.total} lead'ų, nauji: ${entry.newCount}, dublikatai: ${entry.duplicates}`,
       });
 
+      if (mode === "backfill") {
+        entry.updated = 0;
+        entry.sampleFields = fieldNames(leads[0]?.field_data);
+        for (const lead of leads) {
+          const fields = lead.field_data || [];
+          const phone = pickPhone(fields);
+          const email = pickEmail(fields);
+          const name = pickName(fields);
+          const patch: Record<string, string> = {};
+          if (phone) patch.phone = phone;
+          if (email) patch.email = email;
+          if (name) patch.name = name;
+          if (!Object.keys(patch).length) continue;
+          const { data: rows } = await admin
+            .from("contact_submissions")
+            .select("id, phone, email, name")
+            .eq("fb_lead_id", String(lead.id));
+          for (const row of rows ?? []) {
+            const upd: Record<string, string> = {};
+            if (phone && (!row.phone || row.phone === "N/A")) upd.phone = phone;
+            if (email && (!row.email || row.email === "nera@fb.com")) upd.email = email;
+            if (name && !row.name) upd.name = name;
+            if (!Object.keys(upd).length) continue;
+            const { error } = await admin.from("contact_submissions").update(upd).eq("id", row.id);
+            if (error) entry.failed++;
+            else entry.updated++;
+          }
+        }
+        await logEvent(admin, {
+          page_id: page.pageId, brand: page.brand, event_type: "import_backfill",
+          status: "info", message: `Atnaujinta kontaktų: ${entry.updated}`,
+        });
+      }
+
       if (mode === "import") {
         for (const lead of fresh) {
           const fields = lead.field_data || [];
           const { data: inserted, error } = await admin
             .from("contact_submissions")
             .insert({
-              name: getField(fields, "full_name") || getField(fields, "first_name"),
-              email: getField(fields, "email") || "nera@fb.com",
-              phone: getField(fields, "phone_number") || "N/A",
+              name: pickName(fields) || getField(fields, "full_name"),
+              email: pickEmail(fields) || "nera@fb.com",
+              phone: pickPhone(fields) || "N/A",
               source: "facebook",
               status: "new",
               fb_lead_id: String(lead.id),

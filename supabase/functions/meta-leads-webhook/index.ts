@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logEvent, humanMetaError } from "../_shared/metaPages.ts";
+import { pickName, pickEmail, pickPhone, fieldNames } from "../_shared/leadFields.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -187,9 +188,16 @@ serve(async (req: Request) => {
             }
             const fields = leadData.field_data || [];
 
-            const name = getField(fields, "full_name") || getField(fields, "first_name");
-            const email = getField(fields, "email") || "nera@fb.com";
-            const phone = getField(fields, "phone_number") || "N/A";
+            const name = pickName(fields) || getField(fields, "full_name") || getField(fields, "first_name");
+            const email = pickEmail(fields) || "nera@fb.com";
+            const phone = pickPhone(fields) || "N/A";
+            if (phone === "N/A") {
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_fields",
+                status: "warning", fb_lead_id: String(leadgenId),
+                message: `Telefono laukas neatpažintas. Formos laukai: ${fieldNames(fields).join(", ")}`,
+              });
+            }
 
             const { data: inserted, error } = await supabase
               .from("contact_submissions")
