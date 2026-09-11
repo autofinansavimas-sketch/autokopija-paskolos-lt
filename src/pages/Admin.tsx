@@ -332,6 +332,18 @@ export default function Admin() {
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
   const [fbVisibleCount, setFbVisibleCount] = useState(20);
+  const [fbView, setFbView] = useState<"cards" | "list">(() => {
+    try {
+      return (localStorage.getItem("admin_fb_view") as "cards" | "list") || "cards";
+    } catch {
+      return "cards";
+    }
+  });
+  const setFbViewPersisted = (v: "cards" | "list") => {
+    setFbView(v);
+    try { localStorage.setItem("admin_fb_view", v); } catch { /* ignore */ }
+  };
+
   const [fbBulkDeleting, setFbBulkDeleting] = useState(false);
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
