@@ -317,6 +317,9 @@ export default function Admin() {
     toast({ title: "Snaudžiama 24 val.", description: "Perspėjimas šiai kortelei išjungtas 24 val." });
   };
   const [activeTab, setActiveTab] = useState<string>("kanban");
+  const [allSearch, setAllSearch] = useState("");
+  const [allSourceFilter, setAllSourceFilter] = useState<string>("all");
+  const [allStatusFilter, setAllStatusFilter] = useState<string>("all");
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
