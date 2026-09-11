@@ -2360,16 +2360,16 @@ export default function Admin() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
                   {renderClientColumn(
-                    "Autopaskolos",
-                    allAutopaskolosClients,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
-                  {renderClientColumn(
                     "Auto Kopers LT",
                     allKopersClients,
                     "bg-orange-500",
                     "border-orange-200 dark:border-orange-900"
+                  )}
+                  {renderClientColumn(
+                    "Autopaskolos",
+                    allAutopaskolosClients,
+                    "bg-blue-500",
+                    "border-blue-200 dark:border-blue-900"
                   )}
                 </div>
               )}
