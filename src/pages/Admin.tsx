@@ -674,6 +674,53 @@ export default function Admin() {
     [facebookLeads]
   );
 
+  // ===== Visi klientai (all historical + future records) =====
+  const isKopersRecord = (s: Submission) =>
+    s.brand === "autokopers" || s.source === "autokopers";
+
+  const getSourceLabel = (s: Submission) => {
+    switch (s.source) {
+      case "facebook_comment":
+        return "FB komentaras";
+      case "facebook":
+        return "FB lead forma";
+      case "autopaskolos":
+        return "Autopaskolos.lt";
+      case "autokopers":
+        return "Auto Kopers LT";
+      case "import":
+        return "Importuota";
+      default:
+        return s.source || "Kita";
+    }
+  };
+
+  const allClients = useMemo(() => {
+    const q = allSearch.trim().toLowerCase();
+    return submissions.filter((s) => {
+      if (allSourceFilter !== "all" && s.source !== allSourceFilter) return false;
+      if (allStatusFilter !== "all" && s.status !== allStatusFilter) return false;
+      if (!q) return true;
+      return [s.name, s.phone, s.email, s.amount, s.loan_type]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q));
+    });
+  }, [submissions, allSearch, allSourceFilter, allStatusFilter]);
+
+  const allKopersClients = useMemo(
+    () => allClients.filter(isKopersRecord),
+    [allClients]
+  );
+
+  const allAutopaskolosClients = useMemo(
+    () => allClients.filter((s) => !isKopersRecord(s)),
+    [allClients]
+  );
+
+  const availableSources = useMemo(
+    () => Array.from(new Set(submissions.map((s) => s.source).filter(Boolean))) as string[],
+    [submissions]
+  );
 
   // Generate SMS link with follow-up message
   const getSmsLink = (phone: string) => {
