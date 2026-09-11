@@ -268,6 +268,10 @@ serve(async (req: Request) => {
 
             if (error || !inserted) {
               console.error("Error inserting FB comment lead:", error);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "comment_insert",
+                status: "error", message: error?.message ?? "Nepavyko įrašyti komentaro lead'o.", fb_lead_id: dedupId,
+              });
               continue;
             }
 
@@ -283,12 +287,23 @@ serve(async (req: Request) => {
             }
 
             console.log(`FB comment ${commentId} imported as submission ${inserted.id}`);
+            await logEvent(supabase, {
+              page_id: pageId, brand: page.brand, event_type: "comment_insert",
+              status: "success", message: "Naujas Facebook komentaras įrašytas.",
+              fb_lead_id: dedupId, submission_id: inserted.id,
+            });
           }
         } catch (changeError) {
           console.error("Error processing change, continuing:", changeError);
+          await logEvent(supabase, {
+            page_id: pageId, brand: page.brand, event_type: "webhook_change",
+            status: "error",
+            message: humanMetaError(changeError instanceof Error ? changeError.message : changeError),
+          });
         }
       }
     }
+
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
