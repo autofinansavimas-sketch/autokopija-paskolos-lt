@@ -115,31 +115,55 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
 
   const errorEvents = (data?.recentEvents ?? []).filter((e) => e.status === "error");
 
+  const overall: PageHealth["state"] = (() => {
+    const states = (data?.pages ?? []).map((p) => p.state);
+    if (states.length === 0) return "unknown";
+    if (states.includes("error")) return "error";
+    if (states.includes("warning")) return "warning";
+    if (states.every((s) => s === "healthy")) return "healthy";
+    return "unknown";
+  })();
+  const dotClass =
+    overall === "healthy" ? "bg-green-500"
+    : overall === "warning" ? "bg-amber-500"
+    : overall === "error" ? "bg-destructive"
+    : "bg-muted-foreground/40";
+
   return (
-    <Card className="border-blue-200 dark:border-blue-900">
-      <CardHeader className="pb-3">
+    <Card className="border-border/60">
+      <CardHeader className="py-2 px-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-base">Facebook ryšys</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              Tikrinta: {data ? fmt(data.checkedAt) : "—"}
-            </span>
-            <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              <span className="ml-1 text-xs">Atnaujinti būseną</span>
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowErrors((v) => !v)}>
-              <ListFilter className="h-4 w-4" />
-              <span className="ml-1 text-xs">Rodyti klaidas ({errorEvents.length})</span>
-            </Button>
-            <Button size="sm" variant="secondary" onClick={runPreview} disabled={importing}>
-              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              <span className="ml-1 text-xs">Importuoti ankstesnius Facebook lead'us</span>
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className={`h-2 w-2 rounded-full ${dotClass}`} />
+            <span>Facebook ryšys</span>
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </button>
+          {expanded && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-muted-foreground">
+                Tikrinta: {data ? fmt(data.checkedAt) : "—"}
+              </span>
+              <Button size="sm" variant="ghost" onClick={refresh} disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                <span className="ml-1 text-xs">Atnaujinti</span>
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowErrors((v) => !v)}>
+                <ListFilter className="h-4 w-4" />
+                <span className="ml-1 text-xs">Klaidos ({errorEvents.length})</span>
+              </Button>
+              <Button size="sm" variant="ghost" onClick={runPreview} disabled={importing}>
+                {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                <span className="ml-1 text-xs">Importuoti senesnius</span>
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className={`space-y-4 px-3 pb-3 ${expanded ? "" : "hidden"}`}>
         <div className="grid gap-3 sm:grid-cols-2">
           {(data?.pages ?? []).map((p) => {
             const meta = stateMeta[p.state] ?? stateMeta.unknown;
