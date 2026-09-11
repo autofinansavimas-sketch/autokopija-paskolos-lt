@@ -322,6 +322,10 @@ export default function Admin() {
   const [leadSourceFilter, setLeadSourceFilter] = useState<string>("all");
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [fbBrandTab, setFbBrandTab] = useState<string>("autokopers");
+  const [fbSelected, setFbSelected] = useState<string[]>([]);
+  const [fbExpanded, setFbExpanded] = useState<string[]>([]);
+  const [fbVisibleCount, setFbVisibleCount] = useState(20);
+  const [fbBulkDeleting, setFbBulkDeleting] = useState(false);
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
