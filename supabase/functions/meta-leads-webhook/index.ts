@@ -110,12 +110,19 @@ serve(async (req: Request) => {
   try {
     const bodyText = await req.text();
 
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
     // Verify signature
     const signature = req.headers.get("x-hub-signature-256");
     if (signature) {
       const valid = await verifySignature(bodyText, signature);
       if (!valid) {
         console.error("Invalid webhook signature");
+        await logEvent(supabase, {
+          event_type: "webhook_validation",
+          status: "error",
+          message: "Neteisingas Facebook užklausos parašas – užklausa atmesta.",
+        });
         return new Response("Invalid signature", { status: 403 });
       }
     }
@@ -123,17 +130,26 @@ serve(async (req: Request) => {
     const body = JSON.parse(bodyText);
     console.log("Received Meta webhook:", JSON.stringify(body));
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
     // Process each entry
     for (const entry of body.entry || []) {
       const pageId = entry.id ? String(entry.id) : null;
       const page = resolvePage(pageId);
 
+      await logEvent(supabase, {
+        page_id: pageId,
+        brand: page?.brand ?? null,
+        event_type: "webhook_received",
+        status: page ? "success" : "error",
+        message: page
+          ? `Gauta ${entry.changes?.length ?? 0} pakeitimų iš Facebook puslapio`
+          : `Nėra sukonfigūruoto prieigos rakto Facebook puslapiui ${pageId} – praleista.`,
+      });
+
       if (!page) {
         console.error(`No page access token configured for page_id ${pageId} — skipping entry`);
         continue;
       }
+
 
       for (const change of entry.changes || []) {
         try {
