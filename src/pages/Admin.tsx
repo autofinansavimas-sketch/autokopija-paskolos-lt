@@ -319,6 +319,7 @@ export default function Admin() {
   const [leadSearch, setLeadSearch] = useState("");
   const [leadSourceFilter, setLeadSourceFilter] = useState<string>("all");
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
+  const [fbBrandTab, setFbBrandTab] = useState<string>("autokopers");
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
@@ -701,6 +702,21 @@ export default function Admin() {
         .some((v) => String(v).toLowerCase().includes(q));
     });
   }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
+
+  const isKopersRecord = (s: Submission) =>
+    s.brand === "autokopers" || s.source === "autokopers";
+
+  const kopersLeadCards = useMemo(
+    () => leadCards.filter(isKopersRecord),
+    [leadCards]
+  );
+
+  const autopaskolosLeadCards = useMemo(
+    () => leadCards.filter((s) => !isKopersRecord(s)),
+    [leadCards]
+  );
+
+
 
   const availableSources = useMemo(
     () => Array.from(new Set(submissions.map((s) => s.source).filter(Boolean))) as string[],
@@ -2285,13 +2301,12 @@ export default function Admin() {
             )}
           </TabsContent>
           
-          {/* Facebook Leads Tab – visi lead'ai (Facebook + seni įrašai) */}
+          {/* Facebook Leads Tab – du prekės ženklai */}
           <TabsContent value="facebook">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Visi lead'ai vienoje vietoje: Facebook paraiškų formos, komentarai po įrašais/reklamomis
-                ir visi seni įrašai. Kiekvienoje kortelėje matomas tikras šaltinis ir kilmė
-                ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
+                Pasirinkite prekės ženklą. Rodomi visi lead'ai — Facebook paraiškų formos, komentarai
+                po įrašais/reklamomis ir seni įrašai ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
               </p>
 
               <div className="grid gap-2 sm:grid-cols-3">
@@ -2332,19 +2347,34 @@ export default function Admin() {
                 </Select>
               </div>
 
-              {leadCards.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Facebook className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Pagal šiuos filtrus lead'ų nerasta</p>
-                </div>
-              ) : (
-                renderClientColumn(
-                  "Visi lead'ai",
-                  leadCards,
-                  "bg-blue-500",
-                  "border-blue-200 dark:border-blue-900"
-                )
-              )}
+              <Tabs value={fbBrandTab} onValueChange={setFbBrandTab}>
+                <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-2 gap-1">
+                  <TabsTrigger value="autokopers" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    <span className="text-xs font-medium">Auto Kopers LT ({kopersLeadCards.length})</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="autopaskolos" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
+                    <span className="text-xs font-medium">Autopaskolos.lt ({autopaskolosLeadCards.length})</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="autokopers" className="mt-4">
+                  {renderClientColumn(
+                    "Auto Kopers LT",
+                    kopersLeadCards,
+                    "bg-orange-500",
+                    "border-orange-200 dark:border-orange-900"
+                  )}
+                </TabsContent>
+
+                <TabsContent value="autopaskolos" className="mt-4">
+                  {renderClientColumn(
+                    "Autopaskolos.lt",
+                    autopaskolosLeadCards,
+                    "bg-blue-500",
+                    "border-blue-200 dark:border-blue-900"
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           </TabsContent>
 
