@@ -69,8 +69,9 @@ async function verifySignature(body: string, signature: string): Promise<boolean
 
 // Fetch lead details from Meta Graph API
 async function fetchLeadData(leadId: string, token: string) {
+  const fields = "id,created_time,field_data,form_id,ad_id,ad_name,adset_name,campaign_name,platform";
   const res = await fetch(
-    `https://graph.facebook.com/v21.0/${leadId}?access_token=${token}`
+    `https://graph.facebook.com/v21.0/${leadId}?fields=${fields}&access_token=${token}`
   );
   if (!res.ok) {
     const err = await res.text();
@@ -78,6 +79,19 @@ async function fetchLeadData(leadId: string, token: string) {
   }
   return await res.json();
 }
+
+async function fetchFormName(formId: string, token: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v21.0/${formId}?fields=name&access_token=${encodeURIComponent(token)}`
+    );
+    if (!res.ok) return null;
+    return (await res.json())?.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
 
 // Extract field value from lead data
 function getField(fieldData: any[], name: string): string | null {
