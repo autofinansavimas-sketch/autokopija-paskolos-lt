@@ -50,7 +50,8 @@ import {
   Moon,
   PanelTopClose,
   PanelTopOpen,
-  Facebook
+  Facebook,
+  UsersRound
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
