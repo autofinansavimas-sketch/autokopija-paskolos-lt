@@ -233,7 +233,6 @@ export function MetaHealthPanel() {
               {importing ? "Importuojama..." : "Patvirtinti importą"}
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </Card>
