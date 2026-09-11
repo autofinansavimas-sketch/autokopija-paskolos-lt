@@ -1168,6 +1168,9 @@ export default function Admin() {
     
     return submissions.filter(s => {
       if (s.status !== status) return false;
+      // Facebook lead'ai kol kas nerodomi "Nauji" stulpelyje – jie tvarkomi Facebook skiltyje
+      if (status === 'new' && isFacebookRecord(s)) return false;
+      
       
       // Apply quick filter only when search is empty, so client search always scans all active clients
       if (quickFilter && !query) {
