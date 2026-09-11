@@ -2801,6 +2801,25 @@ export default function Admin() {
                 </Select>
               </div>
 
+              <div className="flex items-center gap-1.5">
+                <Button
+                  size="sm"
+                  variant={fbView === "cards" ? "default" : "outline"}
+                  className="h-8 text-xs"
+                  onClick={() => setFbViewPersisted("cards")}
+                >
+                  Kortelės
+                </Button>
+                <Button
+                  size="sm"
+                  variant={fbView === "list" ? "default" : "outline"}
+                  className="h-8 text-xs"
+                  onClick={() => setFbViewPersisted("list")}
+                >
+                  Sąrašas
+                </Button>
+              </div>
+
               <Tabs value={fbBrandTab} onValueChange={setFbBrandTab}>
                 <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-2 gap-1">
                   <TabsTrigger value="autokopers" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
@@ -2812,23 +2831,28 @@ export default function Admin() {
                 </TabsList>
 
                 <TabsContent value="autokopers" className="mt-4">
-                  {renderClientColumn(
-                    "Auto Kopers LT",
-                    kopersLeadCards,
-                    "bg-orange-500",
-                    "border-orange-200 dark:border-orange-900"
-                  )}
+                  {fbView === "cards"
+                    ? renderLeadKanban(kopersLeadCards)
+                    : renderClientColumn(
+                        "Auto Kopers LT",
+                        kopersLeadCards,
+                        "bg-orange-500",
+                        "border-orange-200 dark:border-orange-900"
+                      )}
                 </TabsContent>
 
                 <TabsContent value="autopaskolos" className="mt-4">
-                  {renderClientColumn(
-                    "Autopaskolos.lt",
-                    autopaskolosLeadCards,
-                    "bg-blue-500",
-                    "border-blue-200 dark:border-blue-900"
-                  )}
+                  {fbView === "cards"
+                    ? renderLeadKanban(autopaskolosLeadCards)
+                    : renderClientColumn(
+                        "Autopaskolos.lt",
+                        autopaskolosLeadCards,
+                        "bg-blue-500",
+                        "border-blue-200 dark:border-blue-900"
+                      )}
                 </TabsContent>
               </Tabs>
+
             </div>
           </TabsContent>
 
