@@ -170,6 +170,8 @@ const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
 const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,fb_form_name,fb_campaign_name,fb_ad_name,fb_platform,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
+// Nuo šios datos nauji Facebook lead'ai keliauja ir į bendras paraiškas
+const FB_SHARED_FROM = new Date("2026-09-11T00:00:00Z").getTime();
 
 const DEFAULT_STATUS_CONFIG = [
   { value: "new", label: "Nauji", color: "bg-blue-500", borderColor: "border-blue-500" },
@@ -328,7 +330,7 @@ export default function Admin() {
   const [leadCampaignFilter, setLeadCampaignFilter] = useState<string>("all");
 
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
-  const [fbBrandTab, setFbBrandTab] = useState<string>("autokopers");
+  const [fbBrandTab, setFbBrandTab] = useState<string>("all");
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
   const [fbVisibleCount, setFbVisibleCount] = useState(20);
@@ -728,16 +730,28 @@ export default function Admin() {
     hasRealMetaId(s) &&
     Boolean(s.page_id);
 
+  // Nuo šios datos nauji Facebook lead'ai rodomi ir bendrose paraiškose.
+  // Senesni Facebook įrašai lieka tik Facebook skiltyje.
+  const isLegacyFacebookRecord = (s: Submission) =>
+    isFacebookRecord(s) && new Date(s.created_at).getTime() < FB_SHARED_FROM;
+
   const facebookLeads = useMemo(
     () => submissions.filter(isFacebookRecord),
     [submissions]
   );
+
+  const brandOf = (s: Submission) => {
+    if (s.brand === "autokopers" || s.page_id === "106074400938363") return "autokopers";
+    if (s.brand === "autopaskolos" || s.page_id === "873404112522750") return "autopaskolos";
+    return "other";
+  };
 
   // TIK tikri Facebook/Meta lead'ai – seni administratoriniai įrašai čia nerodomi
   const leadCards = useMemo(() => {
     const q = leadSearch.trim().toLowerCase();
     return submissions.filter((s) => {
       if (!isFacebookRecord(s)) return false;
+      if (fbBrandTab !== "all" && brandOf(s) !== fbBrandTab) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
       if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
       if (leadCampaignFilter !== "all" && (s.fb_campaign_name || "") !== leadCampaignFilter) return false;
@@ -746,7 +760,7 @@ export default function Admin() {
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter]);
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter, fbBrandTab]);
 
   const availableCampaigns = useMemo(
     () =>
@@ -761,17 +775,14 @@ export default function Admin() {
     [submissions]
   );
 
-
-  const isKopersRecord = (s: Submission) => s.page_id === "106074400938363";
-
   const kopersLeadCards = useMemo(
-    () => leadCards.filter(isKopersRecord),
-    [leadCards]
+    () => facebookLeads.filter((s) => brandOf(s) === "autokopers"),
+    [facebookLeads]
   );
 
   const autopaskolosLeadCards = useMemo(
-    () => leadCards.filter((s) => s.page_id === "873404112522750"),
-    [leadCards]
+    () => facebookLeads.filter((s) => brandOf(s) === "autopaskolos"),
+    [facebookLeads]
   );
 
 
@@ -1184,14 +1195,14 @@ export default function Admin() {
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     
     const todayCount = submissions.filter(s => {
-      if (isFacebookRecord(s)) return false;
+      if (isLegacyFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       created.setHours(0, 0, 0, 0);
       return created.getTime() === today.getTime();
     }).length;
     
     const weekCount = submissions.filter(s => {
-      if (isFacebookRecord(s)) return false;
+      if (isLegacyFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       return created >= weekAgo;
     }).length;
@@ -1202,14 +1213,14 @@ export default function Admin() {
     ).length;
     
     const noContactCount = submissions.filter(s => {
-      if (s.status !== 'new' || isFacebookRecord(s)) return false;
+      if (s.status !== 'new' || isLegacyFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       return created < threeDaysAgo;
     }).length;
 
     const staleCount = submissions.filter(s => {
       if (INACTIVE_STATUSES.has(s.status)) return false;
-      if (s.status === 'new' && isFacebookRecord(s)) return false;
+      if (isLegacyFacebookRecord(s)) return false;
       const snoozedUntil = snoozeMap[s.id];
       if (snoozedUntil && Date.now() < snoozedUntil) return false;
       const sComments = comments[s.id] || [];
@@ -1247,8 +1258,8 @@ export default function Admin() {
     
     return submissions.filter(s => {
       if (s.status !== status) return false;
-      // Meta/Facebook lead'ai tvarkomi tik Facebook skiltyje, nebendrų paraiškų kanban
-      if (isFacebookRecord(s)) return false;
+      // Senesni Meta/Facebook lead'ai tvarkomi tik Facebook skiltyje
+      if (isLegacyFacebookRecord(s)) return false;
 
       
       
@@ -2638,12 +2649,14 @@ export default function Admin() {
                                 <Badge 
                                   variant="outline" 
                                   className={`text-[9px] px-1.5 py-0 h-4 shrink-0 font-bold ${
-                                    submission.source === "autokopers" 
+                                    submission.source === "autokopers" || brandOf(submission) === "autokopers"
                                       ? "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800" 
                                       : "bg-primary/10 text-primary border-primary/20"
                                   }`}
                                 >
-                                  {submission.source === "autokopers" ? "AK" : "AP"}
+                                  {isFacebookRecord(submission)
+                                    ? brandOf(submission) === "autokopers" ? "FB · AK" : "FB · AP"
+                                    : submission.source === "autokopers" ? "AK" : "AP"}
                                 </Badge>
                               </div>
                               
@@ -2844,38 +2857,38 @@ export default function Admin() {
                 </Button>
               </div>
 
-              <Tabs value={fbBrandTab} onValueChange={setFbBrandTab}>
-                <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-2 gap-1">
-                  <TabsTrigger value="autokopers" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                    <span className="text-xs font-medium">Auto Kopers LT ({kopersLeadCards.length})</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="autopaskolos" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                    <span className="text-xs font-medium">Autopaskolos.lt ({autopaskolosLeadCards.length})</span>
-                  </TabsTrigger>
-                </TabsList>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { value: "all", label: `Visi (${facebookLeads.length})` },
+                  { value: "autokopers", label: `Auto Kopers LT (${kopersLeadCards.length})` },
+                  { value: "autopaskolos", label: `Autopaskolos.lt (${autopaskolosLeadCards.length})` },
+                ].map((b) => (
+                  <Button
+                    key={b.value}
+                    size="sm"
+                    variant={fbBrandTab === b.value ? "default" : "outline"}
+                    className="h-8 text-xs"
+                    onClick={() => setFbBrandTab(b.value)}
+                  >
+                    {b.label}
+                  </Button>
+                ))}
+              </div>
 
-                <TabsContent value="autokopers" className="mt-4">
-                  {fbView === "cards"
-                    ? renderLeadKanban(kopersLeadCards)
-                    : renderClientColumn(
-                        "Auto Kopers LT",
-                        kopersLeadCards,
-                        "bg-orange-500",
-                        "border-orange-200 dark:border-orange-900"
-                      )}
-                </TabsContent>
-
-                <TabsContent value="autopaskolos" className="mt-4">
-                  {fbView === "cards"
-                    ? renderLeadKanban(autopaskolosLeadCards)
-                    : renderClientColumn(
-                        "Autopaskolos.lt",
-                        autopaskolosLeadCards,
-                        "bg-blue-500",
-                        "border-blue-200 dark:border-blue-900"
-                      )}
-                </TabsContent>
-              </Tabs>
+              <div className="mt-2">
+                {fbView === "cards"
+                  ? renderLeadKanban(leadCards)
+                  : renderClientColumn(
+                      fbBrandTab === "autokopers"
+                        ? "Auto Kopers LT"
+                        : fbBrandTab === "autopaskolos"
+                        ? "Autopaskolos.lt"
+                        : "Visi Facebook lead'ai",
+                      leadCards,
+                      "bg-blue-500",
+                      "border-blue-200 dark:border-blue-900"
+                    )}
+              </div>
 
             </div>
           </TabsContent>
