@@ -1540,7 +1540,7 @@ export default function Admin() {
                   <span className="font-semibold text-sm truncate">{colConfig.label}</span>
                 </div>
                 <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
-                  {items.length}
+                  {total}
                 </Badge>
               </div>
 
