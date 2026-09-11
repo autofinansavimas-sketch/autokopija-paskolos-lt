@@ -317,9 +317,9 @@ export default function Admin() {
     toast({ title: "Snaudžiama 24 val.", description: "Perspėjimas šiai kortelei išjungtas 24 val." });
   };
   const [activeTab, setActiveTab] = useState<string>("kanban");
-  const [leadSearch, setAllSearch] = useState("");
-  const [leadSourceFilter, setAllSourceFilter] = useState<string>("all");
-  const [leadStatusFilter, setAllStatusFilter] = useState<string>("all");
+  const [leadSearch, setLeadSearch] = useState("");
+  const [leadSourceFilter, setLeadSourceFilter] = useState<string>("all");
+  const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
@@ -2319,12 +2319,12 @@ export default function Admin() {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     value={leadSearch}
-                    onChange={(e) => setAllSearch(e.target.value)}
+                    onChange={(e) => setLeadSearch(e.target.value)}
                     placeholder="Vardas, telefonas, el. paštas..."
                     className="pl-8 h-9 text-base"
                   />
                 </div>
-                <Select value={leadSourceFilter} onValueChange={setAllSourceFilter}>
+                <Select value={leadSourceFilter} onValueChange={setLeadSourceFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Šaltinis" />
                   </SelectTrigger>
@@ -2337,7 +2337,7 @@ export default function Admin() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={leadStatusFilter} onValueChange={setAllStatusFilter}>
+                <Select value={leadStatusFilter} onValueChange={setLeadStatusFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Statusas" />
                   </SelectTrigger>
