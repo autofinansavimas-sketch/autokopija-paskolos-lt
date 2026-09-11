@@ -691,10 +691,12 @@ export default function Admin() {
     [submissions]
   );
 
-  // Visi lead'ai (seni ir nauji) – rodomi Facebook skiltyje ta pačia kortele
+  // TIK tikri Facebook/Meta lead'ai – seni administratoriniai įrašai čia nerodomi
   const leadCards = useMemo(() => {
     const q = leadSearch.trim().toLowerCase();
     return submissions.filter((s) => {
+      const isMetaLead = s.source === "facebook" || s.source === "facebook_comment";
+      if (!isMetaLead) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
       if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
       if (!q) return true;
@@ -704,8 +706,7 @@ export default function Admin() {
     });
   }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
 
-  const isKopersRecord = (s: Submission) =>
-    s.brand === "autokopers" || s.source === "autokopers";
+  const isKopersRecord = (s: Submission) => s.brand === "autokopers";
 
   const kopersLeadCards = useMemo(
     () => leadCards.filter(isKopersRecord),
