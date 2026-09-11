@@ -2742,11 +2742,12 @@ export default function Admin() {
           {/* Facebook Leads Tab – du prekės ženklai */}
           <TabsContent value="facebook">
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Rodomi tik Meta Lead Ads įrašai su tikru Facebook identifikatoriumi ({facebookLeads.length}).
-              </p>
-
-              <MetaHealthPanel onImportComplete={() => fetchSubmissions()} />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Rodomi tik Meta Lead Ads įrašai su tikru Facebook identifikatoriumi ({facebookLeads.length}).
+                </p>
+                <MetaHealthPanel onImportComplete={() => fetchSubmissions()} />
+              </div>
 
 
 
