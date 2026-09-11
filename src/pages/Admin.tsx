@@ -325,6 +325,8 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [leadSearch, setLeadSearch] = useState("");
   const [leadSourceFilter, setLeadSourceFilter] = useState<string>("all");
+  const [leadCampaignFilter, setLeadCampaignFilter] = useState<string>("all");
+
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [fbBrandTab, setFbBrandTab] = useState<string>("autokopers");
   const [fbSelected, setFbSelected] = useState<string[]>([]);
