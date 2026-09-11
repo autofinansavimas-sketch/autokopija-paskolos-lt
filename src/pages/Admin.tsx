@@ -1445,7 +1445,7 @@ export default function Admin() {
                       {submission.name || "Nežinomas"}
                     </span>
                     <Badge variant="secondary" className="text-[10px] shrink-0">
-                      {submission.source === "facebook_comment" ? "Komentaras" : "Lead forma"}
+                      {getSourceLabel(submission)}
                     </Badge>
                   </div>
 
