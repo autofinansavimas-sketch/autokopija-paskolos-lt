@@ -2300,13 +2300,12 @@ export default function Admin() {
             )}
           </TabsContent>
           
-          {/* Facebook Leads Tab – visi lead'ai (Facebook + seni įrašai) */}
+          {/* Facebook Leads Tab – du prekės ženklai */}
           <TabsContent value="facebook">
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Visi lead'ai vienoje vietoje: Facebook paraiškų formos, komentarai po įrašais/reklamomis
-                ir visi seni įrašai. Kiekvienoje kortelėje matomas tikras šaltinis ir kilmė
-                ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
+                Pasirinkite prekės ženklą. Rodomi visi lead'ai — Facebook paraiškų formos, komentarai
+                po įrašais/reklamomis ir seni įrašai ({facebookLeads.length} iš Facebook, iš viso {submissions.length}).
               </p>
 
               <div className="grid gap-2 sm:grid-cols-3">
