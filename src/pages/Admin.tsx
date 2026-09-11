@@ -322,6 +322,10 @@ export default function Admin() {
   const [leadSourceFilter, setLeadSourceFilter] = useState<string>("all");
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [fbBrandTab, setFbBrandTab] = useState<string>("autokopers");
+  const [fbSelected, setFbSelected] = useState<string[]>([]);
+  const [fbExpanded, setFbExpanded] = useState<string[]>([]);
+  const [fbVisibleCount, setFbVisibleCount] = useState(20);
+  const [fbBulkDeleting, setFbBulkDeleting] = useState(false);
   const [myDayOnly, setMyDayOnly] = useState(false);
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
@@ -795,6 +799,42 @@ export default function Admin() {
         description: "Nepavyko atnaujinti statuso",
         variant: "destructive",
       });
+    }
+  };
+
+  // Masinis Facebook lead'ų perkėlimas į šiukšliadėžę
+  const handleBulkDelete = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    setFbBulkDeleting(true);
+    try {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from("contact_submissions")
+        .update({ deleted_at: now })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      const moved = submissions.filter((s) => ids.includes(s.id));
+      setSubmissions((prev) => prev.filter((s) => !ids.includes(s.id)));
+      setDeletedSubmissions((prev) => [
+        ...moved.map((s) => ({ ...s, deleted_at: now })),
+        ...prev,
+      ]);
+      setFbSelected([]);
+
+      toast({
+        title: `Perkelta į šiukšliadėžę (${ids.length})`,
+        description: "Įrašus galima atkurti šiukšliadėžės skirtuke",
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko perkelti įrašų",
+        variant: "destructive",
+      });
+    } finally {
+      setFbBulkDeleting(false);
     }
   };
 
@@ -1437,131 +1477,298 @@ export default function Admin() {
     leads: Submission[],
     colorClass: string,
     borderClass: string
-  ) => (
-    <Card className="flex flex-col h-full">
-      <div className={`px-4 py-3 border-b ${borderClass} bg-muted/30`}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${colorClass}`} />
-            {title}
-          </h3>
-          <Badge variant="secondary" className="text-xs">
-            {leads.length}
-          </Badge>
-        </div>
-      </div>
-      <CardContent className="p-3 flex-1 space-y-3 overflow-y-auto max-h-[calc(100vh-260px)]">
-        {leads.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
-            Įrašų kol kas nėra
+  ) => {
+    const visible = leads.slice(0, fbVisibleCount);
+    const visibleIds = visible.map((s) => s.id);
+    const selectedHere = fbSelected.filter((id) => visibleIds.includes(id));
+    const allSelected = visibleIds.length > 0 && selectedHere.length === visibleIds.length;
+
+    const toggleOne = (id: string) =>
+      setFbSelected((prev) =>
+        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      );
+    const toggleExpand = (id: string) =>
+      setFbExpanded((prev) =>
+        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      );
+
+    return (
+      <Card className="flex flex-col h-full">
+        <div className={`px-3 py-2.5 border-b ${borderClass} bg-muted/30 space-y-2`}>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${colorClass}`} />
+              {title}
+            </h3>
+            <Badge variant="secondary" className="text-xs">
+              {leads.length}
+            </Badge>
           </div>
-        ) : (
-          leads.map((submission) => {
-            const leadComments = comments[submission.id] || [];
-            return (
-              <Card key={submission.id} className="border-0 shadow-sm">
-                <CardContent className="p-3 space-y-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-medium text-sm break-words">
-                      {submission.name || "Nežinomas"}
-                    </span>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge variant="secondary" className="text-[10px]">
-                        {getSourceLabel(submission)}
-                      </Badge>
-                      <Badge variant="outline" className="text-[10px] font-normal">
-                        {getOriginLabel(submission)}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    {submission.phone && submission.phone !== "N/A" && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-3 w-3 shrink-0" />
-                        <a href={`tel:${submission.phone}`} className="hover:underline">
-                          {submission.phone}
-                        </a>
-                      </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs"
+              onClick={() =>
+                setFbSelected((prev) =>
+                  allSelected
+                    ? prev.filter((id) => !visibleIds.includes(id))
+                    : Array.from(new Set([...prev, ...visibleIds]))
+                )
+              }
+              disabled={visibleIds.length === 0}
+            >
+              {allSelected ? "Nužymėti" : "Pažymėti rodomus"}
+            </Button>
+            {selectedHere.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="h-7 text-xs" disabled={fbBulkDeleting}>
+                    {fbBulkDeleting ? (
+                      <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
                     )}
-                    {submission.email && submission.email !== "nera@fb.com" && (
-                      <div className="flex items-center gap-2 break-all">
-                        <Mail className="h-3 w-3 shrink-0" />
-                        {submission.email}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3 w-3 shrink-0" />
-                      {formatDate(submission.created_at)}
-                    </div>
-                  </div>
-
-                  <Select
-                    value={submission.status}
-                    onValueChange={(value) => handleStatusChange(submission.id, value)}
-                  >
-                    <SelectTrigger className="h-8 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusConfig.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>
-                          {s.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {leadComments.length > 0 && (
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                      {leadComments.map((comment) => {
-                        const { operator: opName, body } = parseOperatorTag(comment.comment);
-                        return (
-                          <div key={comment.id} className="bg-muted/50 rounded-md p-2">
-                            <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              {opName && <OperatorBadge name={opName} />}
-                              <span className="text-[11px] text-muted-foreground">
-                                {formatShortDate(comment.created_at)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Textarea
-                      value={newComments[submission.id] || ""}
-                      onChange={(e) =>
-                        setNewComments((prev) => ({ ...prev, [submission.id]: e.target.value }))
-                      }
-                      placeholder="Komentaras..."
-                      className="min-h-[36px] text-base"
-                      rows={1}
-                    />
-                    <Button
-                      size="sm"
-                      className="shrink-0"
-                      onClick={() => handleAddComment(submission.id)}
-                      disabled={submittingComment === submission.id || !(newComments[submission.id] || "").trim()}
+                    Ištrinti ({selectedHere.length})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Perkelti į šiukšliadėžę?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Pažymėti {selectedHere.length} įrašai bus perkelti į šiukšliadėžę. Juos galėsite atkurti.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleBulkDelete(selectedHere)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      {submittingComment === submission.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
+                      Perkelti
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        </div>
+
+        <CardContent className="p-2 flex-1 space-y-1.5 overflow-y-auto max-h-[calc(100vh-300px)]">
+          {leads.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
+              Įrašų kol kas nėra
+            </div>
+          ) : (
+            <>
+              {visible.map((submission) => {
+                const leadComments = comments[submission.id] || [];
+                const isOpen = fbExpanded.includes(submission.id);
+                const isSelected = fbSelected.includes(submission.id);
+                const statusLabel =
+                  statusConfig.find((s) => s.value === submission.status)?.label || submission.status;
+
+                return (
+                  <div
+                    key={submission.id}
+                    className={`rounded-lg border transition-colors ${
+                      isSelected ? "border-primary bg-primary/5" : "bg-card"
+                    }`}
+                  >
+                    {/* Kompaktiška eilutė */}
+                    <div className="flex items-center gap-2 p-2">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleOne(submission.id)}
+                        className="h-4 w-4 shrink-0 accent-primary cursor-pointer"
+                        aria-label="Pažymėti įrašą"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(submission.id)}
+                        className="flex-1 min-w-0 text-left"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">
+                            {submission.name || "Nežinomas"}
+                          </span>
+                          {leadComments.length > 0 && (
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+                              <MessageSquare className="h-3 w-3" />
+                              {leadComments.length}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <span className="truncate">
+                            {submission.phone && submission.phone !== "N/A"
+                              ? submission.phone
+                              : "be numerio"}
+                          </span>
+                          <span className="shrink-0">{formatShortDate(submission.created_at)}</span>
+                        </div>
+                      </button>
+                      <Badge variant="outline" className="text-[10px] shrink-0 hidden sm:inline-flex">
+                        {statusLabel}
+                      </Badge>
+                      {submission.phone && submission.phone !== "N/A" && (
+                        <Button asChild size="icon" variant="ghost" className="h-7 w-7 shrink-0">
+                          <a href={`tel:${submission.phone}`} aria-label="Skambinti">
+                            <Phone className="h-3.5 w-3.5" />
+                          </a>
+                        </Button>
                       )}
-                    </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                            aria-label="Ištrinti"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Perkelti į šiukšliadėžę?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {submission.name || "Šis įrašas"} bus perkeltas į šiukšliadėžę ir jį galėsite atkurti.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteSubmission(submission.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Perkelti
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      <button
+                        type="button"
+                        onClick={() => toggleExpand(submission.id)}
+                        className="shrink-0 text-muted-foreground"
+                        aria-label="Išskleisti"
+                      >
+                        {isOpen ? (
+                          <PanelTopClose className="h-4 w-4" />
+                        ) : (
+                          <PanelTopOpen className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Išskleista informacija */}
+                    {isOpen && (
+                      <div className="px-2 pb-2 space-y-2.5 border-t pt-2.5">
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="secondary" className="text-[10px]">
+                            {getSourceLabel(submission)}
+                          </Badge>
+                          <Badge variant="outline" className="text-[10px] font-normal">
+                            {getOriginLabel(submission)}
+                          </Badge>
+                        </div>
+
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          {submission.email && submission.email !== "nera@fb.com" && (
+                            <div className="flex items-center gap-2 break-all">
+                              <Mail className="h-3 w-3 shrink-0" />
+                              {submission.email}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-3 w-3 shrink-0" />
+                            {formatDate(submission.created_at)}
+                          </div>
+                        </div>
+
+                        <Select
+                          value={submission.status}
+                          onValueChange={(value) => handleStatusChange(submission.id, value)}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {statusConfig.map((s) => (
+                              <SelectItem key={s.value} value={s.value}>
+                                {s.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {leadComments.length > 0 && (
+                          <div className="space-y-2 max-h-32 overflow-y-auto">
+                            {leadComments.map((comment) => {
+                              const { operator: opName, body } = parseOperatorTag(comment.comment);
+                              return (
+                                <div key={comment.id} className="bg-muted/50 rounded-md p-2">
+                                  <p className="text-sm whitespace-pre-wrap break-words">{body}</p>
+                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    {opName && <OperatorBadge name={opName} />}
+                                    <span className="text-[11px] text-muted-foreground">
+                                      {formatShortDate(comment.created_at)}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        <div className="flex gap-2">
+                          <Textarea
+                            value={newComments[submission.id] || ""}
+                            onChange={(e) =>
+                              setNewComments((prev) => ({ ...prev, [submission.id]: e.target.value }))
+                            }
+                            placeholder="Komentaras..."
+                            className="min-h-[36px] text-base"
+                            rows={1}
+                          />
+                          <Button
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => handleAddComment(submission.id)}
+                            disabled={
+                              submittingComment === submission.id ||
+                              !(newComments[submission.id] || "").trim()
+                            }
+                          >
+                            {submittingComment === submission.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
-      </CardContent>
-    </Card>
-  );
+                );
+              })}
+
+              {leads.length > visible.length && (
+                <Button
+                  variant="outline"
+                  className="w-full h-8 text-xs"
+                  onClick={() => setFbVisibleCount((c) => c + 20)}
+                >
+                  Rodyti daugiau ({leads.length - visible.length})
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
