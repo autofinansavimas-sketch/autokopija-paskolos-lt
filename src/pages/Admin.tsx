@@ -332,6 +332,7 @@ export default function Admin() {
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
   const [fbVisibleCount, setFbVisibleCount] = useState(20);
+  const [fbColumnLimits, setFbColumnLimits] = useState<Record<string, number>>({});
   const [fbView, setFbView] = useState<"cards" | "list">(() => {
     try {
       return (localStorage.getItem("admin_fb_view") as "cards" | "list") || "cards";
@@ -1183,15 +1184,18 @@ export default function Admin() {
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     
     const todayCount = submissions.filter(s => {
+      if (isFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       created.setHours(0, 0, 0, 0);
       return created.getTime() === today.getTime();
     }).length;
     
     const weekCount = submissions.filter(s => {
+      if (isFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       return created >= weekAgo;
     }).length;
+    
     
     const withRemindersCount = submissions.filter(s => 
       reminders.some(r => r.submission_id === s.id && !r.completed)
@@ -1508,14 +1512,17 @@ export default function Admin() {
   };
 
   const renderLeadKanban = (leads: Submission[]) => {
-    const columns = statusConfig.map((colConfig) => ({
-      colConfig,
-      items: leads.filter((s) => s.status === colConfig.value),
-    }));
+    const columns = statusConfig.map((colConfig) => {
+      const all = leads
+        .filter((s) => s.status === colConfig.value)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const limit = fbColumnLimits[colConfig.value] ?? 20;
+      return { colConfig, items: all.slice(0, limit), total: all.length };
+    });
 
     return (
       <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
-        {columns.map(({ colConfig, items }) => {
+        {columns.map(({ colConfig, items, total }) => {
           const isDropTarget = dragOverColumn === colConfig.value;
           return (
             <div
@@ -1533,7 +1540,7 @@ export default function Admin() {
                   <span className="font-semibold text-sm truncate">{colConfig.label}</span>
                 </div>
                 <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
-                  {items.length}
+                  {total}
                 </Badge>
               </div>
 
@@ -1646,6 +1653,21 @@ export default function Admin() {
                       </Card>
                     );
                   })
+                )}
+                {total > items.length && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() =>
+                      setFbColumnLimits((prev) => ({
+                        ...prev,
+                        [colConfig.value]: (prev[colConfig.value] ?? 20) + 20,
+                      }))
+                    }
+                  >
+                    Rodyti daugiau ({total - items.length})
+                  </Button>
                 )}
               </div>
             </div>
