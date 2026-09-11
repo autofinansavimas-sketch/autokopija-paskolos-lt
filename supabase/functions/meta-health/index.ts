@@ -133,6 +133,12 @@ serve(async (req: Request) => {
         base.tokenUsable = false;
         base.state = "error";
         base.error = humanMetaError(infoBody);
+        try {
+          const err = JSON.parse(infoBody)?.error ?? {};
+          base.metaCode = err?.code ?? null;
+          base.metaSubcode = err?.error_subcode ?? null;
+          base.metaMessage = String(err?.message ?? "").slice(0, 400);
+        } catch { /* ignore */ }
         await logEvent(admin, { page_id: page.pageId, brand: cfg.brand, event_type: "health_check", status: "error", message: base.error });
         results.push(base);
         continue;
