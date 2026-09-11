@@ -55,7 +55,7 @@ const stateMeta: Record<string, { label: string; className: string; Icon: typeof
   unknown: { label: "Nežinoma", className: "bg-muted text-muted-foreground", Icon: HelpCircle },
 };
 
-export function MetaHealthPanel() {
+export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () => void | Promise<void> }) {
   const [data, setData] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
@@ -105,6 +105,7 @@ export function MetaHealthPanel() {
       setPreview(null);
       setConfirmOpen(false);
       await refresh();
+      await onImportComplete?.();
     } catch {
       toast.error("Importas nepavyko");
     } finally {
