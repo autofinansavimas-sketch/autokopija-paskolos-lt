@@ -51,7 +51,6 @@ import {
   PanelTopClose,
   PanelTopOpen,
   Facebook,
-  UsersRound
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -1732,7 +1731,7 @@ export default function Admin() {
 
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-4 sm:grid-cols-8 gap-1">
+          <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-4 sm:grid-cols-7 gap-1">
             <TabsTrigger value="kanban" className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline text-xs font-medium">Paraiškos</span>
