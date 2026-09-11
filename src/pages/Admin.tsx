@@ -1511,10 +1511,13 @@ export default function Admin() {
   };
 
   const renderLeadKanban = (leads: Submission[]) => {
-    const columns = statusConfig.map((colConfig) => ({
-      colConfig,
-      items: leads.filter((s) => s.status === colConfig.value),
-    }));
+    const columns = statusConfig.map((colConfig) => {
+      const all = leads
+        .filter((s) => s.status === colConfig.value)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const limit = fbColumnLimits[colConfig.value] ?? 20;
+      return { colConfig, items: all.slice(0, limit), total: all.length };
+    });
 
     return (
       <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
