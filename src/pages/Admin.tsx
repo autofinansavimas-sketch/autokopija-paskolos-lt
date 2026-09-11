@@ -1195,14 +1195,14 @@ export default function Admin() {
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
     
     const todayCount = submissions.filter(s => {
-      if (isFacebookRecord(s)) return false;
+      if (isLegacyFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       created.setHours(0, 0, 0, 0);
       return created.getTime() === today.getTime();
     }).length;
     
     const weekCount = submissions.filter(s => {
-      if (isFacebookRecord(s)) return false;
+      if (isLegacyFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       return created >= weekAgo;
     }).length;
@@ -1213,14 +1213,14 @@ export default function Admin() {
     ).length;
     
     const noContactCount = submissions.filter(s => {
-      if (s.status !== 'new' || isFacebookRecord(s)) return false;
+      if (s.status !== 'new' || isLegacyFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       return created < threeDaysAgo;
     }).length;
 
     const staleCount = submissions.filter(s => {
       if (INACTIVE_STATUSES.has(s.status)) return false;
-      if (s.status === 'new' && isFacebookRecord(s)) return false;
+      if (isLegacyFacebookRecord(s)) return false;
       const snoozedUntil = snoozeMap[s.id];
       if (snoozedUntil && Date.now() < snoozedUntil) return false;
       const sComments = comments[s.id] || [];
@@ -1258,8 +1258,8 @@ export default function Admin() {
     
     return submissions.filter(s => {
       if (s.status !== status) return false;
-      // Meta/Facebook lead'ai tvarkomi tik Facebook skiltyje, nebendrų paraiškų kanban
-      if (isFacebookRecord(s)) return false;
+      // Senesni Meta/Facebook lead'ai tvarkomi tik Facebook skiltyje
+      if (isLegacyFacebookRecord(s)) return false;
 
       
       
