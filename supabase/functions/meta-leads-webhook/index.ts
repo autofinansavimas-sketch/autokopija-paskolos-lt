@@ -213,6 +213,9 @@ serve(async (req: Request) => {
               });
             }
 
+            const formId = leadData.form_id ? String(leadData.form_id) : null;
+            const formName = formId ? await fetchFormName(formId, page.token) : null;
+
             const { data: inserted, error } = await supabase
               .from("contact_submissions")
               .insert({
@@ -224,9 +227,15 @@ serve(async (req: Request) => {
                 fb_lead_id: leadgenId,
                 page_id: pageId,
                 brand: page.brand,
+                fb_form_id: formId,
+                fb_form_name: formName,
+                fb_campaign_name: leadData.campaign_name ?? null,
+                fb_ad_name: leadData.ad_name ?? null,
+                fb_platform: leadData.platform ?? null,
               })
               .select()
               .single();
+
 
             if (error) {
               console.error("Error inserting lead:", error);
