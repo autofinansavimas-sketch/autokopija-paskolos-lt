@@ -2588,16 +2588,30 @@ export default function Admin() {
 
 
 
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-4">
                 <div className="relative sm:col-span-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     value={leadSearch}
                     onChange={(e) => setLeadSearch(e.target.value)}
-                    placeholder="Vardas, telefonas, el. paštas..."
+                    placeholder="Vardas, telefonas, kampanija..."
                     className="pl-8 h-9 text-base"
                   />
                 </div>
+                <Select value={leadCampaignFilter} onValueChange={setLeadCampaignFilter}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Kampanija" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Visos kampanijos</SelectItem>
+                    {availableCampaigns.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
                 <Select value={leadSourceFilter} onValueChange={setLeadSourceFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Šaltinis" />
