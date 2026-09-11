@@ -1124,7 +1124,7 @@ export default function Admin() {
     ).length;
     
     const noContactCount = submissions.filter(s => {
-      if (s.status !== 'new') return false;
+      if (s.status !== 'new' || isFacebookRecord(s)) return false;
       const created = new Date(s.created_at);
       return created < threeDaysAgo;
     }).length;
