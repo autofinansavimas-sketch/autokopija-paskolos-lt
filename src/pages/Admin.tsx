@@ -127,6 +127,11 @@ interface Submission {
   page_id?: string | null;
   brand?: string | null;
   fb_lead_id?: string | null;
+  fb_form_name?: string | null;
+  fb_campaign_name?: string | null;
+  fb_ad_name?: string | null;
+  fb_platform?: string | null;
+
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -163,7 +168,7 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
 
 const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
-const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,created_at,updated_at,deleted_at";
+const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,fb_form_name,fb_campaign_name,fb_ad_name,fb_platform,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
 
 const DEFAULT_STATUS_CONFIG = [
@@ -320,6 +325,8 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<string>("kanban");
   const [leadSearch, setLeadSearch] = useState("");
   const [leadSourceFilter, setLeadSourceFilter] = useState<string>("all");
+  const [leadCampaignFilter, setLeadCampaignFilter] = useState<string>("all");
+
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
   const [fbBrandTab, setFbBrandTab] = useState<string>("autokopers");
   const [fbSelected, setFbSelected] = useState<string[]>([]);
@@ -720,12 +727,27 @@ export default function Admin() {
       if (!isFacebookRecord(s)) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
       if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
+      if (leadCampaignFilter !== "all" && (s.fb_campaign_name || "") !== leadCampaignFilter) return false;
       if (!q) return true;
-      return [s.name, s.phone, s.email, s.amount, s.loan_type]
+      return [s.name, s.phone, s.email, s.amount, s.loan_type, s.fb_campaign_name, s.fb_ad_name, s.fb_form_name]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter]);
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter]);
+
+  const availableCampaigns = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          submissions
+            .filter(isFacebookRecord)
+            .map((s) => s.fb_campaign_name)
+            .filter((v): v is string => Boolean(v && v.trim()))
+        )
+      ).sort(),
+    [submissions]
+  );
+
 
   const isKopersRecord = (s: Submission) => s.page_id === "106074400938363";
 
@@ -1672,7 +1694,31 @@ export default function Admin() {
                           <Badge variant="outline" className="text-[10px] font-normal">
                             {getOriginLabel(submission)}
                           </Badge>
+                          {submission.fb_platform && (
+                            <Badge variant="outline" className="text-[10px] font-normal capitalize">
+                              {submission.fb_platform}
+                            </Badge>
+                          )}
                         </div>
+
+                        {(submission.fb_campaign_name || submission.fb_ad_name || submission.fb_form_name) ? (
+                          <div className="rounded-md bg-muted/50 p-2 text-[11px] space-y-0.5">
+                            {submission.fb_campaign_name && (
+                              <div><span className="text-muted-foreground">Kampanija: </span>{submission.fb_campaign_name}</div>
+                            )}
+                            {submission.fb_ad_name && (
+                              <div><span className="text-muted-foreground">Reklama: </span>{submission.fb_ad_name}</div>
+                            )}
+                            {submission.fb_form_name && (
+                              <div><span className="text-muted-foreground">Forma: </span>{submission.fb_form_name}</div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-muted-foreground">
+                            Reklamos duomenų nėra – atnaujinkite juos per „Facebook ryšys“ → „Importuoti senesnius“.
+                          </p>
+                        )}
+
 
                         <div className="text-sm text-muted-foreground space-y-1">
                           {submission.email && submission.email !== "nera@fb.com" && (
@@ -2542,16 +2588,30 @@ export default function Admin() {
 
 
 
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-4">
                 <div className="relative sm:col-span-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     value={leadSearch}
                     onChange={(e) => setLeadSearch(e.target.value)}
-                    placeholder="Vardas, telefonas, el. paštas..."
+                    placeholder="Vardas, telefonas, kampanija..."
                     className="pl-8 h-9 text-base"
                   />
                 </div>
+                <Select value={leadCampaignFilter} onValueChange={setLeadCampaignFilter}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Kampanija" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Visos kampanijos</SelectItem>
+                    {availableCampaigns.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
                 <Select value={leadSourceFilter} onValueChange={setLeadSourceFilter}>
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue placeholder="Šaltinis" />
