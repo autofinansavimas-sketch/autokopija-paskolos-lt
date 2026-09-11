@@ -1427,9 +1427,14 @@ export default function Admin() {
                     <span className="font-medium text-sm break-words">
                       {submission.name || "Nežinomas"}
                     </span>
-                    <Badge variant="secondary" className="text-[10px] shrink-0">
-                      {getSourceLabel(submission)}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge variant="secondary" className="text-[10px]">
+                        {getSourceLabel(submission)}
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px] font-normal">
+                        {getOriginLabel(submission)}
+                      </Badge>
+                    </div>
                   </div>
 
                   <div className="text-sm text-muted-foreground space-y-1">
