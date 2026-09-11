@@ -241,6 +241,10 @@ serve(async (req: Request) => {
 
             if (existing) {
               console.log(`Comment ${commentId} already imported, skipping`);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "comment_dedup",
+                status: "skipped", message: "Toks Facebook komentaras jau yra sistemoje.", fb_lead_id: dedupId,
+              });
               continue;
             }
 
