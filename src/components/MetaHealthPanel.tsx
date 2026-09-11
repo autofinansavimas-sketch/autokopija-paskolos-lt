@@ -62,6 +62,7 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
   const [importing, setImporting] = useState(false);
   const [preview, setPreview] = useState<ImportPage[] | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
