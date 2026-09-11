@@ -172,6 +172,12 @@ serve(async (req: Request) => {
               page_id: page.pageId,
               brand: page.brand,
               created_at: lead.created_time || undefined,
+              fb_form_id: lead.__formId ?? (lead.form_id ? String(lead.form_id) : null),
+              fb_form_name: lead.__formName ?? null,
+              fb_campaign_name: lead.campaign_name ?? null,
+              fb_ad_name: lead.ad_name ?? null,
+              fb_platform: lead.platform ?? null,
+
             })
             .select("id")
             .single();
