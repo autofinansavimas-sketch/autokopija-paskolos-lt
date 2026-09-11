@@ -2855,38 +2855,38 @@ export default function Admin() {
                 </Button>
               </div>
 
-              <Tabs value={fbBrandTab} onValueChange={setFbBrandTab}>
-                <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl grid grid-cols-2 gap-1">
-                  <TabsTrigger value="autokopers" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                    <span className="text-xs font-medium">Auto Kopers LT ({kopersLeadCards.length})</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="autopaskolos" className="py-2 px-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                    <span className="text-xs font-medium">Autopaskolos.lt ({autopaskolosLeadCards.length})</span>
-                  </TabsTrigger>
-                </TabsList>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { value: "all", label: `Visi (${facebookLeads.length})` },
+                  { value: "autokopers", label: `Auto Kopers LT (${kopersLeadCards.length})` },
+                  { value: "autopaskolos", label: `Autopaskolos.lt (${autopaskolosLeadCards.length})` },
+                ].map((b) => (
+                  <Button
+                    key={b.value}
+                    size="sm"
+                    variant={fbBrandTab === b.value ? "default" : "outline"}
+                    className="h-8 text-xs"
+                    onClick={() => setFbBrandTab(b.value)}
+                  >
+                    {b.label}
+                  </Button>
+                ))}
+              </div>
 
-                <TabsContent value="autokopers" className="mt-4">
-                  {fbView === "cards"
-                    ? renderLeadKanban(kopersLeadCards)
-                    : renderClientColumn(
-                        "Auto Kopers LT",
-                        kopersLeadCards,
-                        "bg-orange-500",
-                        "border-orange-200 dark:border-orange-900"
-                      )}
-                </TabsContent>
-
-                <TabsContent value="autopaskolos" className="mt-4">
-                  {fbView === "cards"
-                    ? renderLeadKanban(autopaskolosLeadCards)
-                    : renderClientColumn(
-                        "Autopaskolos.lt",
-                        autopaskolosLeadCards,
-                        "bg-blue-500",
-                        "border-blue-200 dark:border-blue-900"
-                      )}
-                </TabsContent>
-              </Tabs>
+              <div className="mt-2">
+                {fbView === "cards"
+                  ? renderLeadKanban(leadCards)
+                  : renderClientColumn(
+                      fbBrandTab === "autokopers"
+                        ? "Auto Kopers LT"
+                        : fbBrandTab === "autopaskolos"
+                        ? "Autopaskolos.lt"
+                        : "Visi Facebook lead'ai",
+                      leadCards,
+                      "bg-blue-500",
+                      "border-blue-200 dark:border-blue-900"
+                    )}
+              </div>
 
             </div>
           </TabsContent>
