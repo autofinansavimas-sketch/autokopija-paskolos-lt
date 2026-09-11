@@ -1877,7 +1877,7 @@ export default function Admin() {
                           </div>
                         ) : (
                           <p className="text-[11px] text-muted-foreground">
-                            Reklamos duomenų nėra – atnaujinkite juos per „Facebook ryšys“ → „Importuoti senesnius“.
+                            Reklamos duomenų nėra – paspauskite „Importuoti senesnius“ viršuje.
                           </p>
                         )}
 
