@@ -728,16 +728,28 @@ export default function Admin() {
     hasRealMetaId(s) &&
     Boolean(s.page_id);
 
+  // Nuo šios datos nauji Facebook lead'ai rodomi ir bendrose paraiškose.
+  // Senesni Facebook įrašai lieka tik Facebook skiltyje.
+  const isLegacyFacebookRecord = (s: Submission) =>
+    isFacebookRecord(s) && new Date(s.created_at).getTime() < FB_SHARED_FROM;
+
   const facebookLeads = useMemo(
     () => submissions.filter(isFacebookRecord),
     [submissions]
   );
+
+  const brandOf = (s: Submission) => {
+    if (s.brand === "autokopers" || s.page_id === "106074400938363") return "autokopers";
+    if (s.brand === "autopaskolos" || s.page_id === "873404112522750") return "autopaskolos";
+    return "other";
+  };
 
   // TIK tikri Facebook/Meta lead'ai – seni administratoriniai įrašai čia nerodomi
   const leadCards = useMemo(() => {
     const q = leadSearch.trim().toLowerCase();
     return submissions.filter((s) => {
       if (!isFacebookRecord(s)) return false;
+      if (fbBrandTab !== "all" && brandOf(s) !== fbBrandTab) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
       if (leadStatusFilter !== "all" && s.status !== leadStatusFilter) return false;
       if (leadCampaignFilter !== "all" && (s.fb_campaign_name || "") !== leadCampaignFilter) return false;
@@ -746,7 +758,7 @@ export default function Admin() {
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter]);
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter, fbBrandTab]);
 
   const availableCampaigns = useMemo(
     () =>
@@ -761,17 +773,14 @@ export default function Admin() {
     [submissions]
   );
 
-
-  const isKopersRecord = (s: Submission) => s.page_id === "106074400938363";
-
   const kopersLeadCards = useMemo(
-    () => leadCards.filter(isKopersRecord),
-    [leadCards]
+    () => facebookLeads.filter((s) => brandOf(s) === "autokopers"),
+    [facebookLeads]
   );
 
   const autopaskolosLeadCards = useMemo(
-    () => leadCards.filter((s) => s.page_id === "873404112522750"),
-    [leadCards]
+    () => facebookLeads.filter((s) => brandOf(s) === "autopaskolos"),
+    [facebookLeads]
   );
 
 
