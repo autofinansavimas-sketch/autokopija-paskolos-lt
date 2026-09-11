@@ -166,11 +166,25 @@ serve(async (req: Request) => {
 
             if (existing) {
               console.log(`Lead ${leadgenId} already exists, skipping`);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_dedup",
+                status: "skipped", message: "Toks Facebook lead'as jau yra sistemoje.", fb_lead_id: String(leadgenId),
+              });
               continue;
             }
 
             // Fetch full lead data from Meta
-            const leadData = await fetchLeadData(leadgenId, page.token);
+            let leadData: any;
+            try {
+              leadData = await fetchLeadData(leadgenId, page.token);
+            } catch (fetchErr) {
+              const msg = humanMetaError(fetchErr instanceof Error ? fetchErr.message : fetchErr);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_fetch",
+                status: "error", message: msg, fb_lead_id: String(leadgenId),
+              });
+              throw fetchErr;
+            }
             const fields = leadData.field_data || [];
 
             const name = getField(fields, "full_name") || getField(fields, "first_name");
@@ -194,8 +208,17 @@ serve(async (req: Request) => {
 
             if (error) {
               console.error("Error inserting lead:", error);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_insert",
+                status: "error", message: error.message, fb_lead_id: String(leadgenId),
+              });
             } else {
               console.log(`Lead ${leadgenId} imported as submission ${inserted.id}`);
+              await logEvent(supabase, {
+                page_id: pageId, brand: page.brand, event_type: "lead_insert",
+                status: "success", message: "Naujas Facebook lead'as įrašytas.",
+                fb_lead_id: String(leadgenId), submission_id: inserted.id,
+              });
             }
             continue;
           }
