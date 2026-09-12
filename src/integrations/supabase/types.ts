@@ -232,6 +232,81 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_oauth_states: {
+        Row: {
+          created_at: string
+          expires_at: string
+          redirect_to: string | null
+          state: string
+          used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          redirect_to?: string | null
+          state: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          redirect_to?: string | null
+          state?: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      meta_page_tokens: {
+        Row: {
+          access_token: string
+          brand: string | null
+          connected_at: string
+          connected_by: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          page_id: string
+          page_name: string | null
+          revoked_at: string | null
+          scopes: string[]
+          token_type: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          brand?: string | null
+          connected_at?: string
+          connected_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          page_id: string
+          page_name?: string | null
+          revoked_at?: string | null
+          scopes?: string[]
+          token_type?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          brand?: string | null
+          connected_at?: string
+          connected_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          page_id?: string
+          page_name?: string | null
+          revoked_at?: string | null
+          scopes?: string[]
+          token_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meta_webhook_events: {
         Row: {
           attempts: number
