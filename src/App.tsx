@@ -18,6 +18,7 @@ import Naujiena from "./pages/Naujiena";
 
 import AdminLogin from "./pages/AdminLogin";
 import Admin from "./pages/Admin";
+import MetaReview from "./pages/MetaReview";
 import { CookieConsent } from "./components/CookieConsent";
 import { WhatsAppButton } from "./components/WhatsAppButton";
 
