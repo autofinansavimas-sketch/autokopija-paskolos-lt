@@ -59,6 +59,9 @@ serve(async (req: Request) => {
       lastWebhookAt: null,
       lastErrorAt: null,
       lastErrorMessage: null,
+      pendingEvents: 0,
+      failedEvents: 0,
+      lastSuccessfulImportAt: null,
     };
 
     // --- Stored data facts (always available) ---
@@ -109,6 +112,30 @@ serve(async (req: Request) => {
         .maybeSingle();
       base.lastErrorAt = lastErr?.created_at ?? null;
       base.lastErrorMessage = lastErr?.message ?? null;
+
+      const { count: pendingEvents } = await admin
+        .from("meta_webhook_events")
+        .select("id", { count: "exact", head: true })
+        .eq("page_id", page.pageId)
+        .eq("status", "pending");
+      const { count: failedEvents } = await admin
+        .from("meta_webhook_events")
+        .select("id", { count: "exact", head: true })
+        .eq("page_id", page.pageId)
+        .eq("status", "failed");
+      base.pendingEvents = pendingEvents ?? 0;
+      base.failedEvents = failedEvents ?? 0;
+
+      const { data: lastImport } = await admin
+        .from("meta_event_log")
+        .select("created_at")
+        .eq("page_id", page.pageId)
+        .in("event_type", ["lead_insert", "import_insert"])
+        .eq("status", "success")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      base.lastSuccessfulImportAt = lastImport?.created_at ?? null;
     }
 
     if (!page) {
@@ -200,14 +227,18 @@ serve(async (req: Request) => {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  const { data: verifyTokenSet } = { data: !!Deno.env.get("META_VERIFY_TOKEN") };
+  const { count: pendingTotal } = await admin
+    .from("meta_webhook_events")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending");
 
   return json({
     checkedAt: new Date().toISOString(),
-    verifyTokenConfigured: verifyTokenSet,
+    verifyTokenConfigured: !!Deno.env.get("META_VERIFY_TOKEN"),
     appSecretConfigured: !!Deno.env.get("META_APP_SECRET"),
     brandLabels: BRAND_LABELS,
     pages: results,
+    pendingTotal: pendingTotal ?? 0,
     recentEvents: recentEvents ?? [],
   });
 });

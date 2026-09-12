@@ -232,6 +232,57 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_webhook_events: {
+        Row: {
+          attempts: number
+          brand: string | null
+          comment_id: string | null
+          field: string | null
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          leadgen_id: string | null
+          page_id: string | null
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          status: string
+          submission_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          brand?: string | null
+          comment_id?: string | null
+          field?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          leadgen_id?: string | null
+          page_id?: string | null
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          status?: string
+          submission_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          brand?: string | null
+          comment_id?: string | null
+          field?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          leadgen_id?: string | null
+          page_id?: string | null
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          status?: string
+          submission_id?: string | null
+        }
+        Relationships: []
+      }
       operator_time: {
         Row: {
           created_at: string

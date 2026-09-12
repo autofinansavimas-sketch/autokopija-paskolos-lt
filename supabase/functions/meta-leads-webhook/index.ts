@@ -1,46 +1,30 @@
+// Real Facebook Lead Ads webhook.
+// 1. Verifies Meta's subscription challenge (hub.verify_token) and payload signature.
+// 2. Persists EVERY incoming change into meta_webhook_events (durable queue) before any Graph API call.
+// 3. Tries to process immediately; retryable failures (expired token, rate limit, network)
+//    stay 'pending' so meta-recover-leads can replay them later without data loss.
+// Tokens live only in server-side secrets and are never logged or returned.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { logEvent, humanMetaError } from "../_shared/metaPages.ts";
-import { pickName, pickEmail, pickPhone, fieldNames } from "../_shared/leadFields.ts";
+import { buildPageRegistry, logEvent, humanMetaError, type PageConfig } from "../_shared/metaPages.ts";
+import { ingestLeadgen } from "../_shared/leadIngest.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const META_VERIFY_TOKEN = Deno.env.get("META_VERIFY_TOKEN")!;
-const META_APP_SECRET = Deno.env.get("META_APP_SECRET")!;
-
-// Legacy single-page setup (kept as fallback so the existing autopaskolos flow keeps working)
+const META_VERIFY_TOKEN = Deno.env.get("META_VERIFY_TOKEN") || "";
+const META_APP_SECRET = Deno.env.get("META_APP_SECRET") || "";
 const LEGACY_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN") || "";
 const LEGACY_PAGE_ID = Deno.env.get("META_PAGE_ID") || "";
 
-// Multi-brand setup
-const AP_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN_AUTOPASKOLOS") || "";
-const AP_PAGE_ID = Deno.env.get("META_PAGE_ID_AUTOPASKOLOS") || "";
-const AK_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN_AUTOKOPERS") || "";
-const AK_PAGE_ID = Deno.env.get("META_PAGE_ID_AUTOKOPERS") || "";
-
-type PageConfig = { pageId: string; token: string; brand: string };
-
-function buildPageRegistry(): PageConfig[] {
-  const pages: PageConfig[] = [];
-  if (AP_PAGE_ID && AP_TOKEN) pages.push({ pageId: AP_PAGE_ID, token: AP_TOKEN, brand: "autopaskolos" });
-  if (AK_PAGE_ID && AK_TOKEN) pages.push({ pageId: AK_PAGE_ID, token: AK_TOKEN, brand: "autokopers" });
-  // Fallback: legacy pair (only if that page id is not already registered)
-  if (LEGACY_PAGE_ID && LEGACY_TOKEN && !pages.some((p) => p.pageId === LEGACY_PAGE_ID)) {
-    pages.push({ pageId: LEGACY_PAGE_ID, token: LEGACY_TOKEN, brand: "autopaskolos" });
-  }
-  return pages;
-}
-
 const PAGES = buildPageRegistry();
 
-function resolvePage(pageId: string | undefined | null): PageConfig | null {
+function resolvePage(pageId: string | null): PageConfig | null {
   if (pageId) {
     const match = PAGES.find((p) => p.pageId === String(pageId));
     if (match) return match;
   }
-  // Single-page installs historically did not have META_PAGE_ID configured at all.
   if (!LEGACY_PAGE_ID && LEGACY_TOKEN) {
-    return { pageId: String(pageId || ""), token: LEGACY_TOKEN, brand: "autopaskolos" };
+    return { pageId: String(pageId || ""), token: LEGACY_TOKEN, brand: "autopaskolos", label: "Autopaskolos.lt" };
   }
   return null;
 }
@@ -50,7 +34,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Verify webhook signature from Meta
 async function verifySignature(body: string, signature: string): Promise<boolean> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -61,81 +44,75 @@ async function verifySignature(body: string, signature: string): Promise<boolean
     ["sign"]
   );
   const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
-  const hexSig = Array.from(new Uint8Array(sig))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  return `sha256=${hexSig}` === signature;
+  const hex = Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return `sha256=${hex}` === signature;
 }
 
-// Fetch lead details from Meta Graph API
-async function fetchLeadData(leadId: string, token: string) {
-  const fields = "id,created_time,field_data,form_id,ad_id,ad_name,adset_name,campaign_name,platform";
-  const res = await fetch(
-    `https://graph.facebook.com/v21.0/${leadId}?fields=${fields}&access_token=${token}`
-  );
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Failed to fetch lead ${leadId}: ${err}`);
+/** Inserts the raw change into the durable queue. Returns the queue row, or null when it is a known duplicate. */
+async function enqueue(
+  admin: any,
+  row: {
+    page_id: string | null; brand: string | null; field: string | null;
+    leadgen_id: string | null; comment_id: string | null; payload: unknown;
   }
-  return await res.json();
-}
-
-async function fetchFormName(formId: string, token: string): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `https://graph.facebook.com/v21.0/${formId}?fields=name&access_token=${encodeURIComponent(token)}`
-    );
-    if (!res.ok) return null;
-    return (await res.json())?.name ?? null;
-  } catch {
+) {
+  const { data, error } = await admin
+    .from("meta_webhook_events")
+    .insert({ ...row, payload: row.payload, status: "pending" })
+    .select("id, attempts")
+    .single();
+  if (error) {
+    // Unique index on leadgen_id / comment_id -> Meta re-delivered an event we already have.
+    if (String(error.code) === "23505") return null;
+    console.error("queue insert failed:", error.message);
     return null;
   }
+  return data;
 }
 
+async function markProcessed(admin: any, id: string, attempts: number, submissionId: string | null) {
+  const now = new Date().toISOString();
+  await admin.from("meta_webhook_events")
+    .update({ status: "processed", processed_at: now, last_attempt_at: now, attempts: attempts + 1, last_error: null, submission_id: submissionId })
+    .eq("id", id);
+}
 
-// Extract field value from lead data
-function getField(fieldData: any[], name: string): string | null {
-  const field = fieldData?.find(
-    (f: any) => f.name?.toLowerCase() === name.toLowerCase()
-  );
-  return field?.values?.[0] || null;
+async function markFailed(admin: any, id: string, attempts: number, message: string, retryable: boolean) {
+  await admin.from("meta_webhook_events")
+    .update({
+      status: retryable ? "pending" : "failed",
+      attempts: attempts + 1,
+      last_attempt_at: new Date().toISOString(),
+      last_error: message.slice(0, 1000),
+    })
+    .eq("id", id);
 }
 
 serve(async (req: Request) => {
-  // Handle CORS
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Webhook verification (GET request from Meta)
+  // Meta subscription verification
   if (req.method === "GET") {
     const url = new URL(req.url);
     const mode = url.searchParams.get("hub.mode");
     const token = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
-
-    if (mode === "subscribe" && token === META_VERIFY_TOKEN) {
-      console.log("Webhook verified successfully");
+    if (mode === "subscribe" && META_VERIFY_TOKEN && token === META_VERIFY_TOKEN) {
       return new Response(challenge, { status: 200 });
     }
     return new Response("Forbidden", { status: 403 });
   }
 
-  // Handle incoming lead webhook (POST)
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
   try {
     const bodyText = await req.text();
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Verify signature
     const signature = req.headers.get("x-hub-signature-256");
-    if (signature) {
-      const valid = await verifySignature(bodyText, signature);
-      if (!valid) {
-        console.error("Invalid webhook signature");
-        await logEvent(supabase, {
-          event_type: "webhook_validation",
-          status: "error",
+    if (META_APP_SECRET && signature) {
+      if (!(await verifySignature(bodyText, signature))) {
+        await logEvent(admin, {
+          event_type: "webhook_validation", status: "error",
           message: "Neteisingas Facebook užklausos parašas – užklausa atmesta.",
         });
         return new Response("Invalid signature", { status: 403 });
@@ -143,208 +120,118 @@ serve(async (req: Request) => {
     }
 
     const body = JSON.parse(bodyText);
-    console.log("Received Meta webhook:", JSON.stringify(body));
 
-    // Process each entry
     for (const entry of body.entry || []) {
       const pageId = entry.id ? String(entry.id) : null;
       const page = resolvePage(pageId);
 
-      await logEvent(supabase, {
+      await logEvent(admin, {
         page_id: pageId,
         brand: page?.brand ?? null,
         event_type: "webhook_received",
         status: page ? "success" : "error",
         message: page
           ? `Gauta ${entry.changes?.length ?? 0} pakeitimų iš Facebook puslapio`
-          : `Nėra sukonfigūruoto prieigos rakto Facebook puslapiui ${pageId} – praleista.`,
+          : `Nėra sukonfigūruoto prieigos rakto Facebook puslapiui ${pageId} – įvykis padėtas į eilę.`,
       });
 
-      if (!page) {
-        console.error(`No page access token configured for page_id ${pageId} — skipping entry`);
-        continue;
-      }
-
-
       for (const change of entry.changes || []) {
+        const field = change?.field ?? null;
+        const value = change?.value ?? {};
+        const leadgenId = field === "leadgen" && value?.leadgen_id ? String(value.leadgen_id) : null;
+        const commentId =
+          field === "feed" && value?.item === "comment" && value?.verb === "add" && value?.comment_id
+            ? String(value.comment_id)
+            : null;
+
+        if (!leadgenId && !commentId) continue;
+
+        const queued = await enqueue(admin, {
+          page_id: pageId, brand: page?.brand ?? null, field,
+          leadgen_id: leadgenId, comment_id: commentId, payload: change,
+        });
+        if (!queued) continue; // duplicate delivery
+
+        // Without a usable page token we cannot fetch the lead — leave it pending for recovery.
+        if (!page) {
+          await markFailed(admin, queued.id, queued.attempts ?? 0,
+            `Nėra sukonfigūruoto prieigos rakto puslapiui ${pageId}.`, true);
+          continue;
+        }
+
         try {
-          if (change.field === "leadgen") {
-            const leadgenId = change.value?.leadgen_id;
-            if (!leadgenId) continue;
-
-            // Check if already imported
-            const { data: existing } = await supabase
-              .from("contact_submissions")
-              .select("id")
-              .eq("fb_lead_id", leadgenId)
-              .maybeSingle();
-
-            if (existing) {
-              console.log(`Lead ${leadgenId} already exists, skipping`);
-              await logEvent(supabase, {
-                page_id: pageId, brand: page.brand, event_type: "lead_dedup",
-                status: "skipped", message: "Toks Facebook lead'as jau yra sistemoje.", fb_lead_id: String(leadgenId),
-              });
-              continue;
-            }
-
-            // Fetch full lead data from Meta
-            let leadData: any;
-            try {
-              leadData = await fetchLeadData(leadgenId, page.token);
-            } catch (fetchErr) {
-              const msg = humanMetaError(fetchErr instanceof Error ? fetchErr.message : fetchErr);
-              await logEvent(supabase, {
-                page_id: pageId, brand: page.brand, event_type: "lead_fetch",
-                status: "error", message: msg, fb_lead_id: String(leadgenId),
-              });
-              throw fetchErr;
-            }
-            const fields = leadData.field_data || [];
-
-            const name = pickName(fields) || getField(fields, "full_name") || getField(fields, "first_name");
-            const email = pickEmail(fields) || "nera@fb.com";
-            const phone = pickPhone(fields) || "N/A";
-            if (phone === "N/A") {
-              await logEvent(supabase, {
-                page_id: pageId, brand: page.brand, event_type: "lead_fields",
-                status: "warning", fb_lead_id: String(leadgenId),
-                message: `Telefono laukas neatpažintas. Formos laukai: ${fieldNames(fields).join(", ")}`,
-              });
-            }
-
-            const formId = leadData.form_id ? String(leadData.form_id) : null;
-            const formName = formId ? await fetchFormName(formId, page.token) : null;
-
-            const { data: inserted, error } = await supabase
-              .from("contact_submissions")
-              .insert({
-                name,
-                email,
-                phone,
-                source: "facebook",
-                status: "new",
-                fb_lead_id: leadgenId,
-                page_id: pageId,
-                brand: page.brand,
-                fb_form_id: formId,
-                fb_form_name: formName,
-                fb_campaign_name: leadData.campaign_name ?? null,
-                fb_ad_name: leadData.ad_name ?? null,
-                fb_platform: leadData.platform ?? null,
-              })
-              .select()
-              .single();
-
-
-            if (error) {
-              console.error("Error inserting lead:", error);
-              await logEvent(supabase, {
-                page_id: pageId, brand: page.brand, event_type: "lead_insert",
-                status: "error", message: error.message, fb_lead_id: String(leadgenId),
-              });
-            } else {
-              console.log(`Lead ${leadgenId} imported as submission ${inserted.id}`);
-              await logEvent(supabase, {
-                page_id: pageId, brand: page.brand, event_type: "lead_insert",
-                status: "success", message: "Naujas Facebook lead'as įrašytas.",
-                fb_lead_id: String(leadgenId), submission_id: inserted.id,
-              });
-            }
+          if (leadgenId) {
+            const result = await ingestLeadgen(admin, page, leadgenId);
+            if (result.outcome === "inserted") await markProcessed(admin, queued.id, queued.attempts ?? 0, result.submissionId);
+            else if (result.outcome === "duplicate") await markProcessed(admin, queued.id, queued.attempts ?? 0, null);
+            else await markFailed(admin, queued.id, queued.attempts ?? 0, result.message, result.retryable);
             continue;
           }
 
-          // Comments under posts / ads
-          if (change.field === "feed") {
-            const value = change.value || {};
-            if (value.item !== "comment" || value.verb !== "add") continue;
-
-            const commentId = value.comment_id;
-            if (!commentId) continue;
-
-            const dedupId = `fb_comment_${commentId}`;
-
-            const { data: existing } = await supabase
-              .from("contact_submissions")
-              .select("id")
-              .eq("fb_lead_id", dedupId)
-              .maybeSingle();
-
-            if (existing) {
-              console.log(`Comment ${commentId} already imported, skipping`);
-              await logEvent(supabase, {
-                page_id: pageId, brand: page.brand, event_type: "comment_dedup",
-                status: "skipped", message: "Toks Facebook komentaras jau yra sistemoje.", fb_lead_id: dedupId,
-              });
-              continue;
-            }
-
-            const fromName = value.from?.name || "Facebook komentaras";
-            const messageText = value.message || "(be teksto)";
-
-            const { data: inserted, error } = await supabase
-              .from("contact_submissions")
-              .insert({
-                name: fromName,
-                email: "nera@fb.com",
-                phone: "N/A",
-                source: "facebook_comment",
-                status: "new",
-                fb_lead_id: dedupId,
-                page_id: pageId,
-                brand: page.brand,
-              })
-              .select()
-              .single();
-
-            if (error || !inserted) {
-              console.error("Error inserting FB comment lead:", error);
-              await logEvent(supabase, {
-                page_id: pageId, brand: page.brand, event_type: "comment_insert",
-                status: "error", message: error?.message ?? "Nepavyko įrašyti komentaro lead'o.", fb_lead_id: dedupId,
-              });
-              continue;
-            }
-
-            const { error: commentError } = await supabase
-              .from("submission_comments")
-              .insert({
-                submission_id: inserted.id,
-                comment: `💬 Facebook komentaras (${fromName}): ${messageText}`,
-              });
-
-            if (commentError) {
-              console.error("Error inserting comment text:", commentError);
-            }
-
-            console.log(`FB comment ${commentId} imported as submission ${inserted.id}`);
-            await logEvent(supabase, {
-              page_id: pageId, brand: page.brand, event_type: "comment_insert",
-              status: "success", message: "Naujas Facebook komentaras įrašytas.",
-              fb_lead_id: dedupId, submission_id: inserted.id,
-            });
+          // Facebook comment lead
+          const dedupId = `fb_comment_${commentId}`;
+          const { data: existing } = await admin
+            .from("contact_submissions").select("id").eq("fb_lead_id", dedupId).maybeSingle();
+          if (existing) {
+            await markProcessed(admin, queued.id, queued.attempts ?? 0, null);
+            continue;
           }
+
+          const fromName = value.from?.name || "Facebook komentaras";
+          const messageText = value.message || "(be teksto)";
+
+          const { data: inserted, error } = await admin
+            .from("contact_submissions")
+            .insert({
+              name: fromName, email: "nera@fb.com", phone: "N/A",
+              source: "facebook_comment", status: "new",
+              fb_lead_id: dedupId, page_id: pageId, brand: page.brand,
+            })
+            .select("id").single();
+
+          if (error || !inserted) {
+            await markFailed(admin, queued.id, queued.attempts ?? 0, error?.message ?? "Nepavyko įrašyti komentaro.", true);
+            await logEvent(admin, {
+              page_id: pageId, brand: page.brand, event_type: "comment_insert",
+              status: "error", message: error?.message ?? "Nepavyko įrašyti komentaro lead'o.", fb_lead_id: dedupId,
+            });
+            continue;
+          }
+
+          await admin.from("submission_comments").insert({
+            submission_id: inserted.id,
+            comment: `💬 Facebook komentaras (${fromName}): ${messageText}`,
+          });
+
+          await markProcessed(admin, queued.id, queued.attempts ?? 0, inserted.id);
+          await logEvent(admin, {
+            page_id: pageId, brand: page.brand, event_type: "comment_insert",
+            status: "success", message: "Naujas Facebook komentaras įrašytas.",
+            fb_lead_id: dedupId, submission_id: inserted.id,
+          });
         } catch (changeError) {
-          console.error("Error processing change, continuing:", changeError);
-          await logEvent(supabase, {
-            page_id: pageId, brand: page.brand, event_type: "webhook_change",
-            status: "error",
-            message: humanMetaError(changeError instanceof Error ? changeError.message : changeError),
+          const msg = humanMetaError(changeError instanceof Error ? changeError.message : changeError);
+          await markFailed(admin, queued.id, queued.attempts ?? 0, msg, true);
+          await logEvent(admin, {
+            page_id: pageId, brand: page?.brand ?? null, event_type: "webhook_change",
+            status: "error", message: msg,
           });
         }
       }
     }
 
-
+    // Always 200 so Meta does not disable the subscription; the queue guarantees no lead is lost.
     return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error processing webhook:", error);
-    return new Response(JSON.stringify({ error: "Internal error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    await logEvent(admin, {
+      event_type: "webhook_error", status: "error",
+      message: error instanceof Error ? error.message : "Nežinoma klaida",
+    });
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
