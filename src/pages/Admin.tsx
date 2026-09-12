@@ -101,6 +101,7 @@ import AdminStats from "@/components/AdminStats";
 import AdminCharts from "@/components/AdminCharts";
 import QuickFilters from "@/components/QuickFilters";
 import { MetaHealthPanel } from "@/components/MetaHealthPanel";
+import { MetaConnectPanel } from "@/components/MetaConnectPanel";
 import AdminAIChat from "@/components/AdminAIChat";
 import CommandPalette from "@/components/CommandPalette";
 import AdminAutomations from "@/components/AdminAutomations";
@@ -2785,6 +2786,7 @@ export default function Admin() {
                   <Button variant="outline" size="sm" onClick={() => navigate("/meta-review")}>
                     Meta peržiūros demo
                   </Button>
+                  <MetaConnectPanel />
                   <MetaHealthPanel onImportComplete={() => fetchSubmissions()} />
                 </div>
               </div>
