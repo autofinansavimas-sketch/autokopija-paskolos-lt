@@ -153,10 +153,11 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
                 {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                 <span className="ml-1.5 text-xs">Atnaujinti</span>
               </Button>
-              <Button size="sm" variant="outline" onClick={recoverMissed} disabled={recovering}>
+              <Button size="sm" variant="outline" onClick={recoverMissed} disabled={recovering} data-testid="meta-recover">
                 {recovering ? <Loader2 className="h-4 w-4 animate-spin" /> : <LifeBuoy className="h-4 w-4" />}
                 <span className="ml-1.5 text-xs">Perimti praleistus lead'us</span>
               </Button>
+
             </div>
           </div>
 
