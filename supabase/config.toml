@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.sync-to-meta]
 verify_jwt = false
+
+[functions.meta-oauth-callback]
+verify_jwt = false
