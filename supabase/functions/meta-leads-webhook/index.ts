@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logEvent, humanMetaError } from "../_shared/metaPages.ts";
-import { pickName, pickEmail, pickPhone, fieldNames } from "../_shared/leadFields.ts";
+import { ingestLeadgen } from "../_shared/leadIngest.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
