@@ -227,14 +227,18 @@ serve(async (req: Request) => {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  const { data: verifyTokenSet } = { data: !!Deno.env.get("META_VERIFY_TOKEN") };
+  const { count: pendingTotal } = await admin
+    .from("meta_webhook_events")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending");
 
   return json({
     checkedAt: new Date().toISOString(),
-    verifyTokenConfigured: verifyTokenSet,
+    verifyTokenConfigured: !!Deno.env.get("META_VERIFY_TOKEN"),
     appSecretConfigured: !!Deno.env.get("META_APP_SECRET"),
     brandLabels: BRAND_LABELS,
     pages: results,
+    pendingTotal: pendingTotal ?? 0,
     recentEvents: recentEvents ?? [],
   });
 });
