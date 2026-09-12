@@ -59,6 +59,9 @@ serve(async (req: Request) => {
       lastWebhookAt: null,
       lastErrorAt: null,
       lastErrorMessage: null,
+      pendingEvents: 0,
+      failedEvents: 0,
+      lastSuccessfulImportAt: null,
     };
 
     // --- Stored data facts (always available) ---
