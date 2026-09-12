@@ -83,3 +83,49 @@ export async function logEvent(
     console.error("meta_event_log insert failed:", e);
   }
 }
+
+/**
+ * DB-first page registry. Tokens authorised through Meta Login for Business are stored
+ * server-side in public.meta_page_tokens and take precedence over static secrets.
+ * Falls back to the env-secret registry so nothing breaks if OAuth was never run.
+ */
+export async function resolvePages(admin: any): Promise<PageConfig[]> {
+  const envPages = buildPageRegistry();
+  const merged = new Map<string, PageConfig>();
+  for (const p of envPages) merged.set(p.pageId, p);
+  try {
+    const { data } = await admin
+      .from("meta_page_tokens")
+      .select("page_id, brand, page_name, access_token, revoked_at")
+      .is("revoked_at", null);
+    for (const row of data ?? []) {
+      if (!row.page_id || !row.access_token) continue;
+      const brand = row.brand
+        || envPages.find((p) => p.pageId === String(row.page_id))?.brand
+        || "autopaskolos";
+      merged.set(String(row.page_id), {
+        pageId: String(row.page_id),
+        token: row.access_token,
+        brand,
+        label: BRAND_LABELS[brand] ?? row.page_name ?? brand,
+      });
+    }
+  } catch (e) {
+    console.error("meta_page_tokens read failed:", e);
+  }
+  return [...merged.values()];
+}
+
+/** Config completeness that also counts OAuth-stored tokens. */
+export async function configStatus(admin: any) {
+  const pages = await resolvePages(admin);
+  return ["autopaskolos", "autokopers"].map((brand) => {
+    const page = pages.find((p) => p.brand === brand);
+    return {
+      brand,
+      label: BRAND_LABELS[brand],
+      hasToken: !!page?.token,
+      hasPageId: !!page?.pageId,
+    };
+  });
+}
