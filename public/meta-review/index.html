@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="lt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meta App Review demo – Autopaskolos.lt</title>
+    <script>
+      // Direct-load fix for SPA route /meta-review on static hosting.
+      (function () {
+        var l = window.location;
+        var target = l.origin + "/?/meta-review" + (l.search ? "&" + l.search.slice(1) : "") + l.hash;
+        l.replace(target);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
