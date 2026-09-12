@@ -3,10 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Download, Loader2, Activity, ChevronDown, RefreshCw, LifeBuoy } from "lucide-react";
+import { Download, Loader2, Activity, RefreshCw, LifeBuoy } from "lucide-react";
 import { toast } from "sonner";
 
 type ImportPage = {
@@ -46,26 +49,31 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
 
   const [open, setOpen] = useState(false);
   const [health, setHealth] = useState<Health | null>(null);
+  const [healthError, setHealthError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [recovering, setRecovering] = useState(false);
 
   const loadHealth = async () => {
     setChecking(true);
+    setHealthError(null);
     try {
       const { data, error } = await supabase.functions.invoke("meta-health");
       if (error) throw error;
-      setHealth(data as Health);
-    } catch {
+      const response = data as Health;
+      if (!response?.pages || !Array.isArray(response.pages)) throw new Error("Neteisingas būsenos atsakymas");
+      setHealth(response);
+    } catch (error) {
+      setHealth(null);
+      setHealthError(error instanceof Error ? error.message : "Serverio būsenos endpointas nepasiekiamas");
       toast.error("Nepavyko nuskaityti Facebook integracijos būsenos");
     } finally {
       setChecking(false);
     }
   };
 
-  const toggle = async () => {
-    const next = !open;
+  const handleOpenChange = (next: boolean) => {
     setOpen(next);
-    if (next && !health) await loadHealth();
+    if (next) void loadHealth();
   };
 
   const recoverMissed = async () => {
@@ -129,20 +137,24 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button size="sm" variant="outline" onClick={toggle} className="text-xs" data-testid="meta-health-toggle">
+      <Button size="sm" variant="default" onClick={() => handleOpenChange(true)} className="text-xs" data-testid="meta-health-toggle">
         <Activity className="h-4 w-4 mr-1.5" />
         Integracijos būsena
-        <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${open ? "rotate-180" : ""}`} />
       </Button>
-
-
       <Button size="sm" variant="outline" onClick={runPreview} disabled={importing}>
         {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
         <span className="ml-1.5 text-xs">Importuoti senesnius</span>
       </Button>
 
-      {open && (
-        <div className="w-full mt-2 rounded-lg border bg-card p-3 space-y-3">
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" data-testid="meta-health-dialog">
+          <DialogHeader>
+            <DialogTitle>Facebook integracijos būsena</DialogTitle>
+            <DialogDescription>
+              Tikra abiejų Facebook puslapių serverio ryšio būsena. Prieigos raktai čia niekada nerodomi.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-xs text-muted-foreground">
               Patikrinta: {health ? fmt(health.checkedAt) : "—"}
@@ -160,6 +172,12 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
 
             </div>
           </div>
+
+          {healthError && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
+              Būsenos ryšys neparuoštas arba nepasiekiamas. Serveris negrąžino patvirtintų duomenų: {healthError}
+            </div>
+          )}
 
           {health && (
             <div className="text-xs text-muted-foreground">
@@ -197,14 +215,29 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
                 )}
               </div>
             ))}
-            {!health && !checking && <div className="text-xs text-muted-foreground">Būsena dar neįkelta.</div>}
+            {!health && !checking && ["Autopaskolos.lt", "Auto Kopers LT"].map((label) => (
+              <div key={label} className="rounded-md border p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium">{label}</span>
+                  <Badge variant="secondary" className="text-[10px]">Nepatvirtinta</Badge>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-0.5">
+                  <div>Ryšys: nepatvirtintas</div>
+                  <div>Leadgen prenumerata: nežinoma</div>
+                  <div>Eilė: duomenų nėra</div>
+                  <div>Paskutinis webhookas: duomenų nėra</div>
+                  <div>Paskutinis importas: duomenų nėra</div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <p className="text-[11px] text-muted-foreground">
             Prieigos raktai saugomi tik serverio pusėje ir čia niekada nerodomi.
           </p>
-        </div>
-      )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
