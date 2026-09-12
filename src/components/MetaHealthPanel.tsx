@@ -129,11 +129,12 @@ export function MetaHealthPanel({ onImportComplete }: { onImportComplete?: () =>
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button size="sm" variant="ghost" onClick={toggle} className="text-xs">
+      <Button size="sm" variant="outline" onClick={toggle} className="text-xs" data-testid="meta-health-toggle">
         <Activity className="h-4 w-4 mr-1.5" />
         Integracijos būsena
         <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${open ? "rotate-180" : ""}`} />
       </Button>
+
 
       <Button size="sm" variant="outline" onClick={runPreview} disabled={importing}>
         {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
