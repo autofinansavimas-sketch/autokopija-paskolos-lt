@@ -93,7 +93,7 @@ serve(async (req: Request) => {
     if (!fbLeadId.startsWith("fb_comment_")) return skipped("no fb comment id");
 
     const commentId = fbLeadId.replace(/^fb_comment_/, "");
-    const token = resolveToken(submission.page_id, submission.brand);
+    const token = await resolveToken(supabase, submission.page_id, submission.brand);
     if (!token) {
       console.error("No Meta page token configured for page", submission.page_id, "brand", submission.brand);
       return skipped("no page token");

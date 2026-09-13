@@ -101,10 +101,13 @@ serve(async (req: Request) => {
     const list = (pagesJson?.data ?? []) as { id: string; name?: string; access_token?: string }[];
 
     let stored = 0;
+    let skipped = 0;
     for (const p of list) {
       if (!p.id || !p.access_token) continue;
       const pageId = String(p.id);
       const brand = brandFor(pageId, p.name ?? null);
+      // Only the two real business pages are authorised; anything else is ignored.
+      if (!brand) { skipped++; continue; }
       const { error } = await admin.from("meta_page_tokens").upsert({
         page_id: pageId,
         brand,
