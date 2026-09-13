@@ -125,7 +125,7 @@ export function MetaConnectPanel() {
                 <div>Prašomi leidimai: {status.scopes.join(", ")}</div>
                 <div>
                   Login for Business konfigūracija:{" "}
-                  {status.hasConfigId ? "naudojama (system-user raktas, negaliojantis niekada)" : "nenustatyta"}
+                  {status.hasConfigId ? "naudojama (sistemos vartotojo raktas be nustatyto galiojimo termino; Meta gali jį atšaukti)" : "nenustatyta"}
                 </div>
               </div>
             )}
