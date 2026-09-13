@@ -58,6 +58,7 @@ serve(async (req: Request) => {
       appConfigured,
       hasAppId: !!META_APP_ID,
       hasAppSecret: !!META_APP_SECRET,
+      hasConfigId: !!META_CONFIG_ID,
       redirectUri: REDIRECT_URI,
       scopes: SCOPES,
       brandLabels: BRAND_LABELS,
@@ -100,5 +101,5 @@ serve(async (req: Request) => {
   if (META_CONFIG_ID) url.searchParams.set("config_id", META_CONFIG_ID);
   else url.searchParams.set("scope", SCOPES.join(","));
 
-  return json({ authorizeUrl: url.toString(), redirectUri: REDIRECT_URI });
+  return json({ authorizeUrl: url.toString(), redirectUri: REDIRECT_URI, usedConfigId: !!META_CONFIG_ID });
 });
