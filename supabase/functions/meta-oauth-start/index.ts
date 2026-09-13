@@ -14,13 +14,14 @@ const META_CONFIG_ID = Deno.env.get("META_LOGIN_CONFIG_ID") || "";
 
 const REDIRECT_URI = `${SUPABASE_URL}/functions/v1/meta-oauth-callback`;
 
+// Must mirror the Meta Login for Business configuration (config_id) permissions.
 const SCOPES = [
   "pages_show_list",
   "pages_read_engagement",
   "pages_manage_metadata",
-  "pages_manage_engagement",
+  "pages_manage_ads",
   "leads_retrieval",
-  "business_management",
+  "ads_read",
 ];
 
 const corsHeaders = {

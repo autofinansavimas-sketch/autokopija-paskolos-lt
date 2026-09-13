@@ -74,17 +74,21 @@ serve(async (req: Request) => {
     if (!tokenRes.ok || !tokenJson?.access_token) throw new Error(JSON.stringify(tokenJson));
     const userToken: string = tokenJson.access_token;
 
-    // 2. extend to a long-lived user token
+    // 2. System-user tokens from a Login for Business configuration never expire —
+    //    do NOT try to exchange them as if they were short-lived personal tokens.
     let longLived = userToken;
-    let userExpires: number | null = tokenJson.expires_in ?? null;
-    const llRes = await fetch(
-      `${GRAPH}/oauth/access_token?grant_type=fb_exchange_token&client_id=${encodeURIComponent(META_APP_ID)}` +
-      `&client_secret=${encodeURIComponent(META_APP_SECRET)}&fb_exchange_token=${encodeURIComponent(userToken)}`,
-    );
-    const llJson = await llRes.json();
-    if (llRes.ok && llJson?.access_token) {
-      longLived = llJson.access_token;
-      userExpires = llJson.expires_in ?? userExpires;
+    let userExpires: number | null =
+      typeof tokenJson.expires_in === "number" && tokenJson.expires_in > 0 ? tokenJson.expires_in : null;
+    if (userExpires !== null) {
+      const llRes = await fetch(
+        `${GRAPH}/oauth/access_token?grant_type=fb_exchange_token&client_id=${encodeURIComponent(META_APP_ID)}` +
+        `&client_secret=${encodeURIComponent(META_APP_SECRET)}&fb_exchange_token=${encodeURIComponent(userToken)}`,
+      );
+      const llJson = await llRes.json().catch(() => ({}));
+      if (llRes.ok && llJson?.access_token) {
+        longLived = llJson.access_token;
+        userExpires = typeof llJson.expires_in === "number" && llJson.expires_in > 0 ? llJson.expires_in : null;
+      }
     }
 
     // 3. granted scopes
