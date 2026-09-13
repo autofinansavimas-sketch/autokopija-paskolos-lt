@@ -52,8 +52,25 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         skipWaiting: true,
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/assets\//, /\.[a-z0-9]+$/i],
+        navigateFallbackDenylist: [
+          /^\/assets\//,
+          /\.[a-z0-9]+$/i,
+          /^\/admin/,
+          /^\/admin-login/,
+          /^\/meta-review/,
+        ],
         runtimeCaching: [
+          {
+            // Always try the network for page loads so a new deploy is picked up
+            // immediately instead of serving a stale cached shell.
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "pages-cache",
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 20 },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
@@ -66,6 +83,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
         ],
+
       },
     }),
   ].filter(Boolean),
