@@ -3,7 +3,7 @@
 // mode=import  -> inserts ONLY new fb_lead_id rows; never updates existing status/comments.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildPageRegistry, humanMetaError, logEvent } from "../_shared/metaPages.ts";
+import { resolvePages, humanMetaError, logEvent } from "../_shared/metaPages.ts";
 import { pickName, pickEmail, pickPhone, fieldNames } from "../_shared/leadFields.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -58,7 +58,7 @@ serve(async (req: Request) => {
   const brandFilter = typeof body?.brand === "string" ? body.brand : null;
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-  const pages = buildPageRegistry().filter((p) => !brandFilter || p.brand === brandFilter);
+  const pages = (await resolvePages(admin)).filter((p) => !brandFilter || p.brand === brandFilter);
 
   const summary: any[] = [];
 
