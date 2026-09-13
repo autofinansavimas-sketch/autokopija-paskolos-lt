@@ -3,7 +3,7 @@
 // meta_webhook_events and re-fetches each lead with the current server-side token.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildPageRegistry, logEvent, BRAND_LABELS } from "../_shared/metaPages.ts";
+import { resolvePages, logEvent, BRAND_LABELS } from "../_shared/metaPages.ts";
 import { ingestLeadgen } from "../_shared/leadIngest.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -34,7 +34,7 @@ serve(async (req: Request) => {
   const limit = Math.min(Number(body?.limit) || 100, 300);
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-  const pages = buildPageRegistry();
+  const pages = await resolvePages(admin);
 
   const { data: pending, error: qErr } = await admin
     .from("meta_webhook_events")

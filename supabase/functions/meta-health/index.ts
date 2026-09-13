@@ -2,7 +2,7 @@
 // Never returns tokens or secrets.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildPageRegistry, missingConfig, humanMetaError, logEvent, BRAND_LABELS } from "../_shared/metaPages.ts";
+import { resolvePages, configStatus, humanMetaError, logEvent, BRAND_LABELS } from "../_shared/metaPages.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -33,8 +33,9 @@ serve(async (req: Request) => {
   if (!approved && !isAdmin) return json({ error: "Forbidden" }, 403);
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
-  const pages = buildPageRegistry();
-  const config = missingConfig();
+  // DB-first: page tokens authorised through Meta Login for Business win over legacy env secrets.
+  const pages = await resolvePages(admin);
+  const config = await configStatus(admin);
 
   const results: any[] = [];
 

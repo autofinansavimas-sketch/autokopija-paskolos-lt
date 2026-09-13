@@ -30,7 +30,16 @@ function buildPageRegistry(): PageConfig[] {
 
 const PAGES = buildPageRegistry();
 
-function resolveToken(pageId?: string | null, brand?: string | null): string | null {
+/** DB-first: tokens stored by the Meta OAuth callback win over legacy env secrets. */
+async function resolveToken(supabase: any, pageId?: string | null, brand?: string | null): Promise<string | null> {
+  try {
+    let q = supabase.from("meta_page_tokens").select("page_id, brand, access_token").is("revoked_at", null);
+    if (pageId) q = q.eq("page_id", String(pageId));
+    else if (brand) q = q.eq("brand", brand);
+    const { data } = await q.limit(1);
+    const stored = data?.[0]?.access_token;
+    if (stored) return stored as string;
+  } catch { /* fall back to env secrets */ }
   if (pageId) {
     const byPage = PAGES.find((p) => p.pageId === String(pageId));
     if (byPage) return byPage.token;
@@ -84,7 +93,7 @@ serve(async (req: Request) => {
     if (!fbLeadId.startsWith("fb_comment_")) return skipped("no fb comment id");
 
     const commentId = fbLeadId.replace(/^fb_comment_/, "");
-    const token = resolveToken(submission.page_id, submission.brand);
+    const token = await resolveToken(supabase, submission.page_id, submission.brand);
     if (!token) {
       console.error("No Meta page token configured for page", submission.page_id, "brand", submission.brand);
       return skipped("no page token");

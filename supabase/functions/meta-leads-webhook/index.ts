@@ -6,7 +6,7 @@
 // Tokens live only in server-side secrets and are never logged or returned.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { buildPageRegistry, logEvent, humanMetaError, type PageConfig } from "../_shared/metaPages.ts";
+import { resolvePages, logEvent, humanMetaError, type PageConfig } from "../_shared/metaPages.ts";
 import { ingestLeadgen } from "../_shared/leadIngest.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -16,11 +16,10 @@ const META_APP_SECRET = Deno.env.get("META_APP_SECRET") || "";
 const LEGACY_TOKEN = Deno.env.get("META_PAGE_ACCESS_TOKEN") || "";
 const LEGACY_PAGE_ID = Deno.env.get("META_PAGE_ID") || "";
 
-const PAGES = buildPageRegistry();
-
-function resolvePage(pageId: string | null): PageConfig | null {
+/** DB-first page lookup: tokens stored by the OAuth callback take precedence over env secrets. */
+function resolvePageFrom(pages: PageConfig[], pageId: string | null): PageConfig | null {
   if (pageId) {
-    const match = PAGES.find((p) => p.pageId === String(pageId));
+    const match = pages.find((p) => p.pageId === String(pageId));
     if (match) return match;
   }
   if (!LEGACY_PAGE_ID && LEGACY_TOKEN) {
@@ -104,6 +103,7 @@ serve(async (req: Request) => {
   }
 
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const activePages = await resolvePages(admin);
 
   try {
     const bodyText = await req.text();
@@ -123,7 +123,7 @@ serve(async (req: Request) => {
 
     for (const entry of body.entry || []) {
       const pageId = entry.id ? String(entry.id) : null;
-      const page = resolvePage(pageId);
+      const page = resolvePageFrom(activePages, pageId);
 
       await logEvent(admin, {
         page_id: pageId,
