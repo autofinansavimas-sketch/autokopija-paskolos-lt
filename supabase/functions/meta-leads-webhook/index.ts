@@ -103,6 +103,7 @@ serve(async (req: Request) => {
   }
 
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const activePages = await resolvePages(admin);
 
   try {
     const bodyText = await req.text();
@@ -122,7 +123,7 @@ serve(async (req: Request) => {
 
     for (const entry of body.entry || []) {
       const pageId = entry.id ? String(entry.id) : null;
-      const page = resolvePage(pageId);
+      const page = resolvePageFrom(activePages, pageId);
 
       await logEvent(admin, {
         page_id: pageId,
