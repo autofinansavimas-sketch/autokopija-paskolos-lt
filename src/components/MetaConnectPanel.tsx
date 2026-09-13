@@ -14,7 +14,7 @@ type Connection = {
 };
 
 type Status = {
-  appConfigured: boolean; hasAppId: boolean; hasAppSecret: boolean;
+  appConfigured: boolean; hasAppId: boolean; hasAppSecret: boolean; hasConfigId?: boolean;
   redirectUri: string; scopes: string[]; connections: Connection[]; message: string | null;
 };
 
@@ -123,6 +123,10 @@ export function MetaConnectPanel() {
               <div className="rounded-md border p-3 text-xs text-muted-foreground space-y-1">
                 <div className="break-all">Callback URL, kurį reikia įrašyti Meta programėlėje: <span className="font-mono">{status.redirectUri}</span></div>
                 <div>Prašomi leidimai: {status.scopes.join(", ")}</div>
+                <div>
+                  Login for Business konfigūracija:{" "}
+                  {status.hasConfigId ? "naudojama (system-user raktas, negaliojantis niekada)" : "nenustatyta"}
+                </div>
               </div>
             )}
 
