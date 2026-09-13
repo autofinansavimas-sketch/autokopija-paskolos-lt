@@ -2782,12 +2782,12 @@ export default function Admin() {
                 <p className="text-sm text-muted-foreground">
                   Rodomi tik Meta Lead Ads įrašai su tikru Facebook identifikatoriumi ({facebookLeads.length}).
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto" data-testid="facebook-admin-actions">
+                  <MetaConnectPanel />
+                  <MetaHealthPanel onImportComplete={() => fetchSubmissions()} />
                   <Button variant="outline" size="sm" onClick={() => navigate("/meta-review")}>
                     Meta peržiūros demo
                   </Button>
-                  <MetaConnectPanel />
-                  <MetaHealthPanel onImportComplete={() => fetchSubmissions()} />
                 </div>
               </div>
 
