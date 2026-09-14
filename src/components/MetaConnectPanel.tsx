@@ -2,20 +2,30 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link2, Loader2, RefreshCw, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 type Connection = {
-  pageId: string; brand: string | null; label: string | null; pageName: string | null;
-  scopes: string[]; expiresAt: string | null; connectedAt: string | null; revoked: boolean;
+  pageId: string;
+  brand: string | null;
+  label: string | null;
+  pageName: string | null;
+  scopes: string[];
+  expiresAt: string | null;
+  connectedAt: string | null;
+  revoked: boolean;
 };
 
 type Status = {
-  appConfigured: boolean; hasAppId: boolean; hasAppSecret: boolean; hasConfigId?: boolean;
-  redirectUri: string; scopes: string[]; connections: Connection[]; message: string | null;
+  appConfigured: boolean;
+  hasAppId: boolean;
+  hasAppSecret: boolean;
+  hasConfigId?: boolean;
+  redirectUri: string;
+  scopes: string[];
+  connections: Connection[];
+  message: string | null;
 };
 
 const fmt = (v: string | null) =>
@@ -74,7 +84,13 @@ export function MetaConnectPanel() {
 
   return (
     <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)} className="text-xs" data-testid="meta-connect-toggle">
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setOpen(true)}
+        className="text-xs"
+        data-testid="meta-connect-toggle"
+      >
         <Link2 className="h-4 w-4 mr-1.5" />
         Prijungti Meta
       </Button>
@@ -84,8 +100,8 @@ export function MetaConnectPanel() {
           <DialogHeader>
             <DialogTitle>Meta Login for Business</DialogTitle>
             <DialogDescription>
-              Autorizuokite Auto Kopers LT ir Autopaskolos.lt puslapių lead'ų nuskaitymą. Prieigos raktai
-              saugomi tik serveryje ir čia niekada nerodomi.
+              Autorizuokite Auto Kopers LT ir Autopaskolos.lt puslapių lead'ų nuskaitymą. Prieigos raktai saugomi tik
+              serveryje ir čia niekada nerodomi.
             </DialogDescription>
           </DialogHeader>
 
@@ -107,25 +123,37 @@ export function MetaConnectPanel() {
             </div>
 
             {error && (
-              <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">
+              <div
+                className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+                role="alert"
+              >
                 {error}
               </div>
             )}
 
             {status && !status.appConfigured && (
               <div className="rounded-md border p-3 text-xs text-muted-foreground space-y-1">
-                <div>Trūksta: {!status.hasAppId && "META_APP_ID"}{!status.hasAppId && !status.hasAppSecret && " ir "}{!status.hasAppSecret && "META_APP_SECRET"}</div>
+                <div>
+                  Trūksta: {!status.hasAppId && "META_APP_ID"}
+                  {!status.hasAppId && !status.hasAppSecret && " ir "}
+                  {!status.hasAppSecret && "META_APP_SECRET"}
+                </div>
                 <div>Kol jų nėra, prijungimo mygtukas neaktyvus — jokio bandomojo ryšio nesimuliuojame.</div>
               </div>
             )}
 
             {status && (
               <div className="rounded-md border p-3 text-xs text-muted-foreground space-y-1">
-                <div className="break-all">Callback URL, kurį reikia įrašyti Meta programėlėje: <span className="font-mono">{status.redirectUri}</span></div>
+                <div className="break-all">
+                  Callback URL, kurį reikia įrašyti Meta programėlėje:{" "}
+                  <span className="font-mono">{status.redirectUri}</span>
+                </div>
                 <div>Prašomi leidimai: {status.scopes.join(", ")}</div>
                 <div>
                   Login for Business konfigūracija:{" "}
-                  {status.hasConfigId ? "naudojama (sistemos vartotojo raktas be nustatyto galiojimo termino; Meta gali jį atšaukti)" : "nenustatyta"}
+                  {status.hasConfigId
+                    ? "naudojama (sistemos vartotojo raktas be nustatyto galiojimo termino; Meta gali jį atšaukti)"
+                    : "nenustatyta"}
                 </div>
               </div>
             )}
@@ -133,7 +161,9 @@ export function MetaConnectPanel() {
             <div className="space-y-2">
               <div className="text-sm font-medium">Prijungti puslapiai</div>
               {(status?.connections ?? []).length === 0 && (
-                <div className="text-xs text-muted-foreground">Kol kas nė vienas puslapis nebuvo autorizuotas per Meta Login for Business.</div>
+                <div className="text-xs text-muted-foreground">
+                  Kol kas nė vienas puslapis nebuvo autorizuotas per Meta Login for Business.
+                </div>
               )}
               {(status?.connections ?? []).map((c) => (
                 <div key={c.pageId} className="rounded-md border p-3 space-y-1">
@@ -145,7 +175,9 @@ export function MetaConnectPanel() {
                   </div>
                   <div className="text-xs text-muted-foreground space-y-0.5">
                     <div>Puslapio ID: {c.pageId}</div>
-                    <div>Prijungta: {fmt(c.connectedAt)} · Galiojimas: {fmt(c.expiresAt)}</div>
+                    <div>
+                      Prijungta: {fmt(c.connectedAt)} · Galiojimas: {fmt(c.expiresAt)}
+                    </div>
                     <div>Leidimai: {c.scopes.length ? c.scopes.join(", ") : "nežinoma"}</div>
                   </div>
                 </div>
