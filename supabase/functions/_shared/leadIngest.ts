@@ -4,7 +4,8 @@ import { logEvent, humanMetaError, type PageConfig } from "./metaPages.ts";
 import { pickName, pickEmail, pickPhone, fieldNames } from "./leadFields.ts";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
-const LEAD_FIELDS = "id,created_time,field_data,form_id,ad_id,ad_name,adset_name,campaign_name,platform";
+const LEAD_FIELDS =
+  "id,created_time,field_data,form_id,ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,platform,is_organic,retailer_item_id,partner_name";
 
 export type IngestResult =
   | { outcome: "inserted"; submissionId: string }
@@ -95,7 +96,11 @@ export async function ingestLeadgen(
       fb_form_name: formName,
       fb_campaign_name: leadData.campaign_name ?? null,
       fb_ad_name: leadData.ad_name ?? null,
+      fb_ad_id: leadData.ad_id ? String(leadData.ad_id) : null,
+      fb_adset_name: leadData.adset_name ?? null,
       fb_platform: leadData.platform ?? null,
+      // Full, unmodified Meta answer set so no submitted field is ever lost.
+      fb_field_data: fields ?? null,
     })
     .select("id")
     .single();
