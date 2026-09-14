@@ -56,7 +56,9 @@ serve(async (req: Request) => {
   let body: any = {};
   try {
     body = await req.json();
-  } catch { /* default */ }
+  } catch {
+    /* default */
+  }
   const mode = body?.mode === "import" ? "import" : body?.mode === "backfill" ? "backfill" : "preview";
   const brandFilter = typeof body?.brand === "string" ? body.brand : null;
 
@@ -80,13 +82,13 @@ serve(async (req: Request) => {
     };
     try {
       const forms = await fetchAll(
-        `https://graph.facebook.com/v21.0/${page.pageId}/leadgen_forms?fields=id,name,status&limit=100&access_token=${encodeURIComponent(page.token)}`
+        `https://graph.facebook.com/v21.0/${page.pageId}/leadgen_forms?fields=id,name,status&limit=100&access_token=${encodeURIComponent(page.token)}`,
       );
       entry.forms = forms.length;
       const leads: any[] = [];
       for (const form of forms) {
         const formLeads = await fetchAll(
-          `https://graph.facebook.com/v21.0/${form.id}/leads?fields=${LEAD_FIELDS}&limit=100&access_token=${encodeURIComponent(page.token)}`
+          `https://graph.facebook.com/v21.0/${form.id}/leads?fields=${LEAD_FIELDS}&limit=100&access_token=${encodeURIComponent(page.token)}`,
         );
         for (const l of formLeads) {
           l.__formId = String(form.id);
@@ -109,7 +111,10 @@ serve(async (req: Request) => {
       const fresh = leads.filter((l) => !existingIds.has(String(l.id)));
       entry.duplicates = entry.total - fresh.length;
       entry.newCount = fresh.length;
-      const times = leads.map((l) => l.created_time).filter(Boolean).sort();
+      const times = leads
+        .map((l) => l.created_time)
+        .filter(Boolean)
+        .sort();
       entry.oldest = times[0] ?? null;
       entry.newest = times[times.length - 1] ?? null;
 
@@ -156,8 +161,11 @@ serve(async (req: Request) => {
         }
 
         await logEvent(admin, {
-          page_id: page.pageId, brand: page.brand, event_type: "import_backfill",
-          status: "info", message: `Atnaujinta kontaktų: ${entry.updated}`,
+          page_id: page.pageId,
+          brand: page.brand,
+          event_type: "import_backfill",
+          status: "info",
+          message: `Atnaujinta kontaktų: ${entry.updated}`,
         });
       }
 
@@ -181,22 +189,29 @@ serve(async (req: Request) => {
               fb_campaign_name: lead.campaign_name ?? null,
               fb_ad_name: lead.ad_name ?? null,
               fb_platform: lead.platform ?? null,
-
             })
             .select("id")
             .single();
           if (error) {
             entry.failed++;
             await logEvent(admin, {
-              page_id: page.pageId, brand: page.brand, event_type: "import_insert",
-              status: "error", message: error.message, fb_lead_id: String(lead.id),
+              page_id: page.pageId,
+              brand: page.brand,
+              event_type: "import_insert",
+              status: "error",
+              message: error.message,
+              fb_lead_id: String(lead.id),
             });
           } else {
             entry.imported++;
             await logEvent(admin, {
-              page_id: page.pageId, brand: page.brand, event_type: "import_insert",
-              status: "success", message: "Įrašytas senas Facebook lead'as",
-              fb_lead_id: String(lead.id), submission_id: inserted?.id ?? null,
+              page_id: page.pageId,
+              brand: page.brand,
+              event_type: "import_insert",
+              status: "success",
+              message: "Įrašytas senas Facebook lead'as",
+              fb_lead_id: String(lead.id),
+              submission_id: inserted?.id ?? null,
             });
           }
         }
@@ -204,9 +219,11 @@ serve(async (req: Request) => {
     } catch (e) {
       entry.error = humanMetaError(e instanceof Error ? e.message : e);
       await logEvent(admin, {
-        page_id: page.pageId, brand: page.brand,
+        page_id: page.pageId,
+        brand: page.brand,
         event_type: mode === "import" ? "import_run" : "import_preview",
-        status: "error", message: entry.error,
+        status: "error",
+        message: entry.error,
       });
     }
     summary.push(entry);
