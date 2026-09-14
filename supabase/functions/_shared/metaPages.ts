@@ -1,5 +1,8 @@
 // Shared multi-brand Meta page registry + durable event logging helpers.
 // Never log or return access tokens.
+// Every page that leaves this module is checked against the strict allow-list
+// (Auto Kopers LT + Autopaskolos.lt only) — no other page can ever be used.
+import { isAllowedPage, brandForPage } from "./metaAllowlist.ts";
 
 export type PageConfig = { pageId: string; token: string; brand: string; label: string };
 
@@ -24,7 +27,7 @@ export function buildPageRegistry(): PageConfig[] {
   if (LEGACY_PAGE_ID && LEGACY_TOKEN && !pages.some((p) => p.pageId === LEGACY_PAGE_ID)) {
     pages.push({ pageId: LEGACY_PAGE_ID, token: LEGACY_TOKEN, brand: "autopaskolos", label: BRAND_LABELS.autopaskolos });
   }
-  return pages;
+  return pages.filter((p) => isAllowedPage(p.pageId));
 }
 
 export function missingConfig(): { brand: string; label: string; hasToken: boolean; hasPageId: boolean }[] {
@@ -100,7 +103,9 @@ export async function resolvePages(admin: any): Promise<PageConfig[]> {
       .is("revoked_at", null);
     for (const row of data ?? []) {
       if (!row.page_id || !row.access_token) continue;
-      const brand = row.brand
+      if (!isAllowedPage(row.page_id)) continue;
+      const brand = brandForPage(row.page_id)
+        || row.brand
         || envPages.find((p) => p.pageId === String(row.page_id))?.brand
         || "autopaskolos";
       merged.set(String(row.page_id), {
@@ -113,7 +118,7 @@ export async function resolvePages(admin: any): Promise<PageConfig[]> {
   } catch (e) {
     console.error("meta_page_tokens read failed:", e);
   }
-  return [...merged.values()];
+  return [...merged.values()].filter((p) => isAllowedPage(p.pageId));
 }
 
 /** Config completeness that also counts OAuth-stored tokens. */

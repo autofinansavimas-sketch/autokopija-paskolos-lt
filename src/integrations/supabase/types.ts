@@ -134,8 +134,11 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           email: string
+          fb_ad_id: string | null
           fb_ad_name: string | null
+          fb_adset_name: string | null
           fb_campaign_name: string | null
+          fb_field_data: Json | null
           fb_form_id: string | null
           fb_form_name: string | null
           fb_lead_id: string | null
@@ -156,8 +159,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email: string
+          fb_ad_id?: string | null
           fb_ad_name?: string | null
+          fb_adset_name?: string | null
           fb_campaign_name?: string | null
+          fb_field_data?: Json | null
           fb_form_id?: string | null
           fb_form_name?: string | null
           fb_lead_id?: string | null
@@ -178,8 +184,11 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email?: string
+          fb_ad_id?: string | null
           fb_ad_name?: string | null
+          fb_adset_name?: string | null
           fb_campaign_name?: string | null
+          fb_field_data?: Json | null
           fb_form_id?: string | null
           fb_form_name?: string | null
           fb_lead_id?: string | null
@@ -267,11 +276,15 @@ export type Database = {
           connected_by: string | null
           created_at: string
           expires_at: string | null
+          health_error: string | null
+          health_status: string | null
           id: string
+          last_verified_at: string | null
           page_id: string
           page_name: string | null
           revoked_at: string | null
           scopes: string[]
+          subscribed_fields: string[] | null
           token_type: string
           updated_at: string
         }
@@ -282,11 +295,15 @@ export type Database = {
           connected_by?: string | null
           created_at?: string
           expires_at?: string | null
+          health_error?: string | null
+          health_status?: string | null
           id?: string
+          last_verified_at?: string | null
           page_id: string
           page_name?: string | null
           revoked_at?: string | null
           scopes?: string[]
+          subscribed_fields?: string[] | null
           token_type?: string
           updated_at?: string
         }
@@ -297,11 +314,15 @@ export type Database = {
           connected_by?: string | null
           created_at?: string
           expires_at?: string | null
+          health_error?: string | null
+          health_status?: string | null
           id?: string
+          last_verified_at?: string | null
           page_id?: string
           page_name?: string | null
           revoked_at?: string | null
           scopes?: string[]
+          subscribed_fields?: string[] | null
           token_type?: string
           updated_at?: string
         }

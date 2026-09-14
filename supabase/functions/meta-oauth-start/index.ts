@@ -10,7 +10,9 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const META_APP_ID = Deno.env.get("META_APP_ID") || "";
 const META_APP_SECRET = Deno.env.get("META_APP_SECRET") || "";
-const META_CONFIG_ID = Deno.env.get("META_LOGIN_CONFIG_ID") || "";
+// Meta Login for Business configuration (user access token, two allowed pages).
+const DEFAULT_CONFIG_ID = "2072586060014075";
+const META_CONFIG_ID = Deno.env.get("META_LOGIN_CONFIG_ID") || DEFAULT_CONFIG_ID;
 
 const REDIRECT_URI = `${SUPABASE_URL}/functions/v1/meta-oauth-callback`;
 
