@@ -21,14 +21,15 @@ const REDIRECT_URI = `${SUPABASE_URL}/functions/v1/meta-oauth-callback`;
 const GRAPH = "https://graph.facebook.com/v21.0";
 const SUBSCRIBED_FIELDS = "leadgen,feed";
 
-const page = (title: string, body: string, back: string | null) => new Response(
-  `<!doctype html><html lang="lt"><head><meta charset="utf-8">
+const page = (title: string, body: string, back: string | null) =>
+  new Response(
+    `<!doctype html><html lang="lt"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
 <style>body{font-family:system-ui,sans-serif;max-width:34rem;margin:12vh auto;padding:0 1.25rem;line-height:1.6;color:#111}
 h1{font-size:1.25rem}a{display:inline-block;margin-top:1.5rem}</style></head>
 <body><h1>${title}</h1><p>${body}</p>${back ? `<a href="${back}">Grįžti į administravimą</a>` : ""}</body></html>`,
-  { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } },
-);
+    { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } },
+  );
 
 type MetaPage = { id: string; name?: string | null; access_token?: string | null; tasks?: string[] };
 
@@ -55,7 +56,7 @@ async function explicitExpiry(pageToken: string): Promise<string | null> {
   try {
     const res = await fetch(
       `${GRAPH}/debug_token?input_token=${encodeURIComponent(pageToken)}` +
-      `&access_token=${encodeURIComponent(`${META_APP_ID}|${META_APP_SECRET}`)}`,
+        `&access_token=${encodeURIComponent(`${META_APP_ID}|${META_APP_SECRET}`)}`,
     );
     if (!res.ok) return null;
     const at = (await res.json())?.data?.expires_at;
@@ -82,7 +83,11 @@ serve(async (req: Request) => {
     .maybeSingle();
 
   if (!stateRow || stateRow.used_at || new Date(stateRow.expires_at) < new Date()) {
-    return page("Saugumo patikra nepavyko", "Prisijungimo nuoroda nebegalioja arba jau buvo panaudota. Pradėkite iš naujo.", null);
+    return page(
+      "Saugumo patikra nepavyko",
+      "Prisijungimo nuoroda nebegalioja arba jau buvo panaudota. Pradėkite iš naujo.",
+      null,
+    );
   }
   await admin.from("meta_oauth_states").update({ used_at: new Date().toISOString() }).eq("state", state);
   const back = stateRow.redirect_to || null;
@@ -98,8 +103,8 @@ serve(async (req: Request) => {
     // 1. code -> short-lived USER access token
     const tokenRes = await fetch(
       `${GRAPH}/oauth/access_token?client_id=${encodeURIComponent(META_APP_ID)}` +
-      `&client_secret=${encodeURIComponent(META_APP_SECRET)}` +
-      `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&code=${encodeURIComponent(code)}`,
+        `&client_secret=${encodeURIComponent(META_APP_SECRET)}` +
+        `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&code=${encodeURIComponent(code)}`,
     );
     const tokenJson = await tokenRes.json();
     if (!tokenRes.ok || !tokenJson?.access_token) throw new Error(JSON.stringify(tokenJson));
@@ -110,7 +115,7 @@ serve(async (req: Request) => {
     let userTokenLongLived = false;
     const llRes = await fetch(
       `${GRAPH}/oauth/access_token?grant_type=fb_exchange_token&client_id=${encodeURIComponent(META_APP_ID)}` +
-      `&client_secret=${encodeURIComponent(META_APP_SECRET)}&fb_exchange_token=${encodeURIComponent(shortLived)}`,
+        `&client_secret=${encodeURIComponent(META_APP_SECRET)}&fb_exchange_token=${encodeURIComponent(shortLived)}`,
     );
     const llJson = await llRes.json().catch(() => ({}));
     if (llRes.ok && llJson?.access_token) {
@@ -118,7 +123,8 @@ serve(async (req: Request) => {
       userTokenLongLived = true;
     } else {
       await logEvent(admin, {
-        event_type: "oauth_exchange", status: "info",
+        event_type: "oauth_exchange",
+        status: "info",
         message: "Ilgo galiojimo vartotojo rakto gauti nepavyko – naudojamas pradinis raktas puslapių raktams išduoti.",
       });
     }
@@ -147,22 +153,27 @@ serve(async (req: Request) => {
       const pageToken = String(p.access_token);
 
       // 5a. validate the replacement token before touching the stored one
-      const checkRes = await fetch(
-        `${GRAPH}/${pageId}?fields=id,name&access_token=${encodeURIComponent(pageToken)}`,
-      );
+      const checkRes = await fetch(`${GRAPH}/${pageId}?fields=id,name&access_token=${encodeURIComponent(pageToken)}`);
       const checkBody = await checkRes.text();
       if (!checkRes.ok) {
         const msg = humanMetaError(checkBody);
         preserved++;
         failures.push(`${label}: ${msg}`);
         await logEvent(admin, {
-          page_id: pageId, brand, event_type: "oauth_connect", status: "error",
+          page_id: pageId,
+          brand,
+          event_type: "oauth_connect",
+          status: "error",
           message: `Naujas ${label} raktas nepasitvirtino – esamas veikiantis ryšys paliktas nepakeistas. ${msg}`,
         });
         continue;
       }
       let pageName: string | null = null;
-      try { pageName = JSON.parse(checkBody)?.name ?? null; } catch { /* ignore */ }
+      try {
+        pageName = JSON.parse(checkBody)?.name ?? null;
+      } catch {
+        /* ignore */
+      }
 
       // 5b. keep leadgen delivery active, then verify the real subscription state
       let subscribedFields: string[] = [];
@@ -176,9 +187,7 @@ serve(async (req: Request) => {
         });
         if (!subPost.ok) healthError = humanMetaError(await subPost.text());
 
-        const subGet = await fetch(
-          `${GRAPH}/${pageId}/subscribed_apps?access_token=${encodeURIComponent(pageToken)}`,
-        );
+        const subGet = await fetch(`${GRAPH}/${pageId}/subscribed_apps?access_token=${encodeURIComponent(pageToken)}`);
         const subBody = await subGet.text();
         if (subGet.ok) {
           const parsed = JSON.parse(subBody);
@@ -197,28 +206,34 @@ serve(async (req: Request) => {
       }
 
       // 5c. atomic, idempotent upsert of the validated page token
-      const { error } = await admin.from("meta_page_tokens").upsert({
-        page_id: pageId,
-        brand,
-        page_name: pageName ?? p.name ?? null,
-        access_token: pageToken,
-        token_type: "page",
-        scopes,
-        // Page tokens derived from a long-lived user token have no expiry unless Meta says otherwise.
-        expires_at: await explicitExpiry(pageToken),
-        revoked_at: null,
-        connected_at: nowIso,
-        last_verified_at: nowIso,
-        health_status: healthStatus,
-        health_error: healthError,
-        subscribed_fields: subscribedFields,
-      }, { onConflict: "page_id" });
+      const { error } = await admin.from("meta_page_tokens").upsert(
+        {
+          page_id: pageId,
+          brand,
+          page_name: pageName ?? p.name ?? null,
+          access_token: pageToken,
+          token_type: "page",
+          scopes,
+          // Page tokens derived from a long-lived user token have no expiry unless Meta says otherwise.
+          expires_at: await explicitExpiry(pageToken),
+          revoked_at: null,
+          connected_at: nowIso,
+          last_verified_at: nowIso,
+          health_status: healthStatus,
+          health_error: healthError,
+          subscribed_fields: subscribedFields,
+        },
+        { onConflict: "page_id" },
+      );
 
       if (error) {
         preserved++;
         failures.push(`${label}: nepavyko išsaugoti prieigos.`);
         await logEvent(admin, {
-          page_id: pageId, brand, event_type: "oauth_connect", status: "error",
+          page_id: pageId,
+          brand,
+          event_type: "oauth_connect",
+          status: "error",
           message: `Nepavyko išsaugoti ${label} prieigos – esamas ryšys nepakeistas.`,
         });
         continue;
@@ -226,16 +241,21 @@ serve(async (req: Request) => {
 
       stored++;
       await logEvent(admin, {
-        page_id: pageId, brand, event_type: "oauth_connect",
+        page_id: pageId,
+        brand,
+        event_type: "oauth_connect",
         status: healthStatus === "active" ? "success" : "info",
-        message: `${label} prijungtas (ilgo galiojimo puslapio raktas${userTokenLongLived ? "" : ", be ilgo vartotojo rakto"}). ` +
-          `Prenumeratos laukai: ${subscribedFields.join(", ") || "nėra"}.` + (healthError ? ` ${healthError}` : ""),
+        message:
+          `${label} prijungtas (ilgo galiojimo puslapio raktas${userTokenLongLived ? "" : ", be ilgo vartotojo rakto"}). ` +
+          `Prenumeratos laukai: ${subscribedFields.join(", ") || "nėra"}.` +
+          (healthError ? ` ${healthError}` : ""),
       });
     }
 
     if (ignored > 0) {
       await logEvent(admin, {
-        event_type: "oauth_connect", status: "skipped",
+        event_type: "oauth_connect",
+        status: "skipped",
         message: `Neleistini puslapiai praleisti: ${ignored}. Leidžiami tik ${ALLOWED_PAGES.map((a) => a.label).join(" ir ")}.`,
       });
     }
@@ -253,7 +273,8 @@ serve(async (req: Request) => {
     return page(
       "Meta prijungta",
       `Sėkmingai prijungti puslapiai: ${stored}${preserved ? `, palikti nepakeisti: ${preserved}` : ""}. ` +
-      `Prieigos raktai saugomi tik serveryje.` + (failures.length ? ` ${failures.join(" ")}` : ""),
+        `Prieigos raktai saugomi tik serveryje.` +
+        (failures.length ? ` ${failures.join(" ")}` : ""),
       back,
     );
   } catch (e) {
