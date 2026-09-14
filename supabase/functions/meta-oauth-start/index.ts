@@ -12,7 +12,9 @@ const META_APP_ID = Deno.env.get("META_APP_ID") || "";
 const META_APP_SECRET = Deno.env.get("META_APP_SECRET") || "";
 // Meta Login for Business configuration (user access token, two allowed pages).
 const DEFAULT_CONFIG_ID = "2072586060014075";
-const META_CONFIG_ID = Deno.env.get("META_LOGIN_CONFIG_ID") || DEFAULT_CONFIG_ID;
+// Do not allow a stale deployment secret to silently switch the OAuth flow
+// back to the retired system-user configuration.
+const META_CONFIG_ID = DEFAULT_CONFIG_ID;
 
 const REDIRECT_URI = `${SUPABASE_URL}/functions/v1/meta-oauth-callback`;
 
@@ -45,7 +47,7 @@ serve(async (req: Request) => {
   const { data: isAdmin } = await userClient.rpc("is_admin");
   if (!isAdmin) return json({ error: "Tik administratorius gali prijungti Meta." }, 403);
 
-  const body = await req.json().catch(() => ({} as any));
+  const body = await req.json().catch(() => ({}) as any);
   const action = body?.action === "start" ? "start" : "status";
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -67,28 +69,30 @@ serve(async (req: Request) => {
       connections: (rows ?? []).map((r) => ({
         pageId: r.page_id,
         brand: r.brand,
-        label: r.brand ? BRAND_LABELS[r.brand] ?? r.page_name : r.page_name,
+        label: r.brand ? (BRAND_LABELS[r.brand] ?? r.page_name) : r.page_name,
         pageName: r.page_name,
         scopes: r.scopes ?? [],
         expiresAt: r.expires_at,
         connectedAt: r.connected_at,
         revoked: !!r.revoked_at,
       })),
-      message: appConfigured
-        ? null
-        : "Reikalingi Meta APP_ID bei APP_SECRET",
+      message: appConfigured ? null : "Reikalingi Meta APP_ID bei APP_SECRET",
     });
   }
 
   // action === "start"
   if (!appConfigured) {
-    return json({ error: "Reikalingi Meta APP_ID bei APP_SECRET", appConfigured: false, redirectUri: REDIRECT_URI }, 400);
+    return json(
+      { error: "Reikalingi Meta APP_ID bei APP_SECRET", appConfigured: false, redirectUri: REDIRECT_URI },
+      400,
+    );
   }
 
   const state = crypto.randomUUID() + "." + crypto.randomUUID();
-  const redirectTo = typeof body?.redirectTo === "string" && body.redirectTo.startsWith("http")
-    ? String(body.redirectTo).slice(0, 500)
-    : null;
+  const redirectTo =
+    typeof body?.redirectTo === "string" && body.redirectTo.startsWith("http")
+      ? String(body.redirectTo).slice(0, 500)
+      : null;
 
   const { error: stateErr } = await admin
     .from("meta_oauth_states")
