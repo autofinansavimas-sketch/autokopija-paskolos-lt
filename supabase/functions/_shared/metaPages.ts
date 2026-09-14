@@ -103,7 +103,9 @@ export async function resolvePages(admin: any): Promise<PageConfig[]> {
       .is("revoked_at", null);
     for (const row of data ?? []) {
       if (!row.page_id || !row.access_token) continue;
-      const brand = row.brand
+      if (!isAllowedPage(row.page_id)) continue;
+      const brand = brandForPage(row.page_id)
+        || row.brand
         || envPages.find((p) => p.pageId === String(row.page_id))?.brand
         || "autopaskolos";
       merged.set(String(row.page_id), {
@@ -116,7 +118,7 @@ export async function resolvePages(admin: any): Promise<PageConfig[]> {
   } catch (e) {
     console.error("meta_page_tokens read failed:", e);
   }
-  return [...merged.values()];
+  return [...merged.values()].filter((p) => isAllowedPage(p.pageId));
 }
 
 /** Config completeness that also counts OAuth-stored tokens. */
