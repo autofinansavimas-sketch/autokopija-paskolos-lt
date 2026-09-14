@@ -17,12 +17,15 @@ const corsHeaders = {
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+const LEAD_FIELDS =
+  "id,created_time,field_data,form_id,ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,platform,is_organic";
+
 function getField(fieldData: any[], name: string): string | null {
   const f = fieldData?.find((x: any) => x.name?.toLowerCase() === name.toLowerCase());
   return f?.values?.[0] || null;
 }
 
-async function fetchAll(url: string, cap = 20): Promise<any[]> {
+async function fetchAll(url: string, cap = 200): Promise<any[]> {
   const out: any[] = [];
   let next: string | null = url;
   let pages = 0;
@@ -77,12 +80,13 @@ serve(async (req: Request) => {
     };
     try {
       const forms = await fetchAll(
-        `https://graph.facebook.com/v21.0/${page.pageId}/leadgen_forms?fields=id,name&limit=50&access_token=${encodeURIComponent(page.token)}`
+        `https://graph.facebook.com/v21.0/${page.pageId}/leadgen_forms?fields=id,name,status&limit=100&access_token=${encodeURIComponent(page.token)}`
       );
+      entry.forms = forms.length;
       const leads: any[] = [];
       for (const form of forms) {
         const formLeads = await fetchAll(
-          `https://graph.facebook.com/v21.0/${form.id}/leads?fields=id,created_time,field_data,form_id,ad_id,ad_name,adset_name,campaign_name,platform&limit=100&access_token=${encodeURIComponent(page.token)}`
+          `https://graph.facebook.com/v21.0/${form.id}/leads?fields=${LEAD_FIELDS}&limit=100&access_token=${encodeURIComponent(page.token)}`
         );
         for (const l of formLeads) {
           l.__formId = String(form.id);
