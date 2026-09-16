@@ -840,6 +840,22 @@ export default function Admin() {
 
       // Sync status change to Meta (fire-and-forget)
       syncToMeta({ type: "status_change", submission_id: submissionId, new_status: newStatus });
+
+      // Notify Make.com when a lead is moved to "Užbaigti"
+      if (newStatus === "completed") {
+        const lead = submissions.find(s => s.id === submissionId);
+        fetch("https://hook.eu2.make.com/qwd6jpks0sfups35574yg9hpo0t7r5wu", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: lead?.email ?? null,
+            value: lead?.amount ?? null,
+            name: lead?.name ?? null,
+            phone: lead?.phone ?? null,
+            submission_id: submissionId,
+          }),
+        }).catch(err => console.error("Make webhook failed:", err));
+      }
     } catch (error) {
       toast({
         title: "Klaida",
