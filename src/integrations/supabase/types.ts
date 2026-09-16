@@ -205,6 +205,45 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          adset_name: string | null
+          budget: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          raw: Json | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          adset_name?: string | null
+          budget?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          raw?: Json | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          adset_name?: string | null
+          budget?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          raw?: Json | null
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meta_event_log: {
         Row: {
           brand: string | null
