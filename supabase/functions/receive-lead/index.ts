@@ -71,5 +71,46 @@ Deno.serve(async (req) => {
     return json({ error: "Could not store lead" }, 500);
   }
 
-  return json({ ok: true, id: data.id }, 201);
+  // Also create a CRM card in contact_submissions so the lead shows up in "Paraiškos".
+  let submissionId: string | null = null;
+  let duplicate = false;
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    let dupQuery = admin
+      .from("contact_submissions")
+      .select("id")
+      .gte("created_at", since)
+      .limit(1);
+
+    if (phone && email) dupQuery = dupQuery.or(`phone.eq.${phone},email.eq.${email}`);
+    else if (phone) dupQuery = dupQuery.eq("phone", phone);
+    else dupQuery = dupQuery.eq("email", email!);
+
+    const { data: dup } = await dupQuery.maybeSingle();
+
+    if (dup) {
+      duplicate = true;
+    } else {
+      const { data: sub, error: subError } = await admin
+        .from("contact_submissions")
+        .insert({
+          name: full_name,
+          email: email ?? "nera@webhook.lt",
+          phone: phone ?? "N/A",
+          amount: budget,
+          loan_type: adset_name,
+          source: "webhook",
+          status: "new",
+        })
+        .select("id")
+        .single();
+
+      if (subError) console.error("receive-lead submission insert failed:", subError.message);
+      else submissionId = sub.id;
+    }
+  } catch (e) {
+    console.error("receive-lead submission step failed:", e instanceof Error ? e.message : String(e));
+  }
+
+  return json({ ok: true, id: data.id, submission_id: submissionId, duplicate }, 201);
 });
