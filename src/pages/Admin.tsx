@@ -310,6 +310,9 @@ export default function Admin() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addingSubmission, setAddingSubmission] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [editingAmount, setEditingAmount] = useState(false);
+  const [amountDraft, setAmountDraft] = useState("");
+  const [savingAmount, setSavingAmount] = useState(false);
   const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(readStatusConfigFromLocalStorage);
@@ -880,6 +883,31 @@ export default function Admin() {
       });
     }
   };
+
+  // Paraiškos sumos redagavimas
+  const handleAmountSave = async (submissionId: string) => {
+    const value = amountDraft.trim().slice(0, 20);
+    setSavingAmount(true);
+    try {
+      const { error } = await supabase
+        .from("contact_submissions")
+        .update({ amount: value || null })
+        .eq("id", submissionId);
+
+      if (error) throw error;
+
+      setSubmissions(prev => prev.map(s => s.id === submissionId ? { ...s, amount: value || null } : s));
+      setSelectedSubmission(prev => prev && prev.id === submissionId ? { ...prev, amount: value || null } : prev);
+      setEditingAmount(false);
+      toast({ title: "Suma atnaujinta" });
+    } catch {
+      toast({ title: "Klaida", description: "Nepavyko atnaujinti sumos", variant: "destructive" });
+    } finally {
+      setSavingAmount(false);
+    }
+  };
+
+
 
   // Masinis Facebook lead'ų perkėlimas į šiukšliadėžę
   const handleBulkDelete = async (ids: string[]) => {
