@@ -3342,8 +3342,46 @@ export default function Admin() {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Suma:</span>
-                      <p className="font-medium">{selectedSubmission.amount || "Nenurodyta"}€</p>
+                      {editingAmount ? (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Input
+                            autoFocus
+                            inputMode="numeric"
+                            className="h-8 text-base"
+                            value={amountDraft}
+                            onChange={(e) => setAmountDraft(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") { e.preventDefault(); handleAmountSave(selectedSubmission.id); }
+                              if (e.key === "Escape") setEditingAmount(false);
+                            }}
+                          />
+                          <Button
+                            size="sm"
+                            className="h-8 px-2"
+                            disabled={savingAmount}
+                            onClick={() => handleAmountSave(selectedSubmission.id)}
+                          >
+                            {savingAmount ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setEditingAmount(false)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 font-medium hover:underline"
+                          onClick={() => {
+                            setAmountDraft(selectedSubmission.amount || "");
+                            setEditingAmount(true);
+                          }}
+                        >
+                          {selectedSubmission.amount || "Nenurodyta"}€
+                          <Pencil className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      )}
                     </div>
+
                     <div>
                       <span className="text-muted-foreground">Laikotarpis:</span>
                       <p className="font-medium">{selectedSubmission.loan_period || "Nenurodyta"}</p>
