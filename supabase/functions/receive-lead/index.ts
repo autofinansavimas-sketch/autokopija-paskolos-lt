@@ -80,10 +80,11 @@ Deno.serve(async (req) => {
       .from("contact_submissions")
       .select("id")
       .gte("created_at", since)
+      .is("deleted_at", null)
       .limit(1);
 
-    if (phone && email) dupQuery = dupQuery.or(`phone.eq.${phone},email.eq.${email}`);
-    else if (phone) dupQuery = dupQuery.eq("phone", phone);
+    // Only a real duplicate: same phone (when given) or same real email.
+    if (phone) dupQuery = dupQuery.eq("phone", phone);
     else dupQuery = dupQuery.eq("email", email!);
 
     const { data: dup } = await dupQuery.maybeSingle();
