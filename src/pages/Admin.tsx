@@ -272,6 +272,33 @@ const readStatusConfigFromLocalStorage = () => {
   }
 };
 
+// Make.com webhook: siunčiamas, kai paraiška perkeliama į „Užbaigti"
+const MAKE_COMPLETED_WEBHOOK_URL = "https://hook.eu2.make.com/qwd6jpks0sfups35574yg9hpo0t7r5wu";
+
+const sendCompletedToMake = (lead: Submission | undefined, submissionId: string) => {
+  const budget = lead?.amount ?? null;
+  const payload = {
+    email: lead?.email ?? null,
+    budget,
+    value: budget,
+    name: lead?.name ?? null,
+    phone: lead?.phone ?? null,
+    status: "completed",
+    submission_id: submissionId,
+    completed_at: new Date().toISOString(),
+  };
+
+  fetch(MAKE_COMPLETED_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then(res => {
+      if (!res.ok) console.error("Make webhook responded with status", res.status);
+    })
+    .catch(err => console.error("Make webhook failed:", err));
+};
+
 export default function Admin() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [deletedSubmissions, setDeletedSubmissions] = useState<Submission[]>([]);
