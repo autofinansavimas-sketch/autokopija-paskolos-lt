@@ -37,6 +37,7 @@ import {
   Archive,
   MessageCircle,
   Pencil,
+  Check,
   Check as CheckIcon,
   Palette,
   ChevronLeft,
