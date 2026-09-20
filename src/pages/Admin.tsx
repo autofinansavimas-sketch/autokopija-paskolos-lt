@@ -3016,7 +3016,6 @@ export default function Admin() {
                       variant="outline"
                       className="h-8 text-xs text-destructive hover:text-destructive"
                       disabled={facebookLeads.length === 0 || fbBulkDeleting}
-                published
                     >
                       <Trash2 className="h-3.5 w-3.5 mr-1" />
                       Ištrinti visus ({facebookLeads.length})
