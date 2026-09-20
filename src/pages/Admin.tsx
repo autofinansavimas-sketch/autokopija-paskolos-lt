@@ -362,6 +362,8 @@ export default function Admin() {
   const [leadCampaignFilter, setLeadCampaignFilter] = useState<string>("all");
 
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
+  const [leadSort, setLeadSort] = useState<"new" | "old" | "amount" | "name">("new");
+  const [fbBulkStatus, setFbBulkStatus] = useState<string>("");
   const [fbBrandTab, setFbBrandTab] = useState<string>("all");
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
@@ -781,7 +783,7 @@ export default function Admin() {
   // TIK tikri Facebook/Meta lead'ai – seni administratoriniai įrašai čia nerodomi
   const leadCards = useMemo(() => {
     const q = leadSearch.trim().toLowerCase();
-    return submissions.filter((s) => {
+    const list = submissions.filter((s) => {
       if (!isFacebookRecord(s)) return false;
       if (fbBrandTab !== "all" && brandOf(s) !== fbBrandTab) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
@@ -792,7 +794,26 @@ export default function Admin() {
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter, fbBrandTab]);
+
+    const amountOf = (s: Submission) => {
+      const n = parseFloat(String(s.amount || "").replace(/[^\d.,]/g, "").replace(",", "."));
+      return Number.isFinite(n) ? n : -1;
+    };
+
+    return [...list].sort((a, b) => {
+      switch (leadSort) {
+        case "old":
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "amount":
+          return amountOf(b) - amountOf(a);
+        case "name":
+          return (a.name || "").localeCompare(b.name || "", "lt");
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter, fbBrandTab, leadSort]);
+
 
   const availableCampaigns = useMemo(
     () =>
@@ -945,6 +966,36 @@ export default function Admin() {
       setFbBulkDeleting(false);
     }
   };
+
+  // Masinis statuso keitimas pažymėtiems Facebook lead'ams
+  const handleBulkStatusChange = async (ids: string[], newStatus: string) => {
+    if (ids.length === 0 || !newStatus) return;
+    try {
+      const { error } = await supabase
+        .from("contact_submissions")
+        .update({ status: newStatus })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      setSubmissions((prev) =>
+        prev.map((s) => (ids.includes(s.id) ? { ...s, status: newStatus } : s))
+      );
+      setFbSelected([]);
+      setFbBulkStatus("");
+      toast({
+        title: `Statusas pakeistas (${ids.length})`,
+        description: statusConfig.find((s) => s.value === newStatus)?.label || newStatus,
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko pakeisti statuso",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   // Soft delete - move to trash
   const handleDeleteSubmission = async (submissionId: string) => {
@@ -1830,6 +1881,26 @@ export default function Admin() {
                 </AlertDialogContent>
               </AlertDialog>
             )}
+            {selectedHere.length > 0 && (
+              <Select
+                value={fbBulkStatus}
+                onValueChange={(v) => {
+                  setFbBulkStatus(v);
+                  handleBulkStatusChange(selectedHere, v);
+                }}
+              >
+                <SelectTrigger className="h-7 w-[190px] text-xs">
+                  <SelectValue placeholder={`Keisti statusą (${selectedHere.length})`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusConfig.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
 
@@ -2609,15 +2680,37 @@ export default function Admin() {
                             <Pencil className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
                           </Button>
                           {statusConfig.length > 1 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-destructive lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleDeleteColumn(colConfig.value)}
-                              title="Ištrinti kortelę"
-                            >
-                              <X className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-destructive lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                  title="Ištrinti kolonėlę"
+                                >
+                                  <X className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Ar tikrai ištrinti kolonėlę „{colConfig.label}“?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {statusSubmissions.length > 0
+                                      ? `Šioje kolonėlėje yra ${statusSubmissions.length} įrašų – jie bus perkelti į pirmąją kolonėlę. Paraiškos nebus ištrintos.`
+                                      : "Kolonėlė bus pašalinta. Paraiškos nebus ištrintos."}
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteColumn(colConfig.value)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Ištrinti kolonėlę
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           )}
                         </div>
                       )}
@@ -2906,7 +2999,7 @@ export default function Admin() {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <Button
                   size="sm"
                   variant={fbView === "cards" ? "default" : "outline"}
@@ -2923,6 +3016,50 @@ export default function Admin() {
                 >
                   Sąrašas
                 </Button>
+
+                <Select value={leadSort} onValueChange={(v) => setLeadSort(v as typeof leadSort)}>
+                  <SelectTrigger className="h-8 w-[170px] text-xs">
+                    <SelectValue placeholder="Rūšiavimas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">Naujausi pirmi</SelectItem>
+                    <SelectItem value="old">Seniausi pirmi</SelectItem>
+                    <SelectItem value="amount">Didžiausia suma</SelectItem>
+                    <SelectItem value="name">Pagal vardą (A–Ž)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs text-destructive hover:text-destructive"
+                      disabled={facebookLeads.length === 0 || fbBulkDeleting}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Ištrinti visus ({facebookLeads.length})
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Ar tikrai ištrinti visus Facebook lead'us?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Visi {facebookLeads.length} Facebook lead'ai bus perkelti į šiukšliadėžę (nepriklausomai nuo filtrų).
+                        Juos galėsite atkurti šiukšliadėžės skirtuke; automatiškai išnyksta po 3 mėnesių.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleBulkDelete(facebookLeads.map((s) => s.id))}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Perkelti visus į šiukšliadėžę
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5">
