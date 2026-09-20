@@ -1881,6 +1881,26 @@ export default function Admin() {
                 </AlertDialogContent>
               </AlertDialog>
             )}
+            {selectedHere.length > 0 && (
+              <Select
+                value={fbBulkStatus}
+                onValueChange={(v) => {
+                  setFbBulkStatus(v);
+                  handleBulkStatusChange(selectedHere, v);
+                }}
+              >
+                <SelectTrigger className="h-7 w-[190px] text-xs">
+                  <SelectValue placeholder={`Keisti statusą (${selectedHere.length})`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusConfig.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
 
