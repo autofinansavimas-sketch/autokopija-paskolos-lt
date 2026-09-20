@@ -2979,7 +2979,7 @@ export default function Admin() {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <Button
                   size="sm"
                   variant={fbView === "cards" ? "default" : "outline"}
@@ -2996,6 +2996,51 @@ export default function Admin() {
                 >
                   Sąrašas
                 </Button>
+
+                <Select value={leadSort} onValueChange={(v) => setLeadSort(v as typeof leadSort)}>
+                  <SelectTrigger className="h-8 w-[170px] text-xs">
+                    <SelectValue placeholder="Rūšiavimas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">Naujausi pirmi</SelectItem>
+                    <SelectItem value="old">Seniausi pirmi</SelectItem>
+                    <SelectItem value="amount">Didžiausia suma</SelectItem>
+                    <SelectItem value="name">Pagal vardą (A–Ž)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs text-destructive hover:text-destructive"
+                      disabled={facebookLeads.length === 0 || fbBulkDeleting}
+                published
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Ištrinti visus ({facebookLeads.length})
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Ar tikrai ištrinti visus Facebook lead'us?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Visi {facebookLeads.length} Facebook lead'ai bus perkelti į šiukšliadėžę (nepriklausomai nuo filtrų).
+                        Juos galėsite atkurti šiukšliadėžės skirtuke; automatiškai išnyksta po 3 mėnesių.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleBulkDelete(facebookLeads.map((s) => s.id))}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Perkelti visus į šiukšliadėžę
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5">
