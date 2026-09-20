@@ -967,6 +967,36 @@ export default function Admin() {
     }
   };
 
+  // Masinis statuso keitimas pažymėtiems Facebook lead'ams
+  const handleBulkStatusChange = async (ids: string[], newStatus: string) => {
+    if (ids.length === 0 || !newStatus) return;
+    try {
+      const { error } = await supabase
+        .from("contact_submissions")
+        .update({ status: newStatus })
+        .in("id", ids);
+
+      if (error) throw error;
+
+      setSubmissions((prev) =>
+        prev.map((s) => (ids.includes(s.id) ? { ...s, status: newStatus } : s))
+      );
+      setFbSelected([]);
+      setFbBulkStatus("");
+      toast({
+        title: `Statusas pakeistas (${ids.length})`,
+        description: statusConfig.find((s) => s.value === newStatus)?.label || newStatus,
+      });
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: "Nepavyko pakeisti statuso",
+        variant: "destructive",
+      });
+    }
+  };
+
+
   // Soft delete - move to trash
   const handleDeleteSubmission = async (submissionId: string) => {
     try {
