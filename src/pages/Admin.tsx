@@ -929,6 +929,17 @@ export default function Admin() {
     }
   };
 
+  // Sumos redagavimo būsena priklauso konkrečiai paraiškai. Kai keičiasi
+  // pasirinkta paraiška (langas uždaromas, atidaroma kita, perjungiama per
+  // dublikatus arba įrašas perkeliamas į šiukšliadėžę), redagavimą atstatome,
+  // kad ankstesnio kliento juodraštis niekada nenusirašytų naujam klientui.
+  useEffect(() => {
+    setEditingAmount(false);
+    setAmountDraft("");
+    setSavingAmount(false);
+  }, [selectedSubmission?.id]);
+
+
 
 
   // Masinis Facebook lead'ų perkėlimas į šiukšliadėžę
@@ -3262,7 +3273,16 @@ export default function Admin() {
 
 
       {/* Detail Sheet */}
-      <Sheet open={!!selectedSubmission} onOpenChange={(open) => !open && setSelectedSubmission(null)}>
+      <Sheet
+        open={!!selectedSubmission}
+        onOpenChange={(open) => {
+          if (open) return;
+          setEditingAmount(false);
+          setAmountDraft("");
+          setSavingAmount(false);
+          setSelectedSubmission(null);
+        }}
+      >
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           {selectedSubmission && (
             <>
