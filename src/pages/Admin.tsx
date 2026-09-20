@@ -2660,15 +2660,37 @@ export default function Admin() {
                             <Pencil className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
                           </Button>
                           {statusConfig.length > 1 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-destructive lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleDeleteColumn(colConfig.value)}
-                              title="Ištrinti kortelę"
-                            >
-                              <X className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 lg:h-6 lg:w-6 p-0 text-muted-foreground hover:text-destructive lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                  title="Ištrinti kolonėlę"
+                                >
+                                  <X className="h-3.5 w-3.5 lg:h-3 lg:w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Ar tikrai ištrinti kolonėlę „{colConfig.label}“?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {statusSubmissions.length > 0
+                                      ? `Šioje kolonėlėje yra ${statusSubmissions.length} įrašų – jie bus perkelti į pirmąją kolonėlę. Paraiškos nebus ištrintos.`
+                                      : "Kolonėlė bus pašalinta. Paraiškos nebus ištrintos."}
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Atšaukti</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteColumn(colConfig.value)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Ištrinti kolonėlę
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           )}
                         </div>
                       )}
