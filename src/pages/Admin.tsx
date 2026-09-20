@@ -783,7 +783,7 @@ export default function Admin() {
   // TIK tikri Facebook/Meta lead'ai – seni administratoriniai įrašai čia nerodomi
   const leadCards = useMemo(() => {
     const q = leadSearch.trim().toLowerCase();
-    return submissions.filter((s) => {
+    const list = submissions.filter((s) => {
       if (!isFacebookRecord(s)) return false;
       if (fbBrandTab !== "all" && brandOf(s) !== fbBrandTab) return false;
       if (leadSourceFilter !== "all" && (s.source || "") !== leadSourceFilter) return false;
@@ -794,7 +794,26 @@ export default function Admin() {
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter, fbBrandTab]);
+
+    const amountOf = (s: Submission) => {
+      const n = parseFloat(String(s.amount || "").replace(/[^\d.,]/g, "").replace(",", "."));
+      return Number.isFinite(n) ? n : -1;
+    };
+
+    return [...list].sort((a, b) => {
+      switch (leadSort) {
+        case "old":
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "amount":
+          return amountOf(b) - amountOf(a);
+        case "name":
+          return (a.name || "").localeCompare(b.name || "", "lt");
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  }, [submissions, leadSearch, leadSourceFilter, leadStatusFilter, leadCampaignFilter, fbBrandTab, leadSort]);
+
 
   const availableCampaigns = useMemo(
     () =>
