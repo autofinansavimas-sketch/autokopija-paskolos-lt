@@ -362,6 +362,8 @@ export default function Admin() {
   const [leadCampaignFilter, setLeadCampaignFilter] = useState<string>("all");
 
   const [leadStatusFilter, setLeadStatusFilter] = useState<string>("all");
+  const [leadSort, setLeadSort] = useState<"new" | "old" | "amount" | "name">("new");
+  const [fbBulkStatus, setFbBulkStatus] = useState<string>("");
   const [fbBrandTab, setFbBrandTab] = useState<string>("all");
   const [fbSelected, setFbSelected] = useState<string[]>([]);
   const [fbExpanded, setFbExpanded] = useState<string[]>([]);
