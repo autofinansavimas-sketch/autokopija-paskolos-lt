@@ -998,6 +998,15 @@ export default function Admin() {
         title: `Statusas pakeistas (${ids.length})`,
         description: statusConfig.find((s) => s.value === newStatus)?.label || newStatus,
       });
+
+      // Masinis keitimas elgiasi kaip atskiri pervedimai: kiekvienam įrašui
+      // sukamas tas pats Meta sinchronizavimas, o „Užbaigti" atveju – ir
+      // Make.com pranešimas (fire-and-forget, kaip handleStatusChange).
+      ids.forEach((id) => {
+        const lead = submissions.find((s) => s.id === id);
+        syncToMeta({ type: "status_change", submission_id: id, new_status: newStatus });
+        if (newStatus === "completed") sendCompletedToMake(lead, id);
+      });
     } catch (error) {
       toast({
         title: "Klaida",
