@@ -3303,11 +3303,27 @@ export default function Admin() {
               <div className="mt-6 space-y-6">
                 {/* Duplicate warning */}
                 {(() => {
-                  const dupes = submissions.filter(s =>
-                    s.id !== selectedSubmission.id &&
-                    ((selectedSubmission.phone && s.phone === selectedSubmission.phone) ||
-                     (selectedSubmission.email && s.email === selectedSubmission.email))
-                  );
+                  // Placeholder contacts (imported leads without a real phone/email)
+                  // must never make different people look like the same client.
+                  const realPhone = (v?: string | null) => {
+                    const d = (v || "").replace(/[^\d]/g, "");
+                    return d.length >= 8 ? d.slice(-8) : null;
+                  };
+                  const realEmail = (v?: string | null) => {
+                    const e = (v || "").trim().toLowerCase();
+                    if (!e || !e.includes("@")) return null;
+                    if (/(no-email|nera@|noreply|no-reply|example\.com)/.test(e)) return null;
+                    return e;
+                  };
+                  const phoneKey = realPhone(selectedSubmission.phone);
+                  const emailKey = realEmail(selectedSubmission.email);
+                  const dupes = (phoneKey || emailKey)
+                    ? submissions.filter(s =>
+                        s.id !== selectedSubmission.id &&
+                        ((phoneKey && realPhone(s.phone) === phoneKey) ||
+                         (emailKey && realEmail(s.email) === emailKey))
+                      )
+                    : [];
                   if (dupes.length === 0) return null;
                   return (
                     <div className="rounded-lg border border-red-300 bg-red-50 dark:bg-red-950/30 p-3">
