@@ -330,6 +330,7 @@ export default function Admin() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [latestLimit, setLatestLimit] = useState<number>(10);
   const [stalePulseEnabled, setStalePulseEnabled] = useState<boolean>(() => {
     try {
       return localStorage.getItem("admin_stale_pulse_enabled") !== "false";
@@ -2446,6 +2447,16 @@ export default function Admin() {
                 >
                   {stalePulseEnabled ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                   Mirksėjimas
+                </Button>
+                <Button
+                  variant={quickFilter === "latest" ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setQuickFilter(quickFilter === "latest" ? null : "latest")}
+                  title="Rodyti paskutines paraiškas nesvarbu kokio statuso"
+                >
+                  <Clock className="h-3.5 w-3.5" />
+                  Naujausios
                 </Button>
                 <Button
                   variant="outline"
