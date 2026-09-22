@@ -330,6 +330,7 @@ export default function Admin() {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
+  const [latestLimit, setLatestLimit] = useState<number>(10);
   const [stalePulseEnabled, setStalePulseEnabled] = useState<boolean>(() => {
     try {
       return localStorage.getItem("admin_stale_pulse_enabled") !== "false";
@@ -2448,6 +2449,16 @@ export default function Admin() {
                   Mirksėjimas
                 </Button>
                 <Button
+                  variant={quickFilter === "latest" ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 gap-1.5"
+                  onClick={() => setQuickFilter(quickFilter === "latest" ? null : "latest")}
+                  title="Rodyti paskutines paraiškas nesvarbu kokio statuso"
+                >
+                  <Clock className="h-3.5 w-3.5" />
+                  Naujausios
+                </Button>
+                <Button
                   variant="outline"
                   size="sm"
                   className="h-8 gap-1.5"
@@ -2495,6 +2506,64 @@ export default function Admin() {
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
+            ) : quickFilter === "latest" ? (
+              (() => {
+                const latest = submissions
+                  .filter(s => !isLegacyFacebookRecord(s))
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .slice(0, latestLimit);
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <p className="text-sm text-muted-foreground">
+                        Paskutinės <span className="font-semibold text-foreground">{latest.length}</span> paraiškos (visi statusai)
+                      </p>
+                      <Select value={String(latestLimit)} onValueChange={(v) => setLatestLimit(Number(v))}>
+                        <SelectTrigger className="h-8 w-[130px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">Paskutinės 10</SelectItem>
+                          <SelectItem value="20">Paskutinės 20</SelectItem>
+                          <SelectItem value="30">Paskutinės 30</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {latest.length === 0 ? (
+                      <div className="text-center py-16 text-muted-foreground">
+                        <Clock className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">Paraiškų dar nėra</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {latest.map((s) => {
+                          const col = statusConfig.find(c => c.value === s.status);
+                          return (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => setSelectedSubmission(s)}
+                              className="w-full flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5 text-left shadow-sm hover:bg-accent/50 active:scale-[0.99] transition"
+                            >
+                              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${col?.color ?? "bg-muted"}`} title={col?.label ?? s.status} />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-sm truncate">{s.name || "Nežinomas"}</span>
+                                  <span className="text-[10px] text-muted-foreground shrink-0">{col?.label ?? s.status}</span>
+                                </div>
+                                <div className="text-xs text-muted-foreground truncate">
+                                  {s.phone}{s.email ? ` · ${s.email}` : ""}{s.amount ? ` · ${s.amount} €` : ""}
+                                </div>
+                              </div>
+                              <span className="text-xs text-muted-foreground shrink-0">{formatShortDate(s.created_at)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()
             ) : (
               (() => {
                 const columnsWithData = statusConfig.map(colConfig => ({
