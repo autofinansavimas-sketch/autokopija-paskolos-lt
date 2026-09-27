@@ -651,20 +651,24 @@ export default function Admin() {
 
       setSubmissions(activeData);
       setDeletedSubmissions(deletedData);
+      // Show the board immediately; comments load in parallel below.
+      setLoading(false);
 
       const allSubmissions = [...activeData, ...deletedData];
 
       if (allSubmissions.length > 0) {
+        const submissionIdChunks = chunkArray(allSubmissions.map(s => s.id), 150);
+        const chunkResults = await Promise.all(
+          submissionIdChunks.map((submissionIdChunk) =>
+            supabase
+              .from("submission_comments")
+              .select("*")
+              .in("submission_id", submissionIdChunk)
+              .order("created_at", { ascending: true })
+          )
+        );
         const commentsData: Comment[] = [];
-        const submissionIdChunks = chunkArray(allSubmissions.map(s => s.id), 100);
-
-        for (const submissionIdChunk of submissionIdChunks) {
-          const { data: chunkData, error: commentsError } = await supabase
-            .from("submission_comments")
-            .select("*")
-            .in("submission_id", submissionIdChunk)
-            .order("created_at", { ascending: true });
-
+        for (const { data: chunkData, error: commentsError } of chunkResults) {
           if (commentsError) {
             console.warn("Error fetching submission comments:", commentsError);
             continue;
@@ -2458,6 +2462,12 @@ export default function Admin() {
                   <Clock className="h-3.5 w-3.5" />
                   Naujausios
                 </Button>
+                <CarMatchesBell
+                  onOpenSubmission={(id) => {
+                    const s = submissions.find((x) => x.id === id);
+                    if (s) setSelectedSubmission(s);
+                  }}
+                />
                 <Button
                   variant="outline"
                   size="sm"
@@ -3646,6 +3656,8 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
+
+                <CarWishes submissionId={selectedSubmission.id} />
 
                 {/* Dates */}
                 <div className="space-y-2 text-sm text-muted-foreground">
