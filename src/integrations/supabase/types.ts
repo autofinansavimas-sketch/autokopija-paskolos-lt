@@ -127,6 +127,98 @@ export type Database = {
           },
         ]
       }
+      car_matches: {
+        Row: {
+          car_id: string
+          created_at: string
+          id: string
+          image_url: string | null
+          price: number | null
+          seen: boolean
+          submission_id: string
+          title: string
+          url: string | null
+          wish_id: string
+          year: number | null
+        }
+        Insert: {
+          car_id: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          price?: number | null
+          seen?: boolean
+          submission_id: string
+          title: string
+          url?: string | null
+          wish_id: string
+          year?: number | null
+        }
+        Update: {
+          car_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          price?: number | null
+          seen?: boolean
+          submission_id?: string
+          title?: string
+          url?: string | null
+          wish_id?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_matches_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "car_matches_wish_id_fkey"
+            columns: ["wish_id"]
+            isOneToOne: false
+            referencedRelation: "car_wishes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      car_wishes: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          make: string
+          model: string | null
+          submission_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          make: string
+          model?: string | null
+          submission_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          make?: string
+          model?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_wishes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_submissions: {
         Row: {
           amount: string | null
