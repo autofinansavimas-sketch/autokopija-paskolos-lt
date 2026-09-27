@@ -17,3 +17,5 @@ verify_jwt = false
 
 [functions.receive-lead]
 verify_jwt = false
+[functions.check-autokopers-cars]
+verify_jwt = false
