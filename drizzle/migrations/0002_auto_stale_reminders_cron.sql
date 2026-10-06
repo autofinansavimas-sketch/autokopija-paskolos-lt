@@ -1,0 +1,1 @@
+SELECT cron.schedule('auto-stale-reminders-hourly', '15 * * * *', $$SELECT net.http_post(url := 'https://jwruubwnqwibbdwkpksz.supabase.co/functions/v1/auto-stale-reminders', headers := '{"Content-Type":"application/json"}'::jsonb, body := '{}'::jsonb)$$);

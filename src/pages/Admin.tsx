@@ -116,6 +116,8 @@ import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/u
 import QuickAddClient from "@/components/QuickAddClient";
 import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
 import OperatorTimeStats from "@/components/OperatorTimeStats";
+import MyDaySummary from "@/components/MyDaySummary";
+import OperatorStats from "@/components/OperatorStats";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Submission {
@@ -315,6 +317,7 @@ export default function Admin() {
   const [addingSubmission, setAddingSubmission] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [editingAmount, setEditingAmount] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [amountDraft, setAmountDraft] = useState("");
   const [savingAmount, setSavingAmount] = useState(false);
   const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
@@ -2380,6 +2383,9 @@ export default function Admin() {
           );
         })()}
 
+        {/* My Day summary */}
+        <MyDaySummary />
+
         {/* Today's Reminders Banner */}
         <TodayReminders />
 
@@ -3366,6 +3372,9 @@ export default function Admin() {
             </div>
             <ClientTools statusConfig={statusConfig} />
             <OperatorTimeStats />
+            <div className="mt-4">
+              <OperatorStats />
+            </div>
             <UserManagement />
           </TabsContent>
 
@@ -3606,6 +3615,52 @@ export default function Admin() {
                         className="h-8 text-xs justify-start"
                         onClick={() => handleAddComment(selectedSubmission.id, tpl.text)}
                       >
+                        {tpl.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Send email to client directly from the card */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5" />
+                    Siųsti el. laišką klientui
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { key: "follow_up", label: "📧 Nepavyko susisiekti" },
+                      { key: "documents", label: "📄 Prašymas dokumentų" },
+                      { key: "offer_ready", label: "🎉 Pasiūlymas paruoštas" },
+                    ].map((tpl) => (
+                      <Button
+                        key={tpl.key}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs justify-start"
+                        disabled={sendingEmail === tpl.key}
+                        onClick={async () => {
+                          setSendingEmail(tpl.key);
+                          try {
+                            const { data, error } = await supabase.functions.invoke("send-client-email", {
+                              body: { submission_id: selectedSubmission.id, template: tpl.key },
+                            });
+                            if (error || !data?.ok) throw new Error(data?.error || error?.message || "klaida");
+                            toast({ title: "Laiškas išsiųstas", description: `Klientui ${selectedSubmission.email}` });
+                            const { data: fresh } = await supabase
+                              .from("submission_comments")
+                              .select("*")
+                              .eq("submission_id", selectedSubmission.id)
+                              .order("created_at", { ascending: true });
+                            if (fresh) setComments((prev) => ({ ...prev, [selectedSubmission.id]: fresh }));
+                          } catch (e) {
+                            toast({ title: "Nepavyko išsiųsti", description: String(e), variant: "destructive" });
+                          } finally {
+                            setSendingEmail(null);
+                          }
+                        }}
+                      >
+                        {sendingEmail === tpl.key ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
                         {tpl.label}
                       </Button>
                     ))}
