@@ -2470,6 +2470,18 @@ export default function Admin() {
                   <Clock className="h-3.5 w-3.5" />
                   Naujausios
                 </Button>
+                <Select value={assignedFilter} onValueChange={setAssignedFilter}>
+                  <SelectTrigger className="h-8 w-[150px]" title="Filtruoti pagal priskyrimą">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Visi darbuotojai</SelectItem>
+                    <SelectItem value="Aivaras">Aivarui</SelectItem>
+                    <SelectItem value="Paulina">Paulinai</SelectItem>
+                    <SelectItem value="none">Nepriskirtos</SelectItem>
+                  </SelectContent>
+                </Select>
+                <NewSubmissionNotifier onNew={() => fetchSubmissions()} />
                 <CarMatchesBell
                   onOpenSubmission={(id) => {
                     const s = submissions.find((x) => x.id === id);
@@ -3663,6 +3675,29 @@ export default function Admin() {
                       </p>
                     </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2 rounded-lg border p-3 text-sm">
+                  <span className="text-muted-foreground">Perduota:</span>
+                  {(["Aivaras", "Paulina"] as const).map((op) => (
+                    <Button
+                      key={op}
+                      size="sm"
+                      variant={selectedSubmission.assigned_to === op ? "default" : "outline"}
+                      className="h-7"
+                      onClick={async () => {
+                        const id = selectedSubmission.id;
+                        const next = selectedSubmission.assigned_to === op ? null : op;
+                        const { error } = await supabase.from("contact_submissions").update({ assigned_to: next }).eq("id", id);
+                        if (error) { toast({ title: "Nepavyko priskirti", variant: "destructive" }); return; }
+                        setSubmissions((prev) => prev.map((x) => (x.id === id ? { ...x, assigned_to: next } : x)));
+                        setSelectedSubmission((prev) => (prev && prev.id === id ? { ...prev, assigned_to: next } : prev));
+                        toast({ title: next ? `Perduota: ${next}` : "Priskyrimas nuimtas" });
+                      }}
+                    >
+                      {op}
+                    </Button>
+                  ))}
                 </div>
 
                 <CarWishes submissionId={selectedSubmission.id} />
