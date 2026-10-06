@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon, Plus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useOperator, tagCommentWithOperator } from "@/hooks/use-operator";
 
 interface AddReminderDialogProps {
   open: boolean;
@@ -45,6 +46,7 @@ export default function AddReminderDialog({
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
+  const { operator } = useOperator();
 
   const handleAddReminder = async () => {
     if (!selectedDate || !currentUserId) {
@@ -63,7 +65,7 @@ export default function AddReminderDialog({
         user_id: currentUserId,
         call_date: format(selectedDate, "yyyy-MM-dd"),
         call_time: callTime,
-        notes: notes || null,
+        notes: tagCommentWithOperator(notes || "", operator) || null,
       });
 
       if (error) throw error;
