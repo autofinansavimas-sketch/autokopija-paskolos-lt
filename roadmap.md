@@ -5,3 +5,4 @@
 - [x] Statuso sinchronizavimas į Meta: Graph API neturi rašomo lead statuso lauko — apribojimas raportuotas
 - [x] Facebook ryšio būsenos skiltis + įvykių žurnalas + importo peržiūra
 - [ ] BLOKUOTA: abu Facebook puslapių prieigos raktai negalioja — reikia naujų iš Meta
+- [x] "Mano priminimai" filtras (vietoj "TIK MAN")

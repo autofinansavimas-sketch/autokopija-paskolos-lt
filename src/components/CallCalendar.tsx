@@ -47,6 +47,13 @@ import {
   Clock,
 } from "lucide-react";
 
+import { tagCommentWithOperator, OPERATORS, type Operator } from "@/hooks/use-operator";
+
+const readActiveOperator = (): Operator | null => {
+  const v = localStorage.getItem("admin_active_operator");
+  return v && (OPERATORS as readonly string[]).includes(v) ? (v as Operator) : null;
+};
+
 interface Submission {
   id: string;
   name: string | null;
@@ -238,7 +245,7 @@ export default function CallCalendar({ submissions, currentUserId }: CallCalenda
           user_id: currentUserId,
           call_date: format(selectedDate, "yyyy-MM-dd"),
           call_time: newReminder.call_time,
-          notes: newReminder.notes || null,
+          notes: tagCommentWithOperator(newReminder.notes || "", readActiveOperator()) || null,
         })
         .select()
         .single();

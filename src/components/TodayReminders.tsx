@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { syncToMeta } from "@/lib/syncToMeta";
+import { useOperator, parseOperatorTag } from "@/hooks/use-operator";
 
 
 interface TodayReminder {
@@ -38,6 +39,15 @@ export default function TodayReminders() {
   const [reminders, setReminders] = useState<TodayReminder[]>([]);
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { operator } = useOperator();
+  const [onlyMine, setOnlyMine] = useState(() => localStorage.getItem("admin_only_my_reminders") === "1");
+  const toggleMine = () => {
+    setOnlyMine((v) => {
+      localStorage.setItem("admin_only_my_reminders", v ? "0" : "1");
+      return !v;
+    });
+  };
+
 
   const today = format(new Date(), "yyyy-MM-dd");
 
@@ -161,6 +171,10 @@ export default function TodayReminders() {
     return null;
   }
 
+  const visible = onlyMine && operator
+    ? reminders.filter((r) => parseOperatorTag(r.notes || "").operator === operator)
+    : reminders;
+
   return (
     <Card className="mb-4 border-primary/30 bg-gradient-to-r from-primary/5 via-primary/3 to-transparent animate-fade-in overflow-hidden">
       <CardHeader className="pb-2">
@@ -176,9 +190,21 @@ export default function TodayReminders() {
               </span>
             </div>
             <Badge variant="default" className="ml-2 shadow-sm">
-              {reminders.length}
+              {visible.length}
             </Badge>
           </CardTitle>
+          <div className="flex items-center gap-1">
+          <Button
+            variant={onlyMine ? "default" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={toggleMine}
+            disabled={!operator}
+            title={operator ? "Rodyti tik mano sukurtus priminimus" : "Pirma pasirinkite, kas dirba"}
+          >
+            <User className="h-3.5 w-3.5" />
+            Mano priminimai{operator ? ` (${operator})` : ""}
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -187,11 +213,15 @@ export default function TodayReminders() {
           >
             <X className="h-4 w-4" />
           </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-2">
         <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-          {reminders.map((reminder) => (
+          {visible.length === 0 && (
+            <p className="text-sm text-muted-foreground">Šiandien jūsų priminimų nėra.</p>
+          )}
+          {visible.map((reminder) => (
             <div
               key={reminder.id}
               className="flex flex-col gap-2 p-3 bg-card rounded-xl border shadow-sm hover:shadow-md transition-shadow"
@@ -211,11 +241,15 @@ export default function TodayReminders() {
                 </Badge>
               </div>
 
-              {reminder.notes && (
-                <p className="text-xs text-muted-foreground line-clamp-2 pl-9">
-                  {reminder.notes}
-                </p>
-              )}
+              {reminder.notes && (() => {
+                const { operator: op, body } = parseOperatorTag(reminder.notes);
+                return (
+                  <p className="text-xs text-muted-foreground line-clamp-2 pl-9">
+                    {op && <span className="font-medium text-foreground">{op}: </span>}
+                    {body}
+                  </p>
+                );
+              })()}
 
               <div className="flex items-center gap-1.5 mt-auto pt-2 border-t">
                 {reminder.submission?.phone && (
