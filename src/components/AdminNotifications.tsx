@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Bell, BellOff } from "lucide-react";
@@ -13,22 +13,27 @@ export function NewSubmissionNotifier({ onNew }: { onNew?: () => void }) {
     () => localStorage.getItem(KEY) === "1" && typeof Notification !== "undefined" && Notification.permission === "granted",
   );
 
+  const onNewRef = useRef(onNew);
+  onNewRef.current = onNew;
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+
   useEffect(() => {
     const ch = supabase
       .channel("new-submissions")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "contact_submissions" }, (payload) => {
         const s = payload.new as { name?: string | null; phone?: string; amount?: string | null; source?: string | null };
-        onNew?.();
+        onNewRef.current?.();
         const body = [s.name || "Be vardo", s.phone, s.amount ? `${s.amount} €` : null].filter(Boolean).join(" · ");
         toast({ title: "🔔 Nauja paraiška", description: body });
-        if (enabled && Notification.permission === "granted") {
+        if (enabledRef.current && Notification.permission === "granted") {
           const n = new Notification("Nauja paraiška", { body, icon: "/pwa-512x512.png", tag: "new-sub" });
           n.onclick = () => { window.focus(); n.close(); };
         }
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [enabled, onNew]);
+  }, []);
 
   const toggle = async () => {
     if (enabled) { localStorage.setItem(KEY, "0"); setEnabled(false); return; }
