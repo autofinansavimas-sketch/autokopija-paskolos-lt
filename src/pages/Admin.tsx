@@ -317,6 +317,7 @@ export default function Admin() {
   const [addingSubmission, setAddingSubmission] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [editingAmount, setEditingAmount] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [amountDraft, setAmountDraft] = useState("");
   const [savingAmount, setSavingAmount] = useState(false);
   const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
@@ -3646,7 +3647,12 @@ export default function Admin() {
                             });
                             if (error || !data?.ok) throw new Error(data?.error || error?.message || "klaida");
                             toast({ title: "Laiškas išsiųstas", description: `Klientui ${selectedSubmission.email}` });
-                            fetchComments(selectedSubmission.id);
+                            const { data: fresh } = await supabase
+                              .from("submission_comments")
+                              .select("*")
+                              .eq("submission_id", selectedSubmission.id)
+                              .order("created_at", { ascending: true });
+                            if (fresh) setComments((prev) => ({ ...prev, [selectedSubmission.id]: fresh }));
                           } catch (e) {
                             toast({ title: "Nepavyko išsiųsti", description: String(e), variant: "destructive" });
                           } finally {
