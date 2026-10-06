@@ -218,7 +218,10 @@ export default function TodayReminders() {
       </CardHeader>
       <CardContent className="pt-2">
         <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-          {reminders.map((reminder) => (
+          {visible.length === 0 && (
+            <p className="text-sm text-muted-foreground">Šiandien jūsų priminimų nėra.</p>
+          )}
+          {visible.map((reminder) => (
             <div
               key={reminder.id}
               className="flex flex-col gap-2 p-3 bg-card rounded-xl border shadow-sm hover:shadow-md transition-shadow"
@@ -238,11 +241,15 @@ export default function TodayReminders() {
                 </Badge>
               </div>
 
-              {reminder.notes && (
-                <p className="text-xs text-muted-foreground line-clamp-2 pl-9">
-                  {reminder.notes}
-                </p>
-              )}
+              {reminder.notes && (() => {
+                const { operator: op, body } = parseOperatorTag(reminder.notes);
+                return (
+                  <p className="text-xs text-muted-foreground line-clamp-2 pl-9">
+                    {op && <span className="font-medium text-foreground">{op}: </span>}
+                    {body}
+                  </p>
+                );
+              })()}
 
               <div className="flex items-center gap-1.5 mt-auto pt-2 border-t">
                 {reminder.submission?.phone && (
