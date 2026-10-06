@@ -116,6 +116,8 @@ import { useOperator, tagCommentWithOperator, parseOperatorTag } from "@/hooks/u
 import QuickAddClient from "@/components/QuickAddClient";
 import { useOperatorHeartbeat } from "@/hooks/use-operator-heartbeat";
 import OperatorTimeStats from "@/components/OperatorTimeStats";
+import MyDaySummary from "@/components/MyDaySummary";
+import OperatorStats from "@/components/OperatorStats";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Submission {
@@ -2380,6 +2382,9 @@ export default function Admin() {
           );
         })()}
 
+        {/* My Day summary */}
+        <MyDaySummary />
+
         {/* Today's Reminders Banner */}
         <TodayReminders />
 
@@ -3366,6 +3371,9 @@ export default function Admin() {
             </div>
             <ClientTools statusConfig={statusConfig} />
             <OperatorTimeStats />
+            <div className="mt-4">
+              <OperatorStats />
+            </div>
             <UserManagement />
           </TabsContent>
 
