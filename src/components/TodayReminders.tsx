@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { syncToMeta } from "@/lib/syncToMeta";
+import { useOperator, parseOperatorTag } from "@/hooks/use-operator";
 
 
 interface TodayReminder {
@@ -38,6 +39,15 @@ export default function TodayReminders() {
   const [reminders, setReminders] = useState<TodayReminder[]>([]);
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { operator } = useOperator();
+  const [onlyMine, setOnlyMine] = useState(() => localStorage.getItem("admin_only_my_reminders") === "1");
+  const toggleMine = () => {
+    setOnlyMine((v) => {
+      localStorage.setItem("admin_only_my_reminders", v ? "0" : "1");
+      return !v;
+    });
+  };
+
 
   const today = format(new Date(), "yyyy-MM-dd");
 
@@ -161,6 +171,10 @@ export default function TodayReminders() {
     return null;
   }
 
+  const visible = onlyMine && operator
+    ? reminders.filter((r) => parseOperatorTag(r.notes || "").operator === operator)
+    : reminders;
+
   return (
     <Card className="mb-4 border-primary/30 bg-gradient-to-r from-primary/5 via-primary/3 to-transparent animate-fade-in overflow-hidden">
       <CardHeader className="pb-2">
@@ -176,9 +190,21 @@ export default function TodayReminders() {
               </span>
             </div>
             <Badge variant="default" className="ml-2 shadow-sm">
-              {reminders.length}
+              {visible.length}
             </Badge>
           </CardTitle>
+          <div className="flex items-center gap-1">
+          <Button
+            variant={onlyMine ? "default" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={toggleMine}
+            disabled={!operator}
+            title={operator ? "Rodyti tik mano sukurtus priminimus" : "Pirma pasirinkite, kas dirba"}
+          >
+            <User className="h-3.5 w-3.5" />
+            Mano priminimai{operator ? ` (${operator})` : ""}
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -187,6 +213,7 @@ export default function TodayReminders() {
           >
             <X className="h-4 w-4" />
           </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-2">
