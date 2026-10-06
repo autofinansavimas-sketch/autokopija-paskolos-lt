@@ -222,6 +222,7 @@ export type Database = {
       contact_submissions: {
         Row: {
           amount: string | null
+          assigned_to: string | null
           brand: string | null
           created_at: string
           deleted_at: string | null
@@ -247,6 +248,7 @@ export type Database = {
         }
         Insert: {
           amount?: string | null
+          assigned_to?: string | null
           brand?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -272,6 +274,7 @@ export type Database = {
         }
         Update: {
           amount?: string | null
+          assigned_to?: string | null
           brand?: string | null
           created_at?: string
           deleted_at?: string | null

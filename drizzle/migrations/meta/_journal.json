@@ -8,6 +8,13 @@
       "when": 1790530700315,
       "tag": "0000_speed_indexes_and_car_wishes",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791286006939,
+      "tag": "0001_assigned_to_and_realtime",
+      "breakpoints": true
     }
   ]
 }
