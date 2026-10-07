@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 // Statuses that mean "we're still waiting on the client" — adjust as needed
-const STALE_STATUSES = ["waiting", "contacted", "in_progress", "laukiama", "laukiu_dokumentu"];
+const STALE_STATUSES = ["new", "contacted", "nusiusta_paraiska_", "outsource_susisiekta"];
 const STALE_DAYS = 3;
 
 serve(async (req) => {
@@ -31,14 +31,16 @@ serve(async (req) => {
     const staleBefore = new Date(Date.now() - STALE_DAYS * 24 * 3600 * 1000).toISOString();
     const today = new Date().toISOString().slice(0, 10);
 
-    // Submissions not touched for 3+ days, not completed/deleted
+    // Only recent (≤30 d.) active submissions untouched for 3+ days
+    const recentFrom = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
     const { data: stale, error } = await admin
       .from("contact_submissions")
       .select("id, name, status, updated_at")
       .is("deleted_at", null)
-      .neq("status", "completed")
+      .in("status", STALE_STATUSES)
+      .gte("created_at", recentFrom)
       .lt("updated_at", staleBefore)
-      .limit(100);
+      .limit(30);
 
     if (error) throw error;
 
