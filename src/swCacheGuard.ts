@@ -31,8 +31,10 @@ export function installCacheGuard() {
   if (isAdminPath()) {
     void (async () => {
       try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        const hadWorker = regs.length > 0 || !!navigator.serviceWorker.controller;
+        const allRegs = await navigator.serviceWorker.getRegistrations();
+        // Keep the push-only admin worker (it never caches pages).
+        const regs = allRegs.filter((r) => !(r.active || r.installing || r.waiting)?.scriptURL.includes("admin-push-sw.js"));
+        const hadWorker = regs.length > 0;
         await Promise.all(regs.map((reg) => reg.unregister()));
         await clearCaches();
 
