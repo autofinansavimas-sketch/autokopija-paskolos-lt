@@ -1,15 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { resolveEmailBrand } from "./branding.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 const TEMPLATES: Record<string, { subject: string; body: (name: string) => string }> = {
   follow_up: {
@@ -28,9 +25,9 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
     subject: "Laukiame Jūsų dokumentų - AUTOPASKOLOS.LT",
     body: (name) => `Sveiki${name ? `, ${name}` : ""},
 
-Norėdami paruošti jums geriausią pasiūlymą, laukiame jūsų dokumentų (asmens tapatybės dokumento ir pajamų įrodymo).
+Norėdami paruošti jums geriausią pasiūlymą, laukiame jūsų dokumentų.
 
-Atsiųskite juos atsakymu į šį laišką arba perduokite mums telefonu.
+Atsiųskite juos atsakymu į šį laišką arba susisiekite su mumis telefonu.
 
 "AUTOPASKOLOS.LT" komanda`,
   },
@@ -79,9 +76,10 @@ serve(async (req) => {
       });
     }
 
-    const { submission_id, template } = await req.json();
-    const tpl = TEMPLATES[template];
-    if (!submission_id || !tpl) {
+    const { submission_id, template, brand } = await req.json();
+    const sender = resolveEmailBrand(brand);
+    const tpl = typeof template === "string" && Object.hasOwn(TEMPLATES, template) ? TEMPLATES[template] : null;
+    if (typeof submission_id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submission_id) || !tpl || !sender) {
       return new Response(JSON.stringify({ ok: false, error: "bad request" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -99,7 +97,8 @@ serve(async (req) => {
     }
 
     const firstName = (sub.name || "").trim().split(/\s+/)[0] || "";
-    const text = tpl.body(firstName);
+    const text = tpl.body(firstName).replaceAll("AUTOPASKOLOS.LT", sender.label);
+    const subject = tpl.subject.replaceAll("AUTOPASKOLOS.LT", sender.label);
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -108,9 +107,9 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "AutoPaskolos <info@autopaskolos.lt>",
+        from: sender.from,
         to: [sub.email],
-        subject: tpl.subject,
+        subject,
         text,
       }),
     });
@@ -126,7 +125,7 @@ serve(async (req) => {
     await admin.from("submission_comments").insert({
       submission_id,
       user_id: user.id,
-      comment: `📧 Išsiųstas el. laiškas klientui: „${tpl.subject}"`,
+      comment: `📧 Išsiųstas el. laiškas klientui: „${subject}" (${sender.from})`,
     });
 
     return new Response(JSON.stringify({ ok: true }), {

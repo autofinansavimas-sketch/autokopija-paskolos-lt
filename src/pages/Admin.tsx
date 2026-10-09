@@ -318,6 +318,7 @@ export default function Admin() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [editingAmount, setEditingAmount] = useState(false);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [emailBrand, setEmailBrand] = useState("autopaskolos");
   const [amountDraft, setAmountDraft] = useState("");
   const [savingAmount, setSavingAmount] = useState(false);
   const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
@@ -3627,6 +3628,15 @@ export default function Admin() {
                     <Mail className="h-3.5 w-3.5" />
                     Siųsti el. laišką klientui
                   </h4>
+                  <Select value={emailBrand} onValueChange={setEmailBrand} disabled={sendingEmail !== null}>
+                    <SelectTrigger className="w-full sm:w-64" aria-label="Laiško siuntėjas">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="autopaskolos">AutoPaskolos.lt</SelectItem>
+                      <SelectItem value="autokopers">AutoKopers.lt</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
                       { key: "follow_up", label: "📧 Nepavyko susisiekti" },
@@ -3638,12 +3648,12 @@ export default function Admin() {
                         variant="outline"
                         size="sm"
                         className="h-8 text-xs justify-start"
-                        disabled={sendingEmail === tpl.key}
+                        disabled={sendingEmail !== null}
                         onClick={async () => {
                           setSendingEmail(tpl.key);
                           try {
                             const { data, error } = await supabase.functions.invoke("send-client-email", {
-                              body: { submission_id: selectedSubmission.id, template: tpl.key },
+                              body: { submission_id: selectedSubmission.id, template: tpl.key, brand: emailBrand },
                             });
                             if (error || !data?.ok) throw new Error(data?.error || error?.message || "klaida");
                             toast({ title: "Laiškas išsiųstas", description: `Klientui ${selectedSubmission.email}` });

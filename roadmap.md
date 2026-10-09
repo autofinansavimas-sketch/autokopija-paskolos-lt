@@ -6,3 +6,4 @@
 - [x] Facebook ryšio būsenos skiltis + įvykių žurnalas + importo peržiūra
 - [ ] BLOKUOTA: abu Facebook puslapių prieigos raktai negalioja — reikia naujų iš Meta
 - [x] "Mano priminimai" filtras (vietoj "TIK MAN")
+- [x] Dokumentų laiško tekstas ir pasirenkamas AutoKopers laiškų siuntėjas.
