@@ -25,6 +25,14 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (action === "list") {
+      const r = await fetch("https://api.resend.com/domains", {
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+      });
+      return new Response(JSON.stringify({ status: r.status, body: await r.text() }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     return new Response(JSON.stringify({ error: "bad action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
