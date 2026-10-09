@@ -11,7 +11,7 @@ serve(async (req) => {
       const r = await fetch("https://api.resend.com/domains", {
         method: "POST",
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ name, region: "eu-central-1" }),
+        body: JSON.stringify({ name, region: "eu-west-1" }),
       });
       return new Response(JSON.stringify({ status: r.status, body: await r.text() }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
