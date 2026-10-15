@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+import { resendFetch } from "../_shared/emailSender.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -185,11 +185,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Submission saved (ID intentionally not logged to avoid PII linkage)
 
     // Send notification email to admin
-    const notificationEmail = await fetch("https://api.resend.com/emails", {
+    const notificationEmail = await resendFetch({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
         from: brand.fromEmail,
@@ -226,11 +225,10 @@ const handler = async (req: Request): Promise<Response> => {
       `<a href="${cbBase}${slot}" style="background:${color};color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-size:14px;display:inline-block;">${label}</a>`;
     
     
-    const emailResponse = await fetch("https://api.resend.com/emails", {
+    const emailResponse = await resendFetch({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
         from: brand.fromEmail,

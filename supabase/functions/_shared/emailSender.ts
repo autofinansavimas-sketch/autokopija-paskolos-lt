@@ -66,3 +66,12 @@ export async function sendEmail(
     return { ok: false, status: 500, error: String(e) };
   }
 }
+
+// Drop-in replacement for fetch("https://api.resend.com/emails", init):
+// routes by the From domain to the correct Resend account.
+export async function resendFetch(init: { body?: string }): Promise<Response> {
+  const parsed = JSON.parse(init.body ?? "{}");
+  const { from, to, ...rest } = parsed;
+  const r = await sendEmail(from, Array.isArray(to) ? to : [to], rest);
+  return new Response(r.error ?? "ok", { status: r.ok ? 200 : (r.status || 500) });
+}
