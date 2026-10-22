@@ -1283,6 +1283,35 @@ export default function Admin() {
     }
   };
 
+  // Live comment sync between staff (Aivaras / Paulina)
+  const profilesRef = useRef(profiles);
+  profilesRef.current = profiles;
+  useEffect(() => {
+    const channel = supabase
+      .channel("submission-comments-live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "submission_comments" }, (payload) => {
+        const row = payload.new as Comment;
+        const profile = profilesRef.current.find((p) => p.user_id === row.user_id);
+        const c: Comment = { ...row, user_email: profile?.email || "Nežinomas", user_display_name: profile?.display_name || undefined };
+        setComments((prev) => {
+          const list = prev[row.submission_id] || [];
+          if (list.some((x) => x.id === row.id)) return prev;
+          return { ...prev, [row.submission_id]: [...list, c] };
+        });
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "submission_comments" }, (payload) => {
+        const id = (payload.old as { id?: string })?.id;
+        if (!id) return;
+        setComments((prev) => {
+          const next: typeof prev = {};
+          for (const [k, v] of Object.entries(prev)) next[k] = v.filter((x) => x.id !== id);
+          return next;
+        });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const handleDeleteComment = async (commentId: string, submissionId: string) => {
     try {
       const { error } = await supabase
