@@ -338,6 +338,7 @@ export default function Admin() {
   const [showCharts, setShowCharts] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [latestLimit, setLatestLimit] = useState<number>(10);
+  const [sheetTab, setSheetTab] = useState<string>("info");
   const [stalePulseEnabled, setStalePulseEnabled] = useState<boolean>(() => {
     try {
       return localStorage.getItem("admin_stale_pulse_enabled") !== "false";
@@ -950,6 +951,7 @@ export default function Admin() {
     setEditingAmount(false);
     setAmountDraft("");
     setSavingAmount(false);
+    setSheetTab("info");
   }, [selectedSubmission?.id]);
 
 
@@ -3448,7 +3450,17 @@ export default function Admin() {
                 </SheetTitle>
               </SheetHeader>
 
-              <div className="mt-6 space-y-6">
+              <Tabs value={sheetTab} onValueChange={setSheetTab} className="mt-6">
+                <TabsList className="w-full grid grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1">
+                  <TabsTrigger value="info" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Info</TabsTrigger>
+                  <TabsTrigger value="comments" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
+                    Komentarai
+                    <span className="text-[10px] font-semibold text-muted-foreground">{comments[selectedSubmission.id]?.length || 0}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="mail" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Laiškai</TabsTrigger>
+                  <TabsTrigger value="auto" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Auto</TabsTrigger>
+                </TabsList>
+                <TabsContent value="info" className="space-y-6 pt-2">
                 {/* Duplicate warning */}
                 {(() => {
                   // Placeholder contacts (imported leads without a real phone/email)
@@ -3498,7 +3510,6 @@ export default function Admin() {
                     </div>
                   );
                 })()}
-
                 {/* Status */}
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Statusas</label>
@@ -3521,7 +3532,6 @@ export default function Admin() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 {/* Contact Info */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
@@ -3581,132 +3591,6 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
-
-                {/* Quick Message Buttons */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    Greitas pranešimas
-                  </h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = getSmsLink(selectedSubmission.phone)}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-1.5" />
-                      SMS
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 dark:bg-green-950/30 dark:border-green-800 dark:text-green-300"
-                      onClick={() => {
-                        const cleanPhone = selectedSubmission.phone.replace(/[^\d]/g, "");
-                        const text = encodeURIComponent(`Sveiki, susisiekiame dėl Jūsų užklausos AUTOPASKOLOS.LT`);
-                        window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
-                      }}
-                      title="Atidaryti WhatsApp"
-                    >
-                      <MessageCircle className="h-4 w-4 mr-1.5" />
-                      WhatsApp
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = getMailtoLink(selectedSubmission.email)}
-                    >
-                      <Mail className="h-4 w-4 mr-1.5" />
-                      Email
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Quick Reply Templates */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                    <Zap className="h-3.5 w-3.5" />
-                    Greiti šablonai
-                  </h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { label: "📞 Neatsiliepė", text: "Neatsiliepė" },
-                      { label: "🔄 Perskambins pats", text: "Perskambins pats" },
-                      { label: "📄 Laukiu dokumentų", text: "Laukiu dokumentų" },
-                      { label: "✅ Ruošiame pasiūlymą", text: "Ruošiame pasiūlymą" },
-                      { label: "❌ Neaktualu", text: "Neaktualu" },
-                      { label: "🤔 Galvoja", text: "Klientas galvoja / svarsto" },
-                      { label: "🏦 Nusiųsta Bigbank paraiška", text: "Paraiška nusiųsta į Bigbank" },
-                      { label: "🏦 Nusiųsta Inbank paraiška", text: "Paraiška nusiųsta į Inbank" },
-                    ].map((tpl) => (
-                      <Button
-                        key={tpl.label}
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs justify-start"
-                        onClick={() => handleAddComment(selectedSubmission.id, tpl.text)}
-                      >
-                        {tpl.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Send email to client directly from the card */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
-                    Siųsti el. laišką klientui
-                  </h4>
-                  <Select value={emailBrand} onValueChange={setEmailBrand} disabled={sendingEmail !== null}>
-                    <SelectTrigger className="w-full sm:w-64" aria-label="Laiško siuntėjas">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="autopaskolos">AutoPaskolos.lt</SelectItem>
-                      <SelectItem value="autokopers">AutoKopers.lt</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {[
-                      { key: "follow_up", label: "📧 Nepavyko susisiekti" },
-                      { key: "documents", label: "📄 Prašymas dokumentų" },
-                      { key: "offer_ready", label: "🎉 Pasiūlymas paruoštas" },
-                    ].map((tpl) => (
-                      <Button
-                        key={tpl.key}
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs justify-start"
-                        disabled={sendingEmail !== null}
-                        onClick={async () => {
-                          setSendingEmail(tpl.key);
-                          try {
-                            const { data, error } = await supabase.functions.invoke("send-client-email", {
-                              body: { submission_id: selectedSubmission.id, template: tpl.key, brand: emailBrand },
-                            });
-                            if (error || !data?.ok) throw new Error(data?.error || error?.message || "klaida");
-                            toast({ title: "Laiškas išsiųstas", description: `Klientui ${selectedSubmission.email}` });
-                            const { data: fresh } = await supabase
-                              .from("submission_comments")
-                              .select("*")
-                              .eq("submission_id", selectedSubmission.id)
-                              .order("created_at", { ascending: true });
-                            if (fresh) setComments((prev) => ({ ...prev, [selectedSubmission.id]: fresh }));
-                          } catch (e) {
-                            toast({ title: "Nepavyko išsiųsti", description: String(e), variant: "destructive" });
-                          } finally {
-                            setSendingEmail(null);
-                          }
-                        }}
-                      >
-                        {sendingEmail === tpl.key ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-                        {tpl.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-
                 {/* Loan Info */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
@@ -3771,7 +3655,6 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2 rounded-lg border p-3 text-sm">
                   <span className="text-muted-foreground">Perduota:</span>
                   {(["Aivaras", "Paulina"] as const).map((op) => (
@@ -3794,9 +3677,6 @@ export default function Admin() {
                     </Button>
                   ))}
                 </div>
-
-                <CarWishes submissionId={selectedSubmission.id} />
-
                 {/* Dates */}
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
@@ -3804,7 +3684,6 @@ export default function Admin() {
                     Sukurta: {formatDate(selectedSubmission.created_at)}
                   </div>
                 </div>
-
                 {/* Reminders for this submission */}
                 {getRemindersForSubmission(selectedSubmission.id).length > 0 && (
                   <div className="space-y-3">
@@ -3829,7 +3708,6 @@ export default function Admin() {
                     </div>
                   </div>
                 )}
-
                 {/* Schedule Call Button */}
                 <div>
                   <Button 
@@ -3841,7 +3719,37 @@ export default function Admin() {
                     Suplanuoti skambutį
                   </Button>
                 </div>
-
+                </TabsContent>
+                <TabsContent value="comments" className="space-y-6 pt-2">
+                {/* Quick Reply Templates */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                    <Zap className="h-3.5 w-3.5" />
+                    Greiti šablonai
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "📞 Neatsiliepė", text: "Neatsiliepė" },
+                      { label: "🔄 Perskambins pats", text: "Perskambins pats" },
+                      { label: "📄 Laukiu dokumentų", text: "Laukiu dokumentų" },
+                      { label: "✅ Ruošiame pasiūlymą", text: "Ruošiame pasiūlymą" },
+                      { label: "❌ Neaktualu", text: "Neaktualu" },
+                      { label: "🤔 Galvoja", text: "Klientas galvoja / svarsto" },
+                      { label: "🏦 Nusiųsta Bigbank paraiška", text: "Paraiška nusiųsta į Bigbank" },
+                      { label: "🏦 Nusiųsta Inbank paraiška", text: "Paraiška nusiųsta į Inbank" },
+                    ].map((tpl) => (
+                      <Button
+                        key={tpl.label}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs justify-start"
+                        onClick={() => handleAddComment(selectedSubmission.id, tpl.text)}
+                      >
+                        {tpl.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
                 {/* Comments */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
@@ -3905,7 +3813,105 @@ export default function Admin() {
                     </Button>
                   </div>
                 </div>
-
+                </TabsContent>
+                <TabsContent value="mail" className="space-y-6 pt-2">
+                {/* Quick Message Buttons */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    Greitas pranešimas
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.href = getSmsLink(selectedSubmission.phone)}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-1.5" />
+                      SMS
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 dark:bg-green-950/30 dark:border-green-800 dark:text-green-300"
+                      onClick={() => {
+                        const cleanPhone = selectedSubmission.phone.replace(/[^\d]/g, "");
+                        const text = encodeURIComponent(`Sveiki, susisiekiame dėl Jūsų užklausos AUTOPASKOLOS.LT`);
+                        window.open(`https://wa.me/${cleanPhone}?text=${text}`, "_blank");
+                      }}
+                      title="Atidaryti WhatsApp"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-1.5" />
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.href = getMailtoLink(selectedSubmission.email)}
+                    >
+                      <Mail className="h-4 w-4 mr-1.5" />
+                      Email
+                    </Button>
+                  </div>
+                </div>
+                {/* Send email to client directly from the card */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5" />
+                    Siųsti el. laišką klientui
+                  </h4>
+                  <Select value={emailBrand} onValueChange={setEmailBrand} disabled={sendingEmail !== null}>
+                    <SelectTrigger className="w-full sm:w-64" aria-label="Laiško siuntėjas">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="autopaskolos">AutoPaskolos.lt</SelectItem>
+                      <SelectItem value="autokopers">AutoKopers.lt</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { key: "follow_up", label: "📧 Nepavyko susisiekti" },
+                      { key: "documents", label: "📄 Prašymas dokumentų" },
+                      { key: "offer_ready", label: "🎉 Pasiūlymas paruoštas" },
+                    ].map((tpl) => (
+                      <Button
+                        key={tpl.key}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs justify-start"
+                        disabled={sendingEmail !== null}
+                        onClick={async () => {
+                          setSendingEmail(tpl.key);
+                          try {
+                            const { data, error } = await supabase.functions.invoke("send-client-email", {
+                              body: { submission_id: selectedSubmission.id, template: tpl.key, brand: emailBrand },
+                            });
+                            if (error || !data?.ok) throw new Error(data?.error || error?.message || "klaida");
+                            toast({ title: "Laiškas išsiųstas", description: `Klientui ${selectedSubmission.email}` });
+                            const { data: fresh } = await supabase
+                              .from("submission_comments")
+                              .select("*")
+                              .eq("submission_id", selectedSubmission.id)
+                              .order("created_at", { ascending: true });
+                            if (fresh) setComments((prev) => ({ ...prev, [selectedSubmission.id]: fresh }));
+                          } catch (e) {
+                            toast({ title: "Nepavyko išsiųsti", description: String(e), variant: "destructive" });
+                          } finally {
+                            setSendingEmail(null);
+                          }
+                        }}
+                      >
+                        {sendingEmail === tpl.key ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                        {tpl.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                </TabsContent>
+                <TabsContent value="auto" className="space-y-6 pt-2">
+                <CarWishes submissionId={selectedSubmission.id} />
+                </TabsContent>
+              </Tabs>
                 {/* Delete */}
                 <div className="pt-4 border-t">
                   <AlertDialog>
@@ -3934,7 +3940,6 @@ export default function Admin() {
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              </div>
             </>
           )}
         </SheetContent>
