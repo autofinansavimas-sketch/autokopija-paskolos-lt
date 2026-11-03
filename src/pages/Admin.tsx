@@ -425,7 +425,7 @@ export default function Admin() {
       return next;
     });
     requestAnimationFrame(() => {
-      document.getElementById(`kanban-col-${value}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById(`kanban-col-${value}`)?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
     });
   };
   const areAllColumnsCollapsed = () => statusConfig.every((c) => collapsedColumns[c.value]);
@@ -2676,7 +2676,7 @@ export default function Admin() {
                             key={colConfig.value}
                             type="button"
                             onClick={() => jumpToColumn(colConfig.value)}
-                            className="shrink-0 flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium shadow-sm active:scale-95 transition-transform"
+                            className="shrink-0 flex items-center gap-1.5 rounded-full border bg-card px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 transition-transform lg:px-3 lg:py-1.5 lg:text-xs"
                           >
                             <span className={`w-2 h-2 rounded-full ${colConfig.color}`} />
                             <span className="max-w-[110px] truncate">{colConfig.label}</span>
@@ -2702,7 +2702,7 @@ export default function Admin() {
                         })()}
                       </div>
 
-                      <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:overflow-x-auto pb-4 -mx-1 px-1">
+                      <div className="flex items-start gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-1 px-1 lg:snap-none">
                         {visibleColumns.map(({ colConfig, statusSubmissions }) => {
                           const isDropTarget = dragOverColumn === colConfig.value;
                           const isCollapsed = !!collapsedColumns[colConfig.value] && !isSearching;
@@ -2714,7 +2714,7 @@ export default function Admin() {
                 <div 
                   key={colConfig.value} 
                   id={`kanban-col-${colConfig.value}`}
-                  className={`group flex-shrink-0 w-full lg:w-72 bg-card/50 rounded-xl border transition-all duration-200 scroll-mt-20 ${
+                  className={`group flex-shrink-0 w-[86vw] max-w-[360px] snap-start snap-always lg:w-72 lg:max-w-none bg-card/50 rounded-xl border transition-all duration-200 scroll-mt-20 ${
                     isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5 scale-[1.02]' : 'hover:bg-card/80'
                   }`}
                   onDragOver={(e) => handleDragOver(e, colConfig.value)}
@@ -2978,7 +2978,7 @@ export default function Admin() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 px-2 text-xs font-medium text-primary hover:bg-primary/10 -ml-2"
+                                  className="h-9 px-2 text-sm font-medium text-primary hover:bg-primary/10 -ml-2 lg:h-7 lg:text-xs"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     window.location.href = `tel:${submission.phone}`;
