@@ -1765,7 +1765,7 @@ export default function Admin() {
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <GripVertical className="h-3.5 w-3.5 text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors shrink-0" />
-                              <span className="font-semibold text-sm truncate">
+                              <span className="font-semibold text-sm break-words whitespace-normal">
                                 {submission.name || "Nežinomas"}
                               </span>
                             </div>
@@ -1810,7 +1810,7 @@ export default function Admin() {
                           </div>
 
                           {submission.fb_campaign_name && (
-                            <p className="text-[10px] text-muted-foreground truncate">
+                            <p className="text-[10px] text-muted-foreground break-words">
                               {submission.fb_campaign_name}
                             </p>
                           )}
@@ -2007,7 +2007,7 @@ export default function Admin() {
                         className="flex-1 min-w-0 text-left"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm truncate">
+                          <span className="font-medium text-sm break-words whitespace-normal">
                             {submission.name || "Nežinomas"}
                           </span>
                           {leadComments.length > 0 && (
@@ -2615,10 +2615,10 @@ export default function Admin() {
                               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${col?.color ?? "bg-muted"}`} title={col?.label ?? s.status} />
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-sm truncate">{s.name || "Nežinomas"}</span>
+                                  <span className="font-semibold text-sm break-words whitespace-normal">{s.name || "Nežinomas"}</span>
                                   <span className="text-[10px] text-muted-foreground shrink-0">{col?.label ?? s.status}</span>
                                 </div>
-                                <div className="text-xs text-muted-foreground truncate">
+                                <div className="text-xs text-muted-foreground break-words">
                                   {s.phone}{s.email ? ` · ${s.email}` : ""}{s.amount ? ` · ${s.amount} €` : ""}
                                 </div>
                               </div>
@@ -2953,7 +2953,7 @@ export default function Admin() {
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   <GripVertical className="h-3.5 w-3.5 text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors shrink-0 cursor-grab" />
-                                  <span className="font-semibold text-sm truncate">
+                                  <span className="font-semibold text-sm break-words whitespace-normal">
                                     {submission.name || "Nežinomas"}
                                   </span>
                                 </div>
@@ -3019,7 +3019,7 @@ export default function Admin() {
                                     {submission.amount}€
                                   </Badge>
                                   {submission.loan_type && (
-                                    <span className="text-[10px] text-muted-foreground truncate">
+                                    <span className="text-[10px] text-muted-foreground break-words">
                                       {submission.loan_type}
                                     </span>
                                   )}
