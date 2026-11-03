@@ -3453,7 +3453,7 @@ export default function Admin() {
               <Tabs value={sheetTab} onValueChange={setSheetTab} className="mt-6">
                 <TabsList className="w-full grid grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1">
                   <TabsTrigger value="info" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Info</TabsTrigger>
-                  <TabsTrigger value="comments" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
+                  <TabsTrigger value="comments" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
                     Komentarai
                     <span className="text-[10px] font-semibold text-muted-foreground">{comments[selectedSubmission.id]?.length || 0}</span>
                   </TabsTrigger>
