@@ -18,7 +18,20 @@ const b64ToUint8 = (b64: string) => {
 async function subscribePush(): Promise<boolean> {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
   const reg = await navigator.serviceWorker.register(SW_URL, { scope: SW_SCOPE });
-  await navigator.serviceWorker.ready.catch(() => undefined);
+  // navigator.serviceWorker.ready never resolves here: the worker's scope
+  // (/admin-push/) does not cover the /admin page. Wait on this registration.
+  if (!reg.active) {
+    const sw = reg.installing || reg.waiting;
+    if (!sw) throw new Error("Service worker nepasiekiamas");
+    await new Promise<void>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error("Service worker neaktyvavosi")), 15000);
+      sw.addEventListener("statechange", () => {
+        if (sw.state === "activated") { clearTimeout(t); resolve(); }
+        else if (sw.state === "redundant") { clearTimeout(t); reject(new Error("Service worker atmestas")); }
+      });
+      if (sw.state === "activated") { clearTimeout(t); resolve(); }
+    });
+  }
   let sub = await reg.pushManager.getSubscription();
   if (!sub) {
     sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToUint8(VAPID_PUBLIC_KEY) });
