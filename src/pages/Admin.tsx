@@ -1730,7 +1730,7 @@ export default function Admin() {
               <div className="p-3 border-b flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`w-3 h-3 rounded-full shrink-0 ${colConfig.color}`} />
-                  <span className="font-semibold text-sm truncate">{colConfig.label}</span>
+                  <span className="font-semibold text-sm break-words whitespace-normal leading-tight">{colConfig.label}</span>
                 </div>
                 <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
                   {total}
@@ -2679,7 +2679,7 @@ export default function Admin() {
                             className="shrink-0 flex items-center gap-1.5 rounded-full border bg-card px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 transition-transform lg:px-3 lg:py-1.5 lg:text-xs"
                           >
                             <span className={`w-2 h-2 rounded-full ${colConfig.color}`} />
-                            <span className="max-w-[110px] truncate">{colConfig.label}</span>
+                            <span className="whitespace-normal">{colConfig.label}</span>
                             <span className="text-muted-foreground">{statusSubmissions.length}</span>
                           </button>
                         ))}
@@ -2789,7 +2789,7 @@ export default function Admin() {
                             <ChevronRight
                               className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
                             />
-                            <span className="truncate">{colConfig.label}</span>
+                            <span className="break-words whitespace-normal leading-tight">{colConfig.label}</span>
                           </button>
                         )}
 
@@ -3450,17 +3450,8 @@ export default function Admin() {
                 </SheetTitle>
               </SheetHeader>
 
-              <Tabs value={sheetTab} onValueChange={setSheetTab} className="mt-6">
-                <TabsList className="w-full grid grid-cols-4 h-auto p-1 bg-muted/50 rounded-xl gap-1">
-                  <TabsTrigger value="info" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Info</TabsTrigger>
-                  <TabsTrigger value="comments" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm gap-1.5">
-                    Komentarai
-                    <span className="text-[10px] font-semibold text-muted-foreground">{comments[selectedSubmission.id]?.length || 0}</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="mail" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Laiškai</TabsTrigger>
-                  <TabsTrigger value="auto" className="text-xs py-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Auto</TabsTrigger>
-                </TabsList>
-                <TabsContent value="info" className="space-y-6 pt-2">
+              <div className="mt-6 space-y-6">
+                <div className="space-y-6 pt-2">
                 {/* Duplicate warning */}
                 {(() => {
                   // Placeholder contacts (imported leads without a real phone/email)
@@ -3719,8 +3710,8 @@ export default function Admin() {
                     Suplanuoti skambutį
                   </Button>
                 </div>
-                </TabsContent>
-                <TabsContent value="comments" className="space-y-6 pt-2">
+                </div>
+                <div className="space-y-6 pt-2">
                 {/* Quick Reply Templates */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
@@ -3813,8 +3804,8 @@ export default function Admin() {
                     </Button>
                   </div>
                 </div>
-                </TabsContent>
-                <TabsContent value="mail" className="space-y-6 pt-2">
+                </div>
+                <div className="space-y-6 pt-2">
                 {/* Quick Message Buttons */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
@@ -3907,11 +3898,11 @@ export default function Admin() {
                     ))}
                   </div>
                 </div>
-                </TabsContent>
-                <TabsContent value="auto" className="space-y-6 pt-2">
+                </div>
+                <div className="space-y-6 pt-2">
                 <CarWishes submissionId={selectedSubmission.id} />
-                </TabsContent>
-              </Tabs>
+                </div>
+              </div>
                 {/* Delete */}
                 <div className="pt-4 border-t">
                   <AlertDialog>
