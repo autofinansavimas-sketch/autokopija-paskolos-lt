@@ -2783,7 +2783,7 @@ export default function Admin() {
                             type="button"
                             onClick={() => toggleColumnCollapse(colConfig.value)}
                             onDoubleClick={() => { setEditingColumn(colConfig.value); setEditingColumnLabel(colConfig.label); }}
-                            className="flex items-center gap-1.5 font-semibold text-sm truncate text-left hover:text-primary transition-colors"
+                            className="flex items-center gap-1.5 font-semibold text-sm min-w-0 text-left hover:text-primary transition-colors"
                             title="Spustelėkite sutraukti/išskleisti, dukart – pervadinti"
                           >
                             <ChevronRight
