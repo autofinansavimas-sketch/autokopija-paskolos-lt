@@ -1730,7 +1730,7 @@ export default function Admin() {
               <div className="p-3 border-b flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`w-3 h-3 rounded-full shrink-0 ${colConfig.color}`} />
-                  <span className="font-semibold text-sm break-words whitespace-normal leading-tight">{colConfig.label}</span>
+                  <span className="font-semibold text-[13px] whitespace-nowrap tracking-tight">{colConfig.label}</span>
                 </div>
                 <Badge variant="outline" className="text-xs font-bold border-0 bg-muted">
                   {total}
@@ -2679,7 +2679,7 @@ export default function Admin() {
                             className="shrink-0 flex items-center gap-1.5 rounded-full border bg-card px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 transition-transform lg:px-3 lg:py-1.5 lg:text-xs"
                           >
                             <span className={`w-2 h-2 rounded-full ${colConfig.color}`} />
-                            <span className="whitespace-normal">{colConfig.label}</span>
+                            <span className="whitespace-nowrap">{colConfig.label}</span>
                             <span className="text-muted-foreground">{statusSubmissions.length}</span>
                           </button>
                         ))}
@@ -2714,7 +2714,7 @@ export default function Admin() {
                 <div 
                   key={colConfig.value} 
                   id={`kanban-col-${colConfig.value}`}
-                  className={`group flex-shrink-0 w-[86vw] max-w-[360px] snap-start snap-always lg:w-72 lg:max-w-none bg-card/50 rounded-xl border transition-all duration-200 scroll-mt-20 ${
+                  className={`group flex-shrink-0 w-[86vw] max-w-[360px] snap-start snap-always lg:w-80 lg:max-w-none bg-card/50 rounded-xl border transition-all duration-200 scroll-mt-20 ${
                     isDropTarget ? 'ring-2 ring-primary ring-offset-2 bg-primary/5 scale-[1.02]' : 'hover:bg-card/80'
                   }`}
                   onDragOver={(e) => handleDragOver(e, colConfig.value)}
@@ -2789,7 +2789,7 @@ export default function Admin() {
                             <ChevronRight
                               className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
                             />
-                            <span className="break-words whitespace-normal leading-tight">{colConfig.label}</span>
+                            <span className="whitespace-nowrap text-[13px] tracking-tight">{colConfig.label}</span>
                           </button>
                         )}
 
