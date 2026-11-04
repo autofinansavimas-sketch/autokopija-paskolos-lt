@@ -240,10 +240,12 @@ export type Database = {
           loan_period: string | null
           loan_type: string | null
           name: string | null
+          next_action: string | null
           page_id: string | null
           phone: string
           source: string | null
           status: string | null
+          tags: string[]
           updated_at: string
         }
         Insert: {
@@ -266,10 +268,12 @@ export type Database = {
           loan_period?: string | null
           loan_type?: string | null
           name?: string | null
+          next_action?: string | null
           page_id?: string | null
           phone: string
           source?: string | null
           status?: string | null
+          tags?: string[]
           updated_at?: string
         }
         Update: {
@@ -292,10 +296,12 @@ export type Database = {
           loan_period?: string | null
           loan_type?: string | null
           name?: string | null
+          next_action?: string | null
           page_id?: string | null
           phone?: string
           source?: string | null
           status?: string | null
+          tags?: string[]
           updated_at?: string
         }
         Relationships: []
