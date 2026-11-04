@@ -120,9 +120,19 @@ import MyDaySummary from "@/components/MyDaySummary";
 import OperatorStats from "@/components/OperatorStats";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+const CARD_TAGS: { value: string; cls: string }[] = [
+  { value: "Karštas", cls: "bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300" },
+  { value: "Laukia banko", cls: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300" },
+  { value: "VIP", cls: "bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-950 dark:text-violet-300" },
+  { value: "Laukia dokumentų", cls: "bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300" },
+];
+const tagCls = (t: string) => CARD_TAGS.find((x) => x.value === t)?.cls ?? "bg-muted text-foreground";
+
 interface Submission {
   id: string;
   assigned_to?: string | null;
+  tags?: string[] | null;
+  next_action?: string | null;
   name: string | null;
   email: string;
   phone: string;
@@ -175,7 +185,7 @@ Labai lauksime jūsų skambučio arba žinutės kada galime jums paskambinti.
 
 const STATUS_CONFIG_STORAGE_KEY = "admin_status_config";
 const STATUS_CONFIG_ROW_ID = "global";
-const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,fb_form_name,fb_campaign_name,fb_ad_name,fb_platform,assigned_to,created_at,updated_at,deleted_at";
+const SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,page_id,brand,fb_lead_id,fb_form_name,fb_campaign_name,fb_ad_name,fb_platform,assigned_to,tags,next_action,created_at,updated_at,deleted_at";
 const LEGACY_SUBMISSION_SELECT = "id,name,email,phone,amount,loan_type,loan_period,status,source,created_at,updated_at";
 // Nuo šios datos nauji Facebook lead'ai keliauja ir į bendras paraiškas
 const FB_SHARED_FROM = new Date("2026-09-11T00:00:00Z").getTime();
@@ -393,6 +403,8 @@ export default function Admin() {
   const [fbBulkDeleting, setFbBulkDeleting] = useState(false);
   const [myDayOnly, setMyDayOnly] = useState(false);
   const [assignedFilter, setAssignedFilter] = useState<string>("all");
+  const [tagFilter, setTagFilter] = useState<string>("all");
+  const [nextActionDraft, setNextActionDraft] = useState<string>("");
   const isMobile = useIsMobile();
   const MOBILE_PAGE_SIZE = 8;
   const [expandedLists, setExpandedLists] = useState<Record<string, boolean>>({});
@@ -952,6 +964,7 @@ export default function Admin() {
     setAmountDraft("");
     setSavingAmount(false);
     setSheetTab("info");
+    setNextActionDraft(selectedSubmission?.next_action || "");
   }, [selectedSubmission?.id]);
 
 
@@ -1216,6 +1229,35 @@ export default function Admin() {
     }
   };
 
+  const updateSubmissionFields = async (id: string, patch: Partial<Submission>) => {
+    const { error } = await supabase.from("contact_submissions").update(patch as never).eq("id", id);
+    if (error) { toast({ title: "Nepavyko išsaugoti", variant: "destructive" }); return false; }
+    setSubmissions((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+    setSelectedSubmission((prev) => (prev && prev.id === id ? { ...prev, ...patch } : prev));
+    return true;
+  };
+
+  const handleNoAnswer = async (sub: Submission) => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    await handleAddComment(sub.id, `📵 Paskambinta ${hh}:${mm} – neatsiliepė`);
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const ymd = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase.from("call_reminders").insert({
+      submission_id: sub.id,
+      user_id: u.user?.id as string,
+      call_date: ymd,
+      call_time: `${hh}:${mm}`,
+      notes: tagCommentWithOperator("Perskambinti – neatsiliepė", operator) || null,
+    });
+    if (error) { toast({ title: "Nepavyko sukurti priminimo", variant: "destructive" }); return; }
+    toast({ title: "Užfiksuota: neatsiliepė", description: `Priminimas rytoj ${hh}:${mm}` });
+    fetchReminders();
+  };
+
   const handleAddComment = async (submissionId: string, text?: string) => {
     const rawText = (text ?? newComments[submissionId] ?? "").trim();
     if (!rawText || !currentUserId) return;
@@ -1441,6 +1483,7 @@ export default function Admin() {
       if (assignedFilter !== "all") {
         if (assignedFilter === "none" ? !!s.assigned_to : s.assigned_to !== assignedFilter) return false;
       }
+      if (tagFilter !== "all" && !(s.tags || []).includes(tagFilter)) return false;
 
 
       
@@ -2520,6 +2563,15 @@ export default function Admin() {
                     <SelectItem value="none">Nepriskirtos</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select value={tagFilter} onValueChange={setTagFilter}>
+                  <SelectTrigger className="h-8 w-[150px]" title="Filtruoti pagal žymą">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Visos žymos</SelectItem>
+                    {CARD_TAGS.map((t) => <SelectItem key={t.value} value={t.value}>{t.value}</SelectItem>)}
+                  </SelectContent>
+                </Select>
                 <NewSubmissionNotifier onNew={() => fetchSubmissions()} />
                 <CarMatchesBell
                   onOpenSubmission={(id) => {
@@ -2972,6 +3024,20 @@ export default function Admin() {
                                     : submission.source === "autokopers" ? "AK" : "AP"}
                                 </Badge>
                               </div>
+                              {((submission.tags && submission.tags.length > 0) || submission.next_action) && (
+                                <div className="mt-1 space-y-1">
+                                  {submission.tags && submission.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1">
+                                      {submission.tags.map((t) => (
+                                        <span key={t} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${tagCls(t)}`}>{t}</span>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {submission.next_action && (
+                                    <div className="text-xs text-primary font-medium break-words">➜ {submission.next_action}</div>
+                                  )}
+                                </div>
+                              )}
                               
                               {/* Phone with quick actions */}
                               <div className="flex items-center gap-1">
@@ -3644,6 +3710,41 @@ export default function Admin() {
                         {selectedSubmission.source === "autokopers" ? "Autokopers" : "Autopaskolos"}
                       </p>
                     </div>
+                  </div>
+                </div>
+                <div className="space-y-2 rounded-lg border p-3">
+                  <Button variant="outline" className="w-full h-10" onClick={() => handleNoAnswer(selectedSubmission)}>
+                    📵 Neatsiliepė – priminti rytoj
+                  </Button>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CARD_TAGS.map((t) => {
+                      const on = (selectedSubmission.tags || []).includes(t.value);
+                      return (
+                        <button
+                          key={t.value}
+                          type="button"
+                          className={`text-xs font-semibold px-2 py-1 rounded border transition-opacity ${tagCls(t.value)} ${on ? "ring-2 ring-primary" : "opacity-50 hover:opacity-100"}`}
+                          onClick={() => {
+                            const cur = selectedSubmission.tags || [];
+                            updateSubmissionFields(selectedSubmission.id, { tags: on ? cur.filter((x) => x !== t.value) : [...cur, t.value] });
+                          }}
+                        >
+                          {on ? "✓ " : ""}{t.value}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      className="h-9 text-base"
+                      placeholder="Kitas veiksmas, pvz. Paskambinti penktadienį"
+                      value={nextActionDraft}
+                      onChange={(e) => setNextActionDraft(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") updateSubmissionFields(selectedSubmission.id, { next_action: nextActionDraft.trim() || null }).then((ok) => ok && toast({ title: "Išsaugota" })); }}
+                    />
+                    <Button size="sm" className="h-9" onClick={() => updateSubmissionFields(selectedSubmission.id, { next_action: nextActionDraft.trim() || null }).then((ok) => ok && toast({ title: "Išsaugota" }))}>
+                      Išsaugoti
+                    </Button>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg border p-3 text-sm">
