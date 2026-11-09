@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { syncToMeta } from "@/lib/syncToMeta";
+import { createClientHandoff, type HandoffRecipient } from "@/lib/clientHandoff";
 import { SEOHead } from "@/components/SEOHead";
 import { 
   LogOut, 
@@ -326,11 +327,14 @@ export default function Admin() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addingSubmission, setAddingSubmission] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const selectedSubmissionRef = useRef(selectedSubmission);
+  selectedSubmissionRef.current = selectedSubmission;
   const [editingAmount, setEditingAmount] = useState(false);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [emailBrand, setEmailBrand] = useState("autopaskolos");
   const [amountDraft, setAmountDraft] = useState("");
   const [savingAmount, setSavingAmount] = useState(false);
+  const [handingOff, setHandingOff] = useState(false);
   const [draggedSubmission, setDraggedSubmission] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [statusConfig, setStatusConfig] = useState<StatusConfig[]>(readStatusConfigFromLocalStorage);
@@ -1236,6 +1240,48 @@ export default function Admin() {
     setSelectedSubmission((prev) => (prev && prev.id === id ? { ...prev, ...patch } : prev));
     return true;
   };
+
+  const handleHandoff = async (sub: Submission, recipient: HandoffRecipient) => {
+    if (!currentUserId || handingOff) return;
+    setHandingOff(true);
+    const { patch, comment } = createClientHandoff(recipient);
+    const commentText = tagCommentWithOperator(comment, operator);
+    try {
+      if (!await updateSubmissionFields(sub.id, patch)) return;
+      if (selectedSubmissionRef.current?.id === sub.id) setNextActionDraft(patch.next_action);
+      const { data, error } = await supabase.from("submission_comments")
+        .insert({ submission_id: sub.id, comment: commentText, user_id: currentUserId })
+        .select().single();
+      if (error) {
+        toast({ title: `Perduota: ${recipient}`, description: "Priskyrimas ir kitas veiksmas išsaugoti, bet komentaro įrašyti nepavyko.", variant: "destructive" });
+        return;
+      }
+      const profile = profiles.find((p) => p.user_id === currentUserId);
+      setComments((prev) => {
+        const list = prev[sub.id] || [];
+        if (list.some((c) => c.id === data.id)) return prev;
+        return { ...prev, [sub.id]: [...list, { ...data, user_email: profile?.email || "Nežinomas", user_display_name: profile?.display_name || undefined }] };
+      });
+      syncToMeta({ type: "comment", submission_id: sub.id, comment: commentText });
+      toast({ title: `Perduota perskambinti: ${recipient}` });
+    } catch {
+      toast({ title: "Nepavyko užbaigti perdavimo", description: "Patikrinkite kliento priskyrimą prieš bandydami dar kartą.", variant: "destructive" });
+    } finally {
+      setHandingOff(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    const channel = supabase.channel("client-handoff-updates")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "contact_submissions" }, (payload) => {
+        const row = payload.new as Submission;
+        if (!row.id) return;
+        setSubmissions((prev) => prev.map((s) => s.id === row.id ? { ...s, ...row } : s));
+        setSelectedSubmission((prev) => prev?.id === row.id ? { ...prev, ...row } : prev);
+      }).subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [currentUserId]);
 
   const handleNoAnswer = async (sub: Submission) => {
     const now = new Date();
@@ -3747,7 +3793,7 @@ export default function Admin() {
                     </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 rounded-lg border p-3 text-sm">
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
                   <span className="text-muted-foreground">Perduota:</span>
                   {(["Aivaras", "Paulina"] as const).map((op) => (
                     <Button
@@ -3768,6 +3814,16 @@ export default function Admin() {
                       {op}
                     </Button>
                   ))}
+                  <div className="flex w-full flex-wrap gap-2 border-t pt-2">
+                    {(["Aivaras", "Paulina"] as const).filter((op) => op !== operator).map((op) => (
+                      <Button key={op} variant="outline" size="sm" disabled={handingOff || !currentUserId}
+                        className="h-auto min-h-9 whitespace-normal text-left"
+                        onClick={() => handleHandoff(selectedSubmission, op)}>
+                        {handingOff ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share2 className="mr-2 h-4 w-4" />}
+                        Perduoti perskambinti: {op}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
                 {/* Dates */}
                 <div className="space-y-2 text-sm text-muted-foreground">
