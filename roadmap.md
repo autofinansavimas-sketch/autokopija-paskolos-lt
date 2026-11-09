@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Pasiūlymo langas išeinančiam lankytojui su nuotrauka ir kontaktų forma.
+
 - [x] Greitas perdavimas kolegai perskambinti su priskyrimu, kitu veiksmu ir komentaru.
 
 - [x] Facebook skiltis = du subtabai: Auto Kopers LT ir Autopaskolos.lt, tos pačios lead kortelės

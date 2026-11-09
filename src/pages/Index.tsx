@@ -8,6 +8,7 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { SEOHead } from "@/components/SEOHead";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { SocialProofPopup } from "@/components/SocialProofPopup";
+import { ExitOfferPopup } from "@/components/ExitOfferPopup";
 
 const faqJsonLd = {
   "@context": "https://schema.org",
@@ -98,6 +99,7 @@ const Index = () => {
       </Suspense>
       <StickyMobileCTA />
       <SocialProofPopup />
+      <ExitOfferPopup />
     </div>
   );
 };
