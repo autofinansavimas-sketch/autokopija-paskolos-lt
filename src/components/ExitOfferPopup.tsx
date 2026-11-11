@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ContactFormDialog } from "@/components/ContactFormDialog";
 import { canShowExitOffer, EXIT_OFFER_KEY } from "@/lib/exitOffer";
-import offerImage from "@/assets/exit-offer-neutral.jpg";
+import offerImage from "@/assets/exit-offer-loans.jpg";
 
 export function ExitOfferPopup() {
   const [open, setOpen] = useState(false);
@@ -32,7 +32,7 @@ export function ExitOfferPopup() {
   return <>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="w-[calc(100%-2rem)] max-w-xl gap-0 overflow-hidden rounded-lg p-0 motion-reduce:animate-none">
-        <img src={offerImage} alt="Automobilio raktelis ant šviesaus stalo" loading="lazy" width={1280} height={768} className="aspect-[5/2] w-full object-cover" />
+        <img src={offerImage} alt="Monetos, dokumentai ir rašiklis ant šviesaus stalo" loading="lazy" width={1280} height={768} className="aspect-[5/2] w-full object-cover" />
         <div className="space-y-5 p-6 sm:p-8">
           <p className="text-xs font-semibold uppercase text-primary">AUTOPASKOLOS.LT</p>
           <DialogTitle className="text-3xl font-bold leading-tight tracking-normal sm:text-4xl">Itin patrauklios<br />paskolų sąlygos</DialogTitle>
